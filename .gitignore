@@ -1,0 +1,5 @@
+data/
+node_modules/
+api/config/local-*
+.config/
+.type/

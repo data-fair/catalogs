@@ -1,0 +1,76 @@
+{
+  "$id": "https://github.com/data-fair/catalogs/api/config",
+  "x-exports": [
+    "types",
+    "validate"
+  ],
+  "x-ajv": {
+    "coerceTypes": "array"
+  },
+  "type": "object",
+  "title": "Api config",
+  "additionalProperties": false,
+  "required": [
+    "dataDir",
+    "mongoUrl",
+    "observer",
+    "port",
+    "privateDirectoryUrl",
+    "secretKeys"
+  ],
+  "properties": {
+    "dataDir": {
+      "type": "string"
+    },
+    "mongoUrl": {
+      "type": "string"
+    },
+    "npm": {
+      "type": "object",
+      "properties": {
+        "httpsProxy": {
+          "type": "string"
+        }
+      }
+    },
+    "observer": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "port": {
+          "type": "number"
+        }
+      }
+    },
+    "port": {
+      "type": "number"
+    },
+    "privateDirectoryUrl": {
+      "type": "string",
+      "pattern": "^https?://"
+    },
+    "privateEventsUrl": {
+      "type": "string"
+    },
+    "secretKeys": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "string"
+        }
+      }
+    },
+    "serveUi": {
+      "type": "boolean"
+    },
+    "tmpDir": {
+      "type": "string",
+      "description": "dataDir + '/tmp' if null"
+    },
+    "util": {},
+    "get": {},
+    "has": {}
+  }
+}
