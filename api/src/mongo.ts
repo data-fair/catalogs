@@ -1,3 +1,5 @@
+import type { Catalog } from '#types'
+
 import { Mongo } from '@data-fair/lib-node/mongo.js'
 import config from '#config'
 
@@ -9,6 +11,10 @@ export class CatalogsMongo {
 
   get db () {
     return this.mongo.db
+  }
+
+  get catalogs () {
+    return this.mongo.db.collection<Catalog>('catalogs')
   }
 
   constructor () {

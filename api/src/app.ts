@@ -2,6 +2,7 @@ import { resolve } from 'node:path'
 import express from 'express'
 import { session, errorHandler, createSiteMiddleware, createSpaMiddleware } from '@data-fair/lib-express/index.js'
 import pluginsRegistryRouter from './routers/plugins-registry.ts'
+import pluginRouter from './routers/plugins.ts'
 import adminRouter from './admin.ts'
 import config, { uiConfig } from '#config'
 
@@ -19,6 +20,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.use('/api/plugins-registry', pluginsRegistryRouter)
+app.use('/api/plugins', pluginRouter)
 app.use('/api/admin', adminRouter)
 
 if (config.serveUi) {

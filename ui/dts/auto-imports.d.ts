@@ -30,7 +30,11 @@ declare global {
   const isReadonly: typeof import('vue')['isReadonly']
   const isRef: typeof import('vue')['isRef']
   const markRaw: typeof import('vue')['markRaw']
+  const mdiAlert: typeof import('@mdi/js')['mdiAlert']
+  const mdiDelete: typeof import('@mdi/js')['mdiDelete']
   const mdiDotsVertical: typeof import('@mdi/js')['mdiDotsVertical']
+  const mdiDownload: typeof import('@mdi/js')['mdiDownload']
+  const mdiMagnify: typeof import('@mdi/js')['mdiMagnify']
   const nextTick: typeof import('vue')['nextTick']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
@@ -130,7 +134,11 @@ declare module 'vue' {
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
+    readonly mdiAlert: UnwrapRef<typeof import('@mdi/js')['mdiAlert']>
+    readonly mdiDelete: UnwrapRef<typeof import('@mdi/js')['mdiDelete']>
     readonly mdiDotsVertical: UnwrapRef<typeof import('@mdi/js')['mdiDotsVertical']>
+    readonly mdiDownload: UnwrapRef<typeof import('@mdi/js')['mdiDownload']>
+    readonly mdiMagnify: UnwrapRef<typeof import('@mdi/js')['mdiMagnify']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>

@@ -42,7 +42,11 @@ export default defineConfig({
         {
           '~/context': ['$uiConfig', '$sitePath', '$apiPath', '$fetch'],
           '@mdi/js': [
-            'mdiDotsVertical'
+            'mdiAlert',
+            'mdiDelete',
+            'mdiDownload',
+            'mdiDotsVertical',
+            'mdiMagnify'
           ]
         }
       ],

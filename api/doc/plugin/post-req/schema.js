@@ -7,13 +7,11 @@ export default {
   'x-exports': ['validate', 'types'],
   type: 'object',
   required: ['body'],
+  additionalProperties: false,
   properties: {
     body:
       jsonSchema(PluginSchema)
-        .pickProperties(['distTag', 'name', 'version', 'description'])
-        .removeFromRequired([
-          'description'
-        ])
+        .pickProperties(['id', 'name', 'description', 'version'])
         .removeId()
         .appendTitle(' post')
         .schema
