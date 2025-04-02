@@ -27,10 +27,10 @@
           </v-row>
           <template v-else>
             <v-list-subheader v-if="displayCatalogs.length > 1">
-              {{ displayCatalogs.length }}/{{ catalogsFetch.data.value?.count }} traitements affichés
+              {{ displayCatalogs.length }}/{{ catalogsFetch.data.value?.count }} catalogues affichés
             </v-list-subheader>
             <v-list-subheader v-else>
-              {{ displayCatalogs.length }}/{{ catalogsFetch.data.value?.count }} traitement affiché
+              {{ displayCatalogs.length }}/{{ catalogsFetch.data.value?.count }} catalogue affiché
             </v-list-subheader>
             <v-row class="d-flex align-stretch">
               <v-col
@@ -49,7 +49,7 @@
           </template>
         </v-container>
       </v-col>
-      <template v-if="catalogsFetch.data.value && canAdmin">
+      <template v-if="catalogsFetch.data.value && getAccountRole(session.state, session.state.account) === 'admin'">
         <layout-navigation-right v-if="$vuetify.display.lgAndUp">
           <catalogs-actions
             v-model:search="search"
@@ -57,11 +57,10 @@
             v-model:plugins-selected="plugins"
             v-model:statuses-selected="statuses"
             v-model:owners-selected="owners"
-            :owner-filter="ownerFilter"
-            :admin-mode="session.state.user?.adminMode"
-            :facets="catalogsFetch.data.value.facets"
+            :admin-mode="session.state.user?.adminMode === 1"
             :is-small="false"
-            :catalogs="displayCatalogs"
+            :facets="catalogsFetch.data.value?.facets || {}"
+            :plugins="pluginsFetch.data.value?.results || []"
           />
         </layout-navigation-right>
         <layout-actions-button
@@ -75,11 +74,10 @@
               v-model:plugins-selected="plugins"
               v-model:statuses-selected="statuses"
               v-model:owners-selected="owners"
-              :owner-filter="ownerFilter"
-              :admin-mode="session.state.user?.adminMode"
-              :facets="catalogsFetch.data.value.facets"
+              :admin-mode="session.state.user?.adminMode === 1"
               :is-small="true"
-              :catalogs="displayCatalogs"
+              :facets="catalogsFetch.data.value?.facets || {}"
+              :plugins="pluginsFetch.data.value?.results || []"
             />
           </template>
         </layout-actions-button>
@@ -89,7 +87,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Catalog } from '#api/types'
+import type { Catalog, CatalogsFacets, Plugin, PluginsFacets } from '#api/types'
+import { getAccountRole } from '@data-fair/lib-vue/session'
 
 const session = useSessionAuthenticated(() => new Error('Authentification nécessaire'))
 const showAll = useBooleanSearchParam('showAll')
@@ -98,64 +97,31 @@ const plugins = useStringsArraySearchParam('plugin')
 const statuses = useStringsArraySearchParam('status')
 const owners = useStringsArraySearchParam('owner')
 
-onMounted(() => setBreadcrumbs([{ text: 'Traitements' }]))
-
-/*
-  Permissions
-*/
-const owner = computed(() => {
-  if (owners.value && owners.value.length) {
-    const parts = owners.value[0].split(':')
-    return { type: parts[0], id: parts[1] } as { type: 'user' | 'organization', id: string, department?: string }
-  } else {
-    return session.state.account
-  }
-})
-const ownerRole = computed(() => {
-  const user = session.state.user
-  if (owner.value.type === 'user') {
-    if (owner.value.id === user.id) return 'admin'
-    else return 'anonymous'
-  }
-  const userOrg = user.organizations.find(o => {
-    if (o.id !== owner.value.id) return false
-    if (!o.department) return true
-    if (o.department === owner.value.department) return true
-    return false
-  })
-  return userOrg ? userOrg.role : 'anonymous'
-})
-const ownerFilter = computed(() => `${owner.value.type}:${owner.value.id}${owner.value.department ? ':' + owner.value.department : ''}`)
-const canAdmin = computed(() => {
-  return ownerRole.value === 'admin' || !!session.state.user?.adminMode
-})
+onMounted(() => setBreadcrumbs([{ text: 'Catalogues' }]))
 
 /*
   fetch and filter resources
 */
-
 const catalogsParams = computed(() => {
-  const params: Record<string, any> = {
-    size: '10000',
+  return {
+    size: '1000',
     showAll: showAll.value,
     sort: 'updated.date:-1',
-    select: '_id,title,plugin,owner,config'
+    select: '_id,title,plugin'
   }
-  if (plugins.value.length) params.plugins = plugins.value.join(',')
-  if (statuses.value.length) params.statuses = statuses.value.join(',')
-  if (owners.value) {
-    params.owner = owners.value.join(',')
-  } else {
-    params.owner = ownerFilter.value
-  }
-  return params
 })
 
 const catalogsFetch = useFetch<{
-  results: Catalog[],
-  facets: { statuses: Record<string, number>, plugins: Record<string, number>, owners: { id: string, name: string, totalCount: number, type: string, departments: { department: string, departmentName: string, count: number }[] }[] },
+  results: Catalog[]
+  facets: CatalogsFacets
   count: number
 }>(`${$apiPath}/catalogs`, { query: catalogsParams })
+
+const pluginsFetch = useFetch<{
+  results: Plugin[]
+  facets: PluginsFacets
+  count: number
+}>(`${$apiPath}/plugins`)
 
 const displayCatalogs = computed(() => {
   const catalogs = (catalogsFetch.data.value?.results ?? [])

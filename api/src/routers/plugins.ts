@@ -1,4 +1,5 @@
-import type { Plugin } from '#types/plugin/index.ts'
+import type { CatalogPlugin } from '../../../dev/catalogs.ts' // Move to @data-fair/lib
+import type { Plugin } from '#types'
 
 import { exec as execCallback } from 'child_process'
 import { promisify } from 'util'
@@ -28,7 +29,7 @@ tmp.setGracefulCleanup()
 // Install a new plugin or update an existing one
 router.post('/', async (req, res) => {
   await session.reqAdminMode(req)
-  const { body } = (await import('#doc/plugin/post-req/index.ts')).returnValid(req)
+  const { body } = (await import('../../docs/plugins/post-req/index.ts')).returnValid(req)
 
   const pluginDir = path.join(pluginsDir, body.id)
   const dir = await tmp.dir({ unsafeCleanup: true, tmpdir: tmpDir, prefix: 'plugin-install-' })
@@ -82,17 +83,16 @@ router.get('/', async (req, res) => {
   const dirs = await fs.readdir(pluginsDir)
   const results: Plugin[] = []
   for (const dir of dirs) {
-    const plugin = await fs.readJson(path.join(pluginsDir, dir, 'plugin.json'))
-    const pluginConfig = await fs.readJson(path.join(pluginsDir, dir, 'src', 'config.json'))
-    const pluginMetadata = await fs.readJson(path.join(pluginsDir, dir, 'src', 'metadata.json'))
+    const pluginInfo = await fs.readJson(path.join(pluginsDir, dir, 'plugin.json'))
+    const plugin: CatalogPlugin = await import(path.join(pluginsDir, dir, 'index.ts'))
 
     results.push({
-      id: plugin.id,
-      name: plugin.name,
-      description: plugin.description,
-      version: plugin.version,
-      catalogConfigSchema: pluginConfig,
-      metadata: pluginMetadata
+      id: pluginInfo.id,
+      name: pluginInfo.name,
+      description: pluginInfo.description,
+      version: pluginInfo.version,
+      configSchema: plugin.configSchema,
+      metadata: plugin.metadata
     })
   }
 
@@ -117,17 +117,16 @@ router.get('/:id', async (req, res) => {
   await session.reqAuthenticated(req)
   try {
     const pluginDir = path.join(pluginsDir, req.params.id)
-    const plugin = await fs.readJson(path.join(pluginDir, 'plugin.json'))
-    const pluginConfig = await fs.readJson(path.join(pluginDir, 'src', 'config.json'))
-    const pluginMetadata = await fs.readJson(path.join(pluginDir, 'src', 'metadata.json'))
+    const pluginInfo = await fs.readJson(path.join(pluginDir, 'plugin.json'))
+    const plugin: CatalogPlugin = await import(path.join(pluginDir, 'index.ts'))
 
     res.send({
-      id: plugin.id,
-      name: plugin.name,
-      description: plugin.description,
-      version: plugin.version,
-      catalogConfigSchema: pluginConfig,
-      metadata: pluginMetadata
+      id: pluginInfo.id,
+      name: pluginInfo.name,
+      description: pluginInfo.description,
+      version: pluginInfo.version,
+      catalogConfigSchema: plugin,
+      metadata: plugin
     })
   } catch (e: any) {
     if (e.code === 'ENOENT') res.status(404).send('Plugin not found')

@@ -35,6 +35,7 @@ declare global {
   const mdiDotsVertical: typeof import('@mdi/js')['mdiDotsVertical']
   const mdiDownload: typeof import('@mdi/js')['mdiDownload']
   const mdiMagnify: typeof import('@mdi/js')['mdiMagnify']
+  const mdiPlusCircle: typeof import('@mdi/js')['mdiPlusCircle']
   const nextTick: typeof import('vue')['nextTick']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
@@ -139,6 +140,7 @@ declare module 'vue' {
     readonly mdiDotsVertical: UnwrapRef<typeof import('@mdi/js')['mdiDotsVertical']>
     readonly mdiDownload: UnwrapRef<typeof import('@mdi/js')['mdiDownload']>
     readonly mdiMagnify: UnwrapRef<typeof import('@mdi/js')['mdiMagnify']>
+    readonly mdiPlusCircle: UnwrapRef<typeof import('@mdi/js')['mdiPlusCircle']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>

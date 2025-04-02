@@ -1,5 +1,5 @@
-import type { Catalog } from '#types'
 import type { SessionStateAuthenticated } from '@data-fair/lib-express/index.js'
+import type { Catalog } from '#types'
 
 import Ajv from 'ajv'
 import ajvFormats from 'ajv-formats'
@@ -69,7 +69,7 @@ const validateCatalog = async (catalog: Catalog, withConfig: boolean = true) => 
 // Get the list of catalogs
 router.get('', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  const params = (await import('#doc/catalogs/get-req/index.ts')).returnValid(req.query)
+  const params = (await import('../../docs/catalogs/get-req/index.ts')).returnValid(req.query)
   const sort = findUtils.sort(params.sort)
   const { skip, size } = findUtils.pagination(params)
   const project = findUtils.project(params.select)
@@ -91,7 +91,7 @@ router.post('', async (req, res) => {
   catalog._id = nanoid()
   catalog.owner = catalog.owner ?? sessionState.account
   if (!permissions.isAdmin(sessionState, catalog.owner)) return res.status(403).send('No permission to create a catalog')
-  catalog.scheduling = catalog.scheduling || []
+  catalog.description = ''
   catalog.created = catalog.updated = {
     id: sessionState.user.id,
     name: sessionState.user.name,

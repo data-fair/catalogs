@@ -1,7 +1,6 @@
 import type { AxiosRequestConfig } from 'axios'
 import { Router } from 'express'
 import memoize from 'memoizee'
-
 import axios from '@data-fair/lib-node/axios.js'
 import config from '#config'
 

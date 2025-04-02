@@ -4,7 +4,7 @@ export default {
     'types',
     'validate'
   ],
-  title: 'catalog',
+  title: 'Catalog',
   type: 'object',
   additionalProperties: false,
   required: [

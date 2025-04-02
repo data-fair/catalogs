@@ -22,7 +22,6 @@
 
     "paths": {
       "#api/types": ["../api/types/index.ts"],
-      "#api/doc/*": ["../api/doc/*"],
       "~/*": ["./src/*"]
     },
 

@@ -1,0 +1,6 @@
+{
+  "id": "@data-fair-catalog-mock",
+  "name": "@data-fair/catalog-mock",
+  "description": "Mock data for the Data Fair Catalog",
+  "version": "0.0.0"
+}

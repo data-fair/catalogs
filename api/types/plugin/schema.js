@@ -4,14 +4,15 @@ export default {
     'types',
     'validate'
   ],
-  title: 'plugin',
+  title: 'Plugin',
   type: 'object',
   additionalProperties: false,
   required: [
     'id',
     'name',
     'version',
-    'catalogConfigSchema'
+    'configSchema',
+    'metadata'
   ],
   properties: {
     id: {
@@ -31,13 +32,18 @@ export default {
     version: {
       type: 'string'
     },
-    catalogConfigSchema: {
+    configSchema: {
       type: 'object'
     },
     metadata: {
       type: 'object',
       description: 'Metadata about the plugin.',
       additionalProperties: false,
+      required: [
+        'title',
+        'description',
+        'icon'
+      ],
       properties: {
         title: {
           type: 'string',

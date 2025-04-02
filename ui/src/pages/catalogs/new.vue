@@ -28,66 +28,80 @@
 
       <v-stepper-window>
         <v-stepper-window-item value="1">
-          <div
-            v-for="category in orderedCategories"
-            :key="category"
-            class="mb-4"
-          >
-            <template v-if="categorizedPlugins[category]?.length">
-              <h3>{{ category }}</h3>
-              <v-row class="d-flex align-stretch">
-                <v-col
-                  v-for="plugin in categorizedPlugins[category]"
-                  :key="plugin.id"
-                  md="3"
-                  sm="4"
-                  xs="6"
-                  cols="12"
+          <v-row class="d-flex align-stretch">
+            <v-col
+              v-for="plugin in installedPluginsFetch.data.value?.results"
+              :key="plugin.id"
+              md="3"
+              sm="4"
+              xs="6"
+              cols="12"
+            >
+              <v-card
+                class="h-100"
+                :color="newCatalog.plugin === plugin.id ? 'primary' : ''"
+                @click="newCatalog.plugin = plugin.id; step = '2'"
+              >
+                <template #title>
+                  <span :class="newCatalog.plugin !== plugin.id ? 'text-primary' : ''">
+                    {{ plugin.metadata.title }}
+                  </span>
+                </template>
+                <template
+                  v-if="plugin.metadata.icon"
+                  #prepend
                 >
-                  <v-card
-                    class="h-100"
-                    :color="newCatalog.plugin === plugin.id ? 'primary' : ''"
-                    @click="newCatalog.plugin = plugin.id; step = '2'"
-                  >
-                    <template #title>
-                      <span :class="newCatalog.plugin !== plugin.id ? 'text-primary' : ''">
-                        {{ plugin.metadata.name }}
-                      </span>
-                    </template>
-                    <template
-                      v-if="plugin.metadata.icon"
-                      #prepend
-                    >
-                      <v-icon
-                        :color="newCatalog.plugin !== plugin.id ? 'primary' : ''"
-                        :icon="plugin.metadata.icon.svgPath"
-                      />
-                    </template>
-                    <v-card-text>{{ plugin.metadata.description }}</v-card-text>
-                  </v-card>
-                </v-col>
-              </v-row>
-            </template>
-          </div>
+                  <v-icon
+                    :color="newCatalog.plugin !== plugin.id ? 'primary' : ''"
+                    :icon="plugin.metadata.icon"
+                  />
+                </template>
+                <v-card-text>{{ plugin.metadata.description }}</v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
         </v-stepper-window-item>
         <v-stepper-window-item value="2">
-          <v-text-field
-            v-model="newCatalog.title"
-            label="Titre"
-          />
-          <owner-pick
-            v-model="newCatalog.owner"
-            v-model:ready="ownersReady"
-          />
+          <v-form v-model="valid">
+            <v-defaults-provider
+              :defaults="{
+                global: {
+                  hideDetails: 'auto'
+                }
+              }"
+            >
+              <vjsf
+                v-model="newCatalog.title"
+                :schema="{
+                  type: 'string',
+                  title: 'Titre',
+                  minLength: 3,
+                  maxLength: 50
+                }"
+                :options="vjsfOptions"
+              />
+              <vjsf
+                v-model="newCatalog.config"
+                :schema="installedPluginsFetch.data.value?.results.find(p => p.id === newCatalog.plugin)?.configSchema"
+                :options="vjsfOptions"
+                class="mr-2"
+              />
+              <owner-pick
+                v-model="newCatalog.owner"
+                v-model:ready="ownersReady"
+              />
+            </v-defaults-provider>
+          </v-form>
           <v-btn
-            :disabled="!ownersReady || !newCatalog.title || !newCatalog.plugin || inCreate"
+            :disabled="!ownersReady || !valid || !newCatalog.plugin || createCatalog.loading.value"
             color="primary"
-            @click="createCatalog()"
+            variant="flat"
+            @click="createCatalog.execute()"
           >
             Créer
           </v-btn>
           <v-btn
-            :disabled="inCreate"
+            :disabled="createCatalog.loading.value"
             variant="text"
             @click="step = '1'"
           >
@@ -100,23 +114,9 @@
 </template>
 
 <script setup lang="ts">
+import type { Plugin } from '#api/types'
+import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import OwnerPick from '@data-fair/lib-vuetify/owner-pick.vue'
-
-type InstalledPlugin = {
-  name: string
-  description: string
-  version: string
-  distTag: string
-  id: string
-  pluginConfigSchema: any
-  catalogConfigSchema: any
-  metadata: {
-    name: string
-    description: string
-    category: string
-    icon: Record<string, string>
-  }
-}
 
 const session = useSessionAuthenticated(() => new Error('Authentification nécessaire'))
 const router = useRouter()
@@ -133,7 +133,6 @@ const owner = computed(() => {
     return session.state.account
   }
 })
-const ownerFilter = computed(() => `${owner.value.type}:${owner.value.id}${owner.value.department ? ':' + owner.value.department : ''}`)
 const ownerRole = computed(() => {
   const user = session.state.user
   if (owner.value.type === 'user') {
@@ -148,58 +147,50 @@ const ownerRole = computed(() => {
   })
   return userOrg ? userOrg.role : 'anonymous'
 })
-const canAdmin = computed(() => {
-  return ownerRole.value === 'admin' || !!session.state.user?.adminMode
-})
-if (!canAdmin.value) throw new Error('Vous n\'avez pas les droits pour créer un traitement')
+const canAdmin = computed(() => ownerRole.value === 'admin' || !!session.state.user?.adminMode)
+if (!canAdmin.value) throw new Error('Vous n\'avez pas les droits pour créer un catalogue')
 
-const installedPluginsFetch = useFetch<{ results: InstalledPlugin[], count: number }>(`${$apiPath}/plugins?privateAccess=${ownerFilter.value}`)
-const installedPlugins = computed(() => installedPluginsFetch.data.value?.results)
+const installedPluginsFetch = useFetch<{ results: Plugin[], count: number }>(`${$apiPath}/plugins`)
 
 const step = ref('1')
-const inCreate = ref(false)
 const showCreateMenu = ref(false)
 const newCatalog: Ref<Record<string, string>> = ref({})
 const ownersReady = ref(false)
+const valid = ref(false)
 
-const categorizedPlugins = computed(() => {
-  const categories: Record<string, InstalledPlugin[]> = {}
-  orderedCategories.forEach(category => {
-    categories[category] = []
-  })
-  installedPlugins.value?.forEach(plugin => {
-    const category = plugin.metadata.category || 'Autres'
-    if (!categories[category]) categories[category] = []
-    categories[category].push(plugin)
-  })
-  return categories
-})
-
-const createCatalog = withUiNotif(
+const createCatalog = useAsyncAction(
   async () => {
-    inCreate.value = true
-
     const catalog = await $fetch('/catalogs', {
       method: 'POST',
       body: JSON.stringify(newCatalog.value)
     })
 
-    await router.push({ path: `/catalogs/${catalog._id}` })
+    await router.replace({ path: `/catalogs/${catalog._id}` })
     showCreateMenu.value = false
-    inCreate.value = false
   },
-  'Erreur pendant la création du traitement',
-  { msg: 'Traitement créé avec succès !' }
+  {
+    success: 'Catalogue créé !',
+    error: 'Erreur pendant la création du catalogue',
+  }
 )
 
 onMounted(() => {
   setBreadcrumbs([{
-    text: 'Traitements',
+    text: 'Catalogues',
     to: '/catalogs'
   }, {
-    text: 'Créer un traitement'
+    text: 'Créer un catalogue'
   }])
 })
+
+const vjsfOptions: VjsfOptions = {
+  density: 'comfortable',
+  validateOn: 'blur',
+  locale: session.lang.value,
+  readOnlyPropertiesMode: 'remove',
+  titleDepth: 4,
+  xI18n: true
+}
 
 </script>
 
