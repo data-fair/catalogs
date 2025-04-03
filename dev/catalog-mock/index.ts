@@ -1,5 +1,5 @@
-import { CatalogPlugin } from '../../catalogs'
-import { schema as configSchema, assertValid as assertConfigValid } from './types/config'
+import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog.js'
+import { schema as configSchema, assertValid as assertConfigValid } from './types/config/index.ts'
 
 export const listDatasets = async () => {
   return {

@@ -1,4 +1,4 @@
-import type { SessionStateAuthenticated } from '@data-fair/lib-express/index.js'
+import type { SessionStateAuthenticated } from '@data-fair/lib-express'
 import type { Catalog } from '#types'
 
 import Ajv from 'ajv'
@@ -9,12 +9,12 @@ import path from 'path'
 import { nanoid } from 'nanoid'
 
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { session } from '@data-fair/lib-express/index.js'
+import { assertAccountRole, session } from '@data-fair/lib-express'
 import { httpError } from '@data-fair/lib-utils/http-errors.js'
 import mongo from '#mongo'
 import config from '#config'
 import findUtils from '../utils/find.ts'
-import permissions from '../utils/permissions.ts'
+import { catalogAggregation } from '../utils/facets.ts'
 
 const router = Router()
 export default router
@@ -69,6 +69,8 @@ const validateCatalog = async (catalog: Catalog, withConfig: boolean = true) => 
 // Get the list of catalogs
 router.get('', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
+  assertAccountRole(sessionState, sessionState.account, ['contrib', 'admin'])
+
   const params = (await import('../../docs/catalogs/get-req/index.ts')).returnValid(req.query)
   const sort = findUtils.sort(params.sort)
   const { skip, size } = findUtils.pagination(params)
@@ -76,21 +78,37 @@ router.get('', async (req, res) => {
   const query = findUtils.query(params, sessionState) // Check permissions
 
   const queryWithFilters = { ...query }
+  // Filter by plugins
+  const plugins = params.plugins ? params.plugins.split(',') : []
+  if (plugins.length > 0) {
+    queryWithFilters.plugin = { $in: plugins }
+  }
 
-  const [results, count] = await Promise.all([
+  // Filter by owner (if showAll)
+  const showAll = params.showAll === 'true'
+  if (showAll) {
+    const owners = params.owners ? params.owners.split(',') : []
+    if (owners.length > 0) {
+      queryWithFilters.owner = { $in: owners }
+    }
+  }
+
+  const [results, count, facets] = await Promise.all([
     size > 0 ? mongo.catalogs.find(queryWithFilters).limit(size).skip(skip).sort(sort).project(project).toArray() : Promise.resolve([]),
-    mongo.catalogs.countDocuments(query)
+    mongo.catalogs.countDocuments(query),
+    mongo.catalogs.aggregate(catalogAggregation(query, showAll)).toArray()
   ])
 
-  res.json({ results, count })
+  res.json({ results, count, facets: facets[0] })
 })
 
 router.post('', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = { ...req.body }
-  catalog._id = nanoid()
   catalog.owner = catalog.owner ?? sessionState.account
-  if (!permissions.isAdmin(sessionState, catalog.owner)) return res.status(403).send('No permission to create a catalog')
+  assertAccountRole(sessionState, catalog.owner, ['contrib', 'admin'])
+
+  catalog._id = nanoid()
   catalog.description = ''
   catalog.created = catalog.updated = {
     id: sessionState.user.id,

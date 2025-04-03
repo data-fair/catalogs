@@ -7,9 +7,7 @@ import { Router } from 'express'
 import fs from 'fs-extra'
 import path from 'path'
 import tmp from 'tmp-promise'
-
-import { session } from '@data-fair/lib-express/index.js'
-
+import { assertAccountRole, session } from '@data-fair/lib-express'
 import mongo from '#mongo'
 import config from '#config'
 
@@ -78,7 +76,8 @@ router.post('/', async (req, res) => {
 
 // List installed plugins
 router.get('/', async (req, res) => {
-  await session.reqAuthenticated(req)
+  const sessionState = await session.reqAuthenticated(req)
+  assertAccountRole(sessionState, sessionState.account, ['contrib', 'admin'])
 
   const dirs = await fs.readdir(pluginsDir)
   const results: Plugin[] = []
@@ -114,7 +113,8 @@ router.get('/', async (req, res) => {
 
 // Return PluginData (if connected)
 router.get('/:id', async (req, res) => {
-  await session.reqAuthenticated(req)
+  const sessionState = await session.reqAuthenticated(req)
+  assertAccountRole(sessionState, sessionState.account, ['contrib', 'admin'])
   try {
     const pluginDir = path.join(pluginsDir, req.params.id)
     const pluginInfo = await fs.readJson(path.join(pluginDir, 'plugin.json'))

@@ -24,6 +24,9 @@ export default {
     },
     plugins: {
       type: 'string'
+    },
+    owners: {
+      type: 'string'
     }
   }
 }

@@ -2,6 +2,7 @@ import type { AxiosRequestConfig } from 'axios'
 import { Router } from 'express'
 import memoize from 'memoizee'
 import axios from '@data-fair/lib-node/axios.js'
+import { httpError, session } from '@data-fair/lib-express'
 import config from '#config'
 
 const router = Router()
@@ -48,9 +49,7 @@ const memoizedSearch = memoize(async (q: string | undefined) => {
 })
 
 router.get('/', async (req, res) => {
-  if (req.query.q && typeof req.query.q !== 'string') {
-    res.status(400).send('Invalid query')
-    return
-  }
+  await session.reqAdminMode(req)
+  if (req.query.q && typeof req.query.q !== 'string') throw httpError(400, 'Invalid query')
   res.send(await memoizedSearch(req.query.q))
 })

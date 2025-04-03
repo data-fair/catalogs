@@ -118,7 +118,7 @@ import type { Plugin } from '#api/types'
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import OwnerPick from '@data-fair/lib-vuetify/owner-pick.vue'
 
-const session = useSessionAuthenticated(() => new Error('Authentification nécessaire'))
+const session = useSessionAuthenticated()
 const router = useRouter()
 
 /*

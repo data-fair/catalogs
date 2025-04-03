@@ -1,15 +1,15 @@
 import { existsSync } from 'fs'
 import resolvePath from 'resolve-path'
 import { app } from './app.ts'
-import { session } from '@data-fair/lib-express/index.js'
+import { session } from '@data-fair/lib-express'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { startObserver, stopObserver } from '@data-fair/lib-node/observer.js'
 import { createHttpTerminator } from 'http-terminator'
 import { exec as execCallback } from 'child_process'
 import { promisify } from 'util'
+import http from 'http'
 import config from '#config'
 import mongo from '#mongo'
-import http from 'http'
 
 const exec = promisify(execCallback)
 const server = http.createServer(app)

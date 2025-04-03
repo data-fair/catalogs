@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import express from 'express'
-import { session, errorHandler, createSiteMiddleware, createSpaMiddleware } from '@data-fair/lib-express/index.js'
+import { session, errorHandler, createSiteMiddleware, createSpaMiddleware } from '@data-fair/lib-express'
 import catalogsRouter from './routers/catalogs.ts'
 import pluginsRegistryRouter from './routers/plugins-registry.ts'
 import pluginRouter from './routers/plugins.ts'

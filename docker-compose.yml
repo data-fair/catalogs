@@ -53,7 +53,7 @@ services:
       - NOTIFY_URL=http://localhost:5600/events
       - PUBLIC_URL=http://localhost:5600/data-fair
       - WS_PUBLIC_URL=ws://localhost:5600/data-fair
-      - EXTRA_NAV_ITEMS=[{"id":"events","can":"admin","iframe":"https://staging-koumoul.com/events/embed/events","basePath":"/events","icon":"mdi-clipboard-text-clock","title":"Traçabilité"},{"id":"catalogs","can":"contrib","iframe":"http://localhost:5600/catalogs/catalogs","basePath":"/catalogs","icon":"mdi-transit-connection","title":"Catalogues"}]
+      - EXTRA_NAV_ITEMS=[{"id":"catalogs","can":"contrib","iframe":"http://localhost:5600/catalogs/catalogs","basePath":"/catalogs","icon":"mdi-transit-connection","title":"Catalogues"}]
       - EXTRA_ADMIN_NAV_ITEMS=[{"id":"catalogs","iframe":"http://localhost:5600/catalogs/admin","basePath":"/catalogs","icon":"mdi-transit-connection","title":"Plugins - Catalogues"}]
       - OBSERVER_ACTIVE=false
 

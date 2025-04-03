@@ -42,7 +42,7 @@
               >
                 <catalog-card
                   :catalog="catalog"
-                  :show-owner="showAll || (catalog.owner.department && !session.state.account.department)"
+                  :show-owner="showAll || !!(catalog.owner.department && !session.state.account.department)"
                 />
               </v-col>
             </v-row>
@@ -90,7 +90,7 @@
 import type { Catalog, CatalogsFacets, Plugin, PluginsFacets } from '#api/types'
 import { getAccountRole } from '@data-fair/lib-vue/session'
 
-const session = useSessionAuthenticated(() => new Error('Authentification nécessaire'))
+const session = useSessionAuthenticated()
 const showAll = useBooleanSearchParam('showAll')
 const search = useStringSearchParam('q')
 const plugins = useStringsArraySearchParam('plugin')

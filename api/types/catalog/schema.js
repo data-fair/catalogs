@@ -2,7 +2,8 @@ export default {
   $id: 'https://github.com/data-fair/catalogs/catalog',
   'x-exports': [
     'types',
-    'validate'
+    'validate',
+    'resolvedSchema'
   ],
   title: 'Catalog',
   type: 'object',

@@ -12,13 +12,10 @@ const query = (reqQuery: Record<string, string>, sessionState: SessionStateAuthe
     throw httpError(400, 'Only super admins can override permissions filter with showAll parameter')
   }
   if (!showAll) {
-    query.owner = {
-      'owner.type': sessionState.account.type,
-      'owner.id': sessionState.account.id
-    }
-    if (sessionState.account.department) query.owner.department = sessionState.account.department
+    query['owner.type'] = sessionState.account.type
+    query['owner.id'] = sessionState.account.id
+    if (sessionState.account.department) query['owner.department'] = sessionState.account.department
   }
-
   return query
 }
 

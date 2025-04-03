@@ -1,8 +1,0 @@
-{
-  "name": "@data-fair/catalog-mock",
-  "version": "0.0.0",
-  "description": "Mock data for the Data Fair Catalog",
-  "license": "MIT",
-  "main": "index.ts",
-  "type": "module"
-}
