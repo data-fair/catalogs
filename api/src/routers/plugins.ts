@@ -8,6 +8,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import tmp from 'tmp-promise'
 import { assertAccountRole, httpError, session } from '@data-fair/lib-express'
+import findUtils from '../utils/find.ts'
 import mongo from '#mongo'
 import config from '#config'
 
@@ -115,23 +116,22 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   assertAccountRole(sessionState, sessionState.account, ['contrib', 'admin'])
+  let pluginInfo
   try {
-    const pluginDir = path.join(pluginsDir, req.params.id)
-    const pluginInfo = await fs.readJson(path.join(pluginDir, 'plugin.json'))
-    const plugin: CatalogPlugin = await import(path.join(pluginDir, 'index.ts'))
-
-    res.send({
-      id: pluginInfo.id,
-      name: pluginInfo.name,
-      description: pluginInfo.description,
-      version: pluginInfo.version,
-      configSchema: plugin.configSchema,
-      metadata: plugin.metadata
-    } as Plugin)
+    pluginInfo = await fs.readJson(path.join(pluginsDir, req.params.id, 'plugin.json'))
   } catch (e: any) {
-    if (e.code === 'ENOENT') throw httpError(404, 'Plugin not found')
-    else throw httpError(500, 'Internal server error')
+    throw httpError(404, 'Plugin not found')
   }
+  const plugin: CatalogPlugin = await findUtils.getPlugin(req.params.id)
+
+  res.send({
+    id: pluginInfo.id,
+    name: pluginInfo.name,
+    description: pluginInfo.description,
+    version: pluginInfo.version,
+    configSchema: plugin.configSchema,
+    metadata: plugin.metadata
+  } as Plugin)
 })
 
 router.delete('/:id', async (req, res) => {

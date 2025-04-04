@@ -1,4 +1,4 @@
-export const catalogAggregation = (query: Record<string, any>, showAll: boolean) => {
+export const catalogFacets = (query: Record<string, any>, showAll: boolean) => {
   const aggregationPipeline = [
     {
       $facet: {

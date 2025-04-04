@@ -42,7 +42,8 @@ export default {
       required: [
         'title',
         'description',
-        'icon'
+        'icon',
+        'capabilities'
       ],
       properties: {
         title: {
@@ -56,6 +57,16 @@ export default {
         icon: {
           type: 'string',
           description: 'The SVG Path icon of the plugin.'
+        },
+        capabilities: {
+          type: 'array',
+          items: {
+            type: 'string',
+            enum: [
+              'listDatasets',
+              'getDataset'
+            ]
+          },
         }
       }
     }

@@ -3,8 +3,6 @@ import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog.js'
 import type { Catalog } from '#types'
 
 import { Router } from 'express'
-import fs from 'fs-extra'
-import path from 'path'
 import { nanoid } from 'nanoid'
 
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
@@ -13,13 +11,12 @@ import { httpError } from '@data-fair/lib-utils/http-errors.js'
 import { resolvedSchema as catalogSchema } from '#types/catalog/index.ts'
 import mongo from '#mongo'
 import config from '#config'
+// import harvester from '../utils/harvester.ts'
 import findUtils from '../utils/find.ts'
-import { catalogAggregation } from '../utils/facets.ts'
+import { catalogFacets } from '../utils/facets.ts'
 
 const router = Router()
 export default router
-
-const pluginsDir = path.join(config.dataDir, 'plugins')
 
 /**
  * Helper function to send events related to catalogs
@@ -55,8 +52,7 @@ const sendCatalogEvent = (
  */
 const validateCatalog = async (catalog: Catalog) => {
   (await import('#types/catalog/index.ts')).returnValid(catalog)
-  if (!await fs.pathExists(path.join(pluginsDir, catalog.plugin))) throw httpError(400, 'Plugin not found')
-  const plugin: CatalogPlugin = await import(path.resolve(pluginsDir, catalog.plugin, 'index.ts'))
+  const plugin: CatalogPlugin = await findUtils.getPlugin(catalog.plugin)
   plugin.assertConfigValid(catalog.config)
 }
 
@@ -94,7 +90,7 @@ router.get('', async (req, res) => {
   const [results, count, facets] = await Promise.all([
     size > 0 ? mongo.catalogs.find(queryWithFilters).limit(size).skip(skip).sort(sort).project(project).toArray() : Promise.resolve([]),
     mongo.catalogs.countDocuments(query),
-    mongo.catalogs.aggregate(catalogAggregation(query, showAll)).toArray()
+    mongo.catalogs.aggregate(catalogFacets(query, showAll)).toArray()
   ])
 
   res.json({ results, count, facets: facets[0] })
@@ -121,7 +117,7 @@ router.post('', async (req, res) => {
   if (config.privateEventsUrl && config.secretKeys.events) {
     sendCatalogEvent(catalog, 'a été créé', 'create', sessionState)
   }
-  res.status(200).json(catalog)
+  res.status(201).json(catalog)
 })
 
 // Get a catalog
@@ -187,3 +183,27 @@ router.delete('/:id', async (req, res) => {
   }
   res.sendStatus(204)
 })
+
+// Get the list of datasets from a catalog
+router.get('/:id/datasets', async (req, res) => {
+  const sessionState = await session.reqAuthenticated(req)
+  const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
+  if (!catalog) throw httpError(404, 'Catalog not found')
+  assertAccountRole(sessionState, catalog.owner, ['contrib', 'admin'])
+
+  // Execute the plugin function
+  const plugin = await findUtils.getPlugin(catalog.plugin)
+  const datasets = await plugin.listDatasets(catalog.config)
+
+  res.json(datasets)
+})
+
+// Create a new dataset from a catalog
+// router.post('/:id/datasets', async (req, res) => {
+//   const sessionState = await session.reqAuthenticated(req)
+//   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
+//   if (!catalog) throw httpError(404, 'Catalog not found')
+//   assertAccountRole(sessionState, catalog.owner, 'admin')
+//   await harvester.harvestDataset()
+//   res.status(201)
+// })

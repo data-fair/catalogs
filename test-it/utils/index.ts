@@ -37,15 +37,3 @@ export const stopApiServer = async () => {
   const apiServer = await import('../../api/src/server.ts')
   await apiServer.stop()
 }
-
-export const startWorkerServer = async () => {
-  console.log('Starting worker server...')
-  process.env.NODE_CONFIG_DIR = 'worker/config/'
-  const workerServer = await import('../../worker/src/worker.ts')
-  await workerServer.start()
-}
-
-export const stopWorkerServer = async () => {
-  const workerServer = await import('../../worker/src/worker.ts')
-  await workerServer.stop()
-}

@@ -45,7 +45,7 @@
           <v-btn
             color="warning"
             variant="flat"
-            :disabled="deleteCatalog.loading.value"
+            :loading="deleteCatalog.loading.value"
             @click="deleteCatalog.execute()"
           >
             Oui
@@ -112,7 +112,8 @@
           <v-btn
             color="warning"
             variant="flat"
-            :disabled="!ownersReady || changeOwner.loading.value"
+            :disabled="!ownersReady"
+            :loading="changeOwner.loading.value"
             @click="changeOwner.execute()"
           >
             Confirmer

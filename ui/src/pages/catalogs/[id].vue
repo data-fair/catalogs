@@ -26,6 +26,10 @@
         />
       </v-form>
     </v-defaults-provider>
+    <list-datasets
+      v-if="plugin?.metadata.capabilities.includes('listDatasets')"
+      :catalog-id="catalog._id"
+    />
     <layout-actions v-if="canAdmin">
       <catalog-actions
         :catalog="catalog"

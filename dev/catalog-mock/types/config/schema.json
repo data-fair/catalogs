@@ -19,7 +19,7 @@
       "x-i18n-description": {
         "fr": "L'URL de l'API du catalogue"
       },
-      "pattern": "^https?://.*"
+      "pattern": "^https?://.+"
     }
   }
 }

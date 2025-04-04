@@ -34,15 +34,13 @@
 </template>
 
 <script setup lang="ts">
+import type { Catalog } from '#api/types'
 import ownerAvatar from '@data-fair/lib-vuetify/owner-avatar.vue'
 
-const { catalog, showOwner } = defineProps({
-  catalog: {
-    type: Object,
-    default: null
-  },
-  showOwner: Boolean
-})
+const { catalog, showOwner } = defineProps<{
+  catalog: Catalog
+  showOwner?: boolean
+}>()
 
 </script>
 

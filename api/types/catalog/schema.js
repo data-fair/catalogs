@@ -109,6 +109,16 @@ export default {
     }
   },
   layout: {
-    title: ''
+    title: null,
+    children: [
+      {
+        children: [
+          'title',
+          'description',
+        ],
+        cols: 8,
+      },
+      'config',
+    ]
   }
 }

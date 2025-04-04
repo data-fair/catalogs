@@ -72,9 +72,9 @@
             >
               <vjsf
                 v-model="newCatalog"
+                class="mr-2"
                 :schema="catalogSchema"
                 :options="vjsfOptions"
-                class="mr-2"
               />
               <owner-pick
                 v-model="newCatalog.owner"
@@ -83,16 +83,17 @@
             </v-defaults-provider>
           </v-form>
           <v-btn
-            :disabled="!ownersReady || !valid || !newCatalog.plugin || createCatalog.loading.value"
             color="primary"
             variant="flat"
+            :disabled="!ownersReady || !valid || !newCatalog.plugin"
+            :loading="createCatalog.loading.value"
             @click="createCatalog.execute()"
           >
             Créer
           </v-btn>
           <v-btn
-            :disabled="createCatalog.loading.value"
             variant="text"
+            :disabled="createCatalog.loading.value"
             @click="step = '1'"
           >
             Retour
