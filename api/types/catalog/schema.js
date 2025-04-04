@@ -11,7 +11,6 @@ export default {
   required: [
     '_id',
     'title',
-    'description',
     'plugin',
     'owner',
     'config',
@@ -30,7 +29,9 @@ export default {
       'x-i18n-title': {
         fr: 'Titre'
       },
-      minLength: 3
+      minLength: 3,
+      maxLength: 75,
+      default: ''
     },
     description: {
       type: 'string',
@@ -42,7 +43,7 @@ export default {
       'x-i18n-description': {
         fr: 'Une zone de texte libre pour écrire des commentaires sur le catalogue'
       },
-      format: 'markdown'
+      layout: 'markdown'
     },
     plugin: {
       type: 'string',
@@ -106,5 +107,8 @@ export default {
         }
       }
     }
+  },
+  layout: {
+    title: ''
   }
 }

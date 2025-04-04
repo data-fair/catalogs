@@ -20,7 +20,7 @@ export default defineConfig({
       }
     }
   },
-  optimizeDeps: { include: ['debug', ...commonjsDeps] },
+  optimizeDeps: { include: ['debug', 'easymde', ...commonjsDeps] },
   resolve: {
     alias: {
       '~': path.resolve(__dirname, 'src/')
@@ -42,6 +42,7 @@ export default defineConfig({
         {
           '~/context': ['$uiConfig', '$sitePath', '$apiPath', '$fetch'],
           '@mdi/js': [
+            'mdiAccount',
             'mdiAlert',
             'mdiDelete',
             'mdiDownload',

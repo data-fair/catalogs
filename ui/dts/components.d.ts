@@ -8,10 +8,13 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    CatalogAction: typeof import('./../src/components/catalog/catalog-action.vue')['default']
+    CatalogActions: typeof import('./../src/components/catalog/catalog-actions.vue')['default']
     CatalogCard: typeof import('./../src/components/catalog/catalog-card.vue')['default']
     CatalogsActions: typeof import('./../src/components/catalogs-actions.vue')['default']
+    LayoutActions: typeof import('./../src/components/layout/layout-actions.vue')['default']
     LayoutActionsButton: typeof import('./../src/components/layout/layout-actions-button.vue')['default']
-    LayoutNavigationRight: typeof import('./../src/components/layout/layout-navigation-right.vue')['default']
+    LayoutActionsRight: typeof import('./../src/components/layout/layout-actions-right.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

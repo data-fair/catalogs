@@ -1,4 +1,4 @@
-import type { CatalogPlugin } from '../../../dev/catalogs.ts' // Move to @data-fair/lib
+import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog.js'
 import type { Plugin } from '#types'
 
 import { exec as execCallback } from 'child_process'
@@ -7,7 +7,7 @@ import { Router } from 'express'
 import fs from 'fs-extra'
 import path from 'path'
 import tmp from 'tmp-promise'
-import { assertAccountRole, session } from '@data-fair/lib-express'
+import { assertAccountRole, httpError, session } from '@data-fair/lib-express'
 import mongo from '#mongo'
 import config from '#config'
 
@@ -27,7 +27,7 @@ tmp.setGracefulCleanup()
 // Install a new plugin or update an existing one
 router.post('/', async (req, res) => {
   await session.reqAdminMode(req)
-  const { body } = (await import('../../docs/plugins/post-req/index.ts')).returnValid(req)
+  const { body } = (await import('../../doc/plugins/post-req/index.ts')).returnValid(req)
 
   const pluginDir = path.join(pluginsDir, body.id)
   const dir = await tmp.dir({ unsafeCleanup: true, tmpdir: tmpDir, prefix: 'plugin-install-' })
@@ -92,7 +92,7 @@ router.get('/', async (req, res) => {
       version: pluginInfo.version,
       configSchema: plugin.configSchema,
       metadata: plugin.metadata
-    })
+    } as Plugin)
   }
 
   const aggregationResult = (
@@ -125,12 +125,12 @@ router.get('/:id', async (req, res) => {
       name: pluginInfo.name,
       description: pluginInfo.description,
       version: pluginInfo.version,
-      catalogConfigSchema: plugin,
-      metadata: plugin
-    })
+      configSchema: plugin.configSchema,
+      metadata: plugin.metadata
+    } as Plugin)
   } catch (e: any) {
-    if (e.code === 'ENOENT') res.status(404).send('Plugin not found')
-    else throw e
+    if (e.code === 'ENOENT') throw httpError(404, 'Plugin not found')
+    else throw httpError(500, 'Internal server error')
   }
 })
 

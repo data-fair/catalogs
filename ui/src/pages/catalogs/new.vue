@@ -1,12 +1,12 @@
 <template>
   <v-container
     data-iframe-height
-    style="min-height:500px"
     class="pa-0"
     fluid
   >
     <v-stepper
       v-model="step"
+      elevation="0"
       hide-actions
     >
       <v-stepper-header>
@@ -71,18 +71,8 @@
               }"
             >
               <vjsf
-                v-model="newCatalog.title"
-                :schema="{
-                  type: 'string',
-                  title: 'Titre',
-                  minLength: 3,
-                  maxLength: 50
-                }"
-                :options="vjsfOptions"
-              />
-              <vjsf
-                v-model="newCatalog.config"
-                :schema="installedPluginsFetch.data.value?.results.find(p => p.id === newCatalog.plugin)?.configSchema"
+                v-model="newCatalog"
+                :schema="catalogSchema"
                 :options="vjsfOptions"
                 class="mr-2"
               />
@@ -115,8 +105,12 @@
 
 <script setup lang="ts">
 import type { Plugin } from '#api/types'
+
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
+import VjsfMarkdown from '@koumoul/vjsf-markdown'
 import OwnerPick from '@data-fair/lib-vuetify/owner-pick.vue'
+import jsonSchema from '@data-fair/lib-utils/json-schema.js'
+import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog/index.ts'
 
 const session = useSessionAuthenticated()
 const router = useRouter()
@@ -158,6 +152,19 @@ const newCatalog: Ref<Record<string, string>> = ref({})
 const ownersReady = ref(false)
 const valid = ref(false)
 
+const catalogSchema = computed(() => {
+  const configSchema = installedPluginsFetch.data.value?.results.find(p => p.id === newCatalog.value.plugin)?.configSchema
+  if (!configSchema) return
+  delete catalogSchemaBase.title
+
+  const schema = jsonSchema(catalogSchemaBase)
+    .addProperty('config', configSchema)
+    .schema
+
+  schema.required = ['title', 'config']
+  return schema
+})
+
 const createCatalog = useAsyncAction(
   async () => {
     const catalog = await $fetch('/catalogs', {
@@ -185,10 +192,12 @@ onMounted(() => {
 
 const vjsfOptions: VjsfOptions = {
   density: 'comfortable',
-  validateOn: 'blur',
+  initialValidation: 'always',
   locale: session.lang.value,
-  readOnlyPropertiesMode: 'remove',
+  plugins: [VjsfMarkdown],
+  readOnlyPropertiesMode: 'hide',
   titleDepth: 4,
+  validateOn: 'blur',
   xI18n: true
 }
 

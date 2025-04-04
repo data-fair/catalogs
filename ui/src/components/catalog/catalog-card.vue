@@ -43,4 +43,8 @@ const { catalog, showOwner } = defineProps({
   },
   showOwner: Boolean
 })
+
 </script>
+
+<style scoped>
+</style>

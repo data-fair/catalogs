@@ -1,8 +1,8 @@
 <template>
   <v-list
+    data-iframe-height
     density="compact"
-    class="list-actions"
-    :style="isSmall ? '' : 'background-color: transparent;'"
+    style="background-color: transparent;"
   >
     <v-list-item
       :to="{ path: '/catalogs/new' }"
@@ -75,9 +75,8 @@
 <script setup lang="ts">
 import type { Plugin, CatalogsFacets } from '#api/types'
 
-const { adminMode, isSmall, plugins, facets } = defineProps<{
+const { adminMode, plugins, facets } = defineProps<{
   adminMode: boolean
-  isSmall: boolean
   plugins: Plugin[]
   facets: CatalogsFacets
 }>()

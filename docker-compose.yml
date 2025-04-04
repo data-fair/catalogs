@@ -53,7 +53,7 @@ services:
       - NOTIFY_URL=http://localhost:5600/events
       - PUBLIC_URL=http://localhost:5600/data-fair
       - WS_PUBLIC_URL=ws://localhost:5600/data-fair
-      - EXTRA_NAV_ITEMS=[{"id":"catalogs","can":"contrib","iframe":"http://localhost:5600/catalogs/catalogs","basePath":"/catalogs","icon":"mdi-transit-connection","title":"Catalogues"}]
+      - EXTRA_NAV_ITEMS=[{"id":"catalogs","can":"contrib","iframe":"http://localhost:5600/catalogs/catalogs","basePath":"/catalogs","icon":"mdi-transit-connection","title":"Catalogues"},{"id":"events","can":"admin","iframe":"http://localhost:5600/events/embed/events","basePath":"/events","icon":"mdi-clipboard-text-clock","title":"Traçabilité"}]
       - EXTRA_ADMIN_NAV_ITEMS=[{"id":"catalogs","iframe":"http://localhost:5600/catalogs/admin","basePath":"/catalogs","icon":"mdi-transit-connection","title":"Plugins - Catalogues"}]
       - OBSERVER_ACTIVE=false
 
@@ -71,12 +71,13 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms128m -Xmx128m"
+      - "ES_JAVA_OPTS=-Xms128m -Xmx128m -server"
+      - "ES_HEAP_SIZE=128m"
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9200"]
-      timeout: 10s
+      timeout: 5s
       interval: 2s
       retries: 50
 

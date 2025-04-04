@@ -5,7 +5,7 @@
     "validate",
     "schema"
   ],
-  "title": "config",
+  "title": "Configuration",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -14,7 +14,12 @@
   "properties": {
     "url": {
       "type": "string",
-      "description": "The URL of the catalog API"
+      "title": "URL",
+      "description": "The URL of the catalog API",
+      "x-i18n-description": {
+        "fr": "L'URL de l'API du catalogue"
+      },
+      "pattern": "^https?://.*"
     }
   }
 }

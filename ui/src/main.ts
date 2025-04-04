@@ -13,6 +13,10 @@ import { createUiNotif } from '@data-fair/lib-vue/ui-notif.js'
 import { createI18n } from 'vue-i18n'
 import App from './App.vue'
 
+import '@koumoul/v-iframe/content-window'
+import 'iframe-resizer/js/iframeResizer.contentWindow.js'
+(window as any).iFrameResizer = { heightCalculationMethod: 'taggedElement' };
+
 (async function () {
   const router = createRouter({ history: createWebHistory($sitePath + '/catalogs/'), routes })
   dFrameContent(router)
@@ -24,7 +28,8 @@ import App from './App.vue'
     ...vuetifySessionOptions(session),
     icons: { defaultSet: 'mdi', aliases, sets: { mdi, } }
   })
-  const i18n = createI18n({ locale: session.state.lang })
+  const i18n = createI18n({ locale: session.state.lang });
+  (window as any).vIframeOptions = { router }
 
   createApp(App)
     .use(router)

@@ -2,6 +2,9 @@
   "name": "@data-fair/catalog-mock",
   "description": "Mock data for the Data Fair Catalog",
   "version": "0.0.0",
+  "scripts": {
+    "build-types": "df-build-types ./"
+  },
   "files": [
     "**/*.js",
     "**/types/config/**"

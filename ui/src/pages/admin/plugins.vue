@@ -124,7 +124,7 @@
 
 <script setup lang="ts">
 import type { Plugin } from '#api/types'
-import type { PluginPost } from '../../../../api/docs/plugins/post-req/index.js'
+import type { PluginPost } from '../../../../api/doc/plugins/post-req/index.js'
 
 const session = useSession()
 // const search = useStringSearchParam('q')
