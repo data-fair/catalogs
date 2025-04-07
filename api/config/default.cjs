@@ -9,6 +9,7 @@ module.exports = {
     port: 9090
   },
   port: 8080,
+  privateDatafairUrl: 'http://data-fair:8080',
   privateDirectoryUrl: 'http://simple-directory:8080',
   privateEventsUrl: null,
   secretKeys: {

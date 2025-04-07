@@ -14,6 +14,7 @@ export default {
     'plugin',
     'owner',
     'config',
+    'datasets',
     'created',
     'updated'
   ],
@@ -50,12 +51,37 @@ export default {
       readOnly: true
     },
     owner: {
-      $ref: 'https://github.com/data-fair/lib/account',
-      readOnly: true
+      $ref: 'https://github.com/data-fair/lib/account'
     },
     config: {
       type: 'object',
       description: 'Plugin-specific configuration : this content varies depending on the used plugin'
+    },
+    datasets: {
+      type: 'array',
+      description: 'List of data-fair datasets imported or exported by this catalog',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: [
+          'id',
+          'dataFairId',
+          'title'
+        ],
+        properties: {
+          id: {
+            type: 'string',
+            description: 'Id of the dataset in the catalog'
+          },
+          dataFairId: {
+            type: 'string',
+            description: 'Data-fair dataset identifier'
+          },
+          title: {
+            type: 'string'
+          }
+        }
+      }
     },
     created: {
       type: 'object',

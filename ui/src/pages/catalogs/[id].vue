@@ -28,7 +28,8 @@
     </v-defaults-provider>
     <list-datasets
       v-if="plugin?.metadata.capabilities.includes('listDatasets')"
-      :catalog-id="catalog._id"
+      class="mt-4"
+      :catalog="catalog"
     />
     <layout-actions v-if="canAdmin">
       <catalog-actions

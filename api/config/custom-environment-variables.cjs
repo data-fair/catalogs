@@ -9,6 +9,7 @@ module.exports = {
     port: 'OBSERVER_PORT'
   },
   port: 'PORT',
+  privateDatafairUrl: 'PRIVATE_DATAFAIR_URL',
   privateDirectoryUrl: 'PRIVATE_DIRECTORY_URL',
   privateEventsUrl: 'PRIVATE_EVENTS_URL',
   secretKeys: {

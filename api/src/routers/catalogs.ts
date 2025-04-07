@@ -34,7 +34,7 @@ const sendCatalogEvent = (
   if (!config.privateEventsUrl && !config.secretKeys.events) return
 
   eventsQueue.pushEvent({
-    title: `Le traitement ${catalog.title} ${actionText}`,
+    title: `Le catalogue ${catalog.title} ${actionText}`,
     topic: { key: `catalogs:catalog-${topicAction}:${catalog._id}` },
     sender: catalog.owner,
     resource: {
@@ -104,7 +104,7 @@ router.post('', async (req, res) => {
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
   catalog._id = nanoid()
-  catalog.description = ''
+  catalog.datasets = []
   catalog.created = catalog.updated = {
     id: sessionState.user.id,
     name: sessionState.user.name,
@@ -138,7 +138,7 @@ router.patch('/:id', async (req, res) => {
 
   // Restrict the parts of the catalog that can be edited by API
   const acceptedParts = Object.keys(catalogSchema.properties)
-    .filter(k => sessionState.user.adminMode || !(catalogSchema.properties)[k].readOnly || 'owner')
+    .filter(k => sessionState.user.adminMode || !(catalogSchema.properties)[k].readOnly)
   for (const key in req.body) {
     if (!acceptedParts.includes(key)) throw httpError(400, `Unsupported patch part ${key}`)
     // check if the user has the right to change to this owner

@@ -15,6 +15,7 @@
     "mongoUrl",
     "observer",
     "port",
+    "privateDatafairUrl",
     "privateDirectoryUrl",
     "secretKeys"
   ],
@@ -46,6 +47,10 @@
     },
     "port": {
       "type": "number"
+    },
+    "privateDatafairUrl": {
+      "type": "string",
+      "pattern": "^https?://"
     },
     "privateDirectoryUrl": {
       "type": "string",
