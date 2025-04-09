@@ -24,19 +24,26 @@ export const query = (reqQuery: Record<string, string>, sessionState: SessionSta
   return query
 }
 
-// Get the plugin from the plugins directory
-// TODO : Optimize this to not load the plugin each time
+// TODO: Demander a Alban si il vaut mieux mettre les plugins en cahce => montée en mémoire ou les charger a chaque fois => beaucoup de lecture sur le disque
+// Cache loaded plugins to avoid loading them each time
+const pluginsCache: Record<string, CatalogPlugin> = {}
+
+// Get the plugin from the plugins directory or from cache if already loaded
 fs.ensureDirSync(config.dataDir)
 const pluginsDir = path.resolve(config.dataDir, 'plugins')
 export const getPlugin = async (pluginId: string) => {
-  let plugin: CatalogPlugin
+  if (pluginsCache[pluginId]) return pluginsCache[pluginId] // Return cached plugin if available
+
   try {
-    plugin = await import(path.resolve(pluginsDir, pluginId, 'index.ts'))
+    const plugin = (await import(path.resolve(pluginsDir, pluginId, 'index.ts'))).default
+    pluginsCache[pluginId] = plugin // Store in cache for future use
+    return plugin
   } catch (e) {
     throw httpError(404, `Plugin ${pluginId} not found`)
   }
-  return plugin
 }
+
+export const removePluginFromCache = (pluginId: string) => delete pluginsCache[pluginId]
 
 export default {
   query,

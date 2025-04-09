@@ -5,7 +5,6 @@ module.exports = {
     port: 9092
   },
   port: 8082,
-  privateDatafairUrl: 'http://localhost:8081',
   privateDirectoryUrl: 'http://localhost:8080',
   serveUi: false
 }

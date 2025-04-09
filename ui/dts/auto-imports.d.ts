@@ -35,6 +35,10 @@ declare global {
   const mdiDelete: typeof import('@mdi/js')['mdiDelete']
   const mdiDotsVertical: typeof import('@mdi/js')['mdiDotsVertical']
   const mdiDownload: typeof import('@mdi/js')['mdiDownload']
+  const mdiFileDownload: typeof import('@mdi/js')['mdiFileDownload']
+  const mdiImport: typeof import('@mdi/js')['mdiImport']
+  const mdiLock: typeof import('@mdi/js')['mdiLock']
+  const mdiLockOpen: typeof import('@mdi/js')['mdiLockOpen']
   const mdiMagnify: typeof import('@mdi/js')['mdiMagnify']
   const mdiPlusCircle: typeof import('@mdi/js')['mdiPlusCircle']
   const nextTick: typeof import('vue')['nextTick']
@@ -141,6 +145,10 @@ declare module 'vue' {
     readonly mdiDelete: UnwrapRef<typeof import('@mdi/js')['mdiDelete']>
     readonly mdiDotsVertical: UnwrapRef<typeof import('@mdi/js')['mdiDotsVertical']>
     readonly mdiDownload: UnwrapRef<typeof import('@mdi/js')['mdiDownload']>
+    readonly mdiFileDownload: UnwrapRef<typeof import('@mdi/js')['mdiFileDownload']>
+    readonly mdiImport: UnwrapRef<typeof import('@mdi/js')['mdiImport']>
+    readonly mdiLock: UnwrapRef<typeof import('@mdi/js')['mdiLock']>
+    readonly mdiLockOpen: UnwrapRef<typeof import('@mdi/js')['mdiLockOpen']>
     readonly mdiMagnify: UnwrapRef<typeof import('@mdi/js')['mdiMagnify']>
     readonly mdiPlusCircle: UnwrapRef<typeof import('@mdi/js')['mdiPlusCircle']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>

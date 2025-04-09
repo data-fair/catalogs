@@ -6,8 +6,7 @@ import { Router } from 'express'
 import { nanoid } from 'nanoid'
 
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { assertAccountRole, session } from '@data-fair/lib-express'
-import { httpError } from '@data-fair/lib-utils/http-errors.js'
+import { assertAccountRole, session, httpError, assertReqInternalSecret } from '@data-fair/lib-express'
 import { resolvedSchema as catalogSchema } from '#types/catalog/index.ts'
 import mongo from '#mongo'
 import config from '#config'
@@ -99,7 +98,9 @@ router.get('', async (req, res) => {
 // Create a new catalog
 router.post('', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  const catalog = { ...req.body }
+  const { body } = (await import('../../doc/catalogs/post-req/index.ts')).returnValid(req)
+
+  const catalog: any = { ...body }
   catalog.owner = catalog.owner ?? sessionState.account
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
@@ -126,6 +127,7 @@ router.get('/:id', async (req, res) => {
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
   assertAccountRole(sessionState, catalog.owner, ['contrib', 'admin'])
+  // TODO: Remove sensitive parts like apiKeys
   res.status(200).json(catalog)
 })
 
@@ -193,17 +195,40 @@ router.get('/:id/datasets', async (req, res) => {
 
   // Execute the plugin function
   const plugin = await findUtils.getPlugin(catalog.plugin)
-  const datasets = await plugin.listDatasets(catalog.config)
+  if (!plugin.listDatasets) throw httpError(501, 'Plugin does not support listing datasets')
+  const datasets = await plugin.listDatasets(catalog.config, req.query)
 
   res.json(datasets)
 })
 
-// Create a new dataset from a catalog
-// router.post('/:id/datasets', async (req, res) => {
-//   const sessionState = await session.reqAuthenticated(req)
-//   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
-//   if (!catalog) throw httpError(404, 'Catalog not found')
-//   assertAccountRole(sessionState, catalog.owner, 'admin')
-//   await harvester.harvestDataset()
-//   res.status(201)
-// })
+// Publish a dataset in a catalog
+router.post('/:id/dataset', async (req, res) => {
+  assertReqInternalSecret(req, config.secretKeys.catalogs)
+  const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
+  if (!catalog) throw httpError(404, 'Catalog not found')
+
+  const { body: { dataset, publication } }: { body: { dataset: { owner?: any }, publication: any } } = (await import('../../doc/catalogs/dataset/post-req/index.ts')).returnValid(req)
+  if (dataset.owner && (catalog.owner.type !== dataset.owner.type || catalog.owner.id !== dataset.owner.id)) {
+    throw httpError(403, 'You do not have permission to publish this dataset in this catalog because the owner of the dataset is different from the owner of the catalog')
+  }
+
+  const plugin = await findUtils.getPlugin(catalog.plugin)
+  if (!plugin.publishDataset) throw httpError(501, 'Plugin does not support publishing datasets')
+  await plugin.publishDataset(catalog.config, dataset, publication)
+
+  res.status(201)
+})
+
+// Unpublish a dataset in a catalog
+router.delete('/:id/dataset/:datasetId', async (req, res) => {
+  const sessionState = await session.reqAuthenticated(req)
+  const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
+  if (!catalog) throw httpError(404, 'Catalog not found')
+  assertAccountRole(sessionState, catalog.owner, 'admin')
+
+  const plugin = await findUtils.getPlugin(catalog.plugin)
+  if (!plugin.deleteDataset) throw httpError(501, 'Plugin does not support deleting datasets')
+  await plugin.deleteDataset(catalog.config)
+
+  res.status(201)
+})

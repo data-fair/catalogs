@@ -9,11 +9,11 @@ module.exports = {
     port: 'OBSERVER_PORT'
   },
   port: 'PORT',
-  privateDatafairUrl: 'PRIVATE_DATAFAIR_URL',
   privateDirectoryUrl: 'PRIVATE_DIRECTORY_URL',
   privateEventsUrl: 'PRIVATE_EVENTS_URL',
   secretKeys: {
-    events: 'SECRET_EVENTS'
+    events: 'SECRET_EVENTS',
+    catalogs: 'SECRET_CATALOGS'
   },
   serveUi: 'SERVE_UI',
   tmpDir: 'TMP_DIR'

@@ -47,8 +47,12 @@ export default defineConfig({
             'mdiDelete',
             'mdiDownload',
             'mdiDotsVertical',
+            'mdiFileDownload',
+            'mdiImport',
             'mdiMagnify',
-            'mdiPlusCircle'
+            'mdiPlusCircle',
+            'mdiLock',
+            'mdiLockOpen'
           ]
         }
       ],

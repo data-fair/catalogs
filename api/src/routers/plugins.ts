@@ -1,4 +1,3 @@
-import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog.js'
 import type { Plugin } from '#types'
 
 import { exec as execCallback } from 'child_process'
@@ -8,7 +7,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import tmp from 'tmp-promise'
 import { assertAccountRole, httpError, session } from '@data-fair/lib-express'
-import findUtils from '../utils/find.ts'
+import findUtils, { removePluginFromCache } from '../utils/find.ts'
 import mongo from '#mongo'
 import config from '#config'
 
@@ -48,11 +47,8 @@ router.post('/', async (req, res) => {
     await fs.move(path.join(dir.path, 'node_modules', body.name), path.join(dir.path, 'src'), { overwrite: true })
 
     // generate an index.js file to export the main file
-    const packageJson = (await fs.readJson(path.join(dir.path, 'src', 'package.json'))) || 'index.ts'
-    await fs.writeFile(path.join(dir.path, 'index.ts'), `export * from './${path.join('src', packageJson)}'`)
-
-    // TODO Validate the metadata file
-
+    const packageJson = await fs.readJson(path.join(dir.path, 'src', 'package.json'))
+    await fs.writeFile(path.join(dir.path, 'index.ts'), `export { default } from './${path.join('src', packageJson.main || 'index.ts')}'`)
     await fs.writeFile(path.join(dir.path, 'plugin.json'), JSON.stringify({
       id: body.id,
       name: packageJson.name,
@@ -61,6 +57,7 @@ router.post('/', async (req, res) => {
     }, null, 2))
 
     await fs.move(dir.path, pluginDir, { overwrite: true })
+    removePluginFromCache(body.id) // Remove the plugin from cache to reload it
   } finally {
     try {
       await dir.cleanup()
@@ -84,7 +81,7 @@ router.get('/', async (req, res) => {
   const results: Plugin[] = []
   for (const dir of dirs) {
     const pluginInfo = await fs.readJson(path.join(pluginsDir, dir, 'plugin.json'))
-    const plugin: CatalogPlugin = await import(path.join(pluginsDir, dir, 'index.ts'))
+    const plugin = await findUtils.getPlugin(dir)
 
     results.push({
       id: pluginInfo.id,
@@ -112,7 +109,7 @@ router.get('/', async (req, res) => {
   })
 })
 
-// Return PluginData (if connected)
+// Get a plugin with its metadata
 router.get('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   assertAccountRole(sessionState, sessionState.account, ['contrib', 'admin'])
@@ -122,7 +119,7 @@ router.get('/:id', async (req, res) => {
   } catch (e: any) {
     throw httpError(404, 'Plugin not found')
   }
-  const plugin: CatalogPlugin = await findUtils.getPlugin(req.params.id)
+  const plugin = await findUtils.getPlugin(req.params.id)
 
   res.send({
     id: pluginInfo.id,

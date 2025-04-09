@@ -22,6 +22,16 @@
         class="mb-4"
       >
         <v-card-item>
+          <template
+            v-if="dataset.private === undefined"
+            #prepend
+          >
+            <v-icon
+              :title="dataset.private ? 'Le jeu de données est privé' : 'Le jeu de données est public'"
+              :icon="dataset.private ? mdiLockOpen : mdiLock"
+              color="primary"
+            />
+          </template>
           <template #title>
             {{ dataset.title }}
           </template>
@@ -30,9 +40,10 @@
               v-if="!catalog.datasets.find(d => d.id === dataset.id)"
               color="primary"
               density="comfortable"
+              title="Créer un jeu de données de type &quot;métadonnées seul&quot;"
               variant="text"
               :loading="createDataset.loading.value"
-              :icon="mdiDownload"
+              :icon="mdiImport"
               @click="createDataset.execute(dataset)"
             />
             <v-menu
@@ -46,9 +57,10 @@
                   v-bind="createDatasetProps"
                   color="warning"
                   density="comfortable"
+                  title="Créer un jeu de données de type &quot;métadonnées seul&quot;"
                   variant="text"
                   :loading="createDataset.loading.value"
-                  :icon="mdiDownload"
+                  :icon="mdiImport"
                 />
               </template>
               <v-card
@@ -96,7 +108,7 @@
                   v-if="!catalog.datasets.find(d => d.id === resource.id)"
                   color="primary"
                   density="comfortable"
-                  size="small"
+                  title="Créer un jeu de données de type &quot;fichier distant&quot;"
                   variant="text"
                   :icon="mdiDownload"
                   :loading="createDataset.loading.value"
@@ -113,7 +125,7 @@
                       v-bind="createResourceProps"
                       color="warning"
                       density="comfortable"
-                      size="small"
+                      title="Créer un jeu de données de type &quot;fichier distant&quot;"
                       variant="text"
                       :icon="mdiDownload"
                     />

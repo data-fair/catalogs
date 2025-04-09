@@ -64,7 +64,8 @@ export default {
             type: 'string',
             enum: [
               'listDatasets',
-              'getDataset'
+              'publishDataset',
+              'publishApplication'
             ]
           },
         }
