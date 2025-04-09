@@ -49,14 +49,3 @@ jobs:
         labels: ${{ steps.docker_meta_main.outputs.labels }}
         cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/buildcache
         cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/buildcache,mode=max
-
-      id: docker_build_worker
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        target: worker
-        tags: ${{ steps.docker_meta_worker.outputs.tags }}
-        platforms: linux/amd64
-        labels: ${{ steps.docker_meta_worker.outputs.labels }}
-        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/buildcache
