@@ -7,11 +7,10 @@ export default {
   'x-exports': ['validate', 'types'],
   type: 'object',
   required: ['body'],
-  additionalProperties: false,
   properties: {
     body:
       jsonSchema(CatalogSchema)
-        .pickProperties(['title', 'plugin', 'owner'])
+        .pickProperties(['title', 'plugin', 'owner', 'config'])
         .removeId()
         .appendTitle(' post')
         .schema

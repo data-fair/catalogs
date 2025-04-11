@@ -23,12 +23,12 @@
       >
         <v-card-item>
           <template
-            v-if="dataset.private === undefined"
+            v-if="dataset.private !== undefined"
             #prepend
           >
             <v-icon
               :title="dataset.private ? 'Le jeu de données est privé' : 'Le jeu de données est public'"
-              :icon="dataset.private ? mdiLockOpen : mdiLock"
+              :icon="dataset.private ? mdiLock : mdiLockOpen"
               color="primary"
             />
           </template>
@@ -46,56 +46,102 @@
               :icon="mdiImport"
               @click="createDataset.execute(dataset)"
             />
-            <v-menu
-              v-else
-              v-model="showOverwriteMenu[dataset.id]"
-              :close-on-content-click="false"
-              max-width="500"
-            >
-              <template #activator="{ props: createDatasetProps }">
-                <v-btn
-                  v-bind="createDatasetProps"
-                  color="warning"
-                  density="comfortable"
-                  title="Créer un jeu de données de type &quot;métadonnées seul&quot;"
-                  variant="text"
-                  :loading="createDataset.loading.value"
-                  :icon="mdiImport"
-                />
-              </template>
-              <v-card
-                rounded="lg"
-                title="Écraser le jeu de données"
-                variant="elevated"
-                :loading="createDataset.loading.value ? 'warning' : false"
+            <template v-else>
+              <v-menu
+                v-model="showDeleteMenu[dataset.id]"
+                :close-on-content-click="false"
+                max-width="500"
               >
-                <v-card-text>
-                  Voulez-vous vraiment écraser les informations déjà importées ?
-                </v-card-text>
-                <v-card-actions>
-                  <v-spacer />
+                <template #activator="{ props: deleteDatasetProps }">
                   <v-btn
-                    variant="text"
-                    :disabled="createDataset.loading.value"
-                    @click="showOverwriteMenu[dataset.id] = false"
-                  >
-                    Non
-                  </v-btn>
-                  <v-btn
+                    v-bind="deleteDatasetProps"
                     color="warning"
-                    variant="flat"
-                    :loading="createDataset.loading.value ? 'warning' : false"
-                    @click="createDataset.execute(dataset)"
-                  >
-                    Oui
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-menu>
+                    density="comfortable"
+                    title="Supprimer le jeu de données"
+                    variant="text"
+                    :loading="deleteDataset.loading.value"
+                    :icon="mdiDelete"
+                  />
+                </template>
+                <v-card
+                  rounded="lg"
+                  title="Supprimer le jeu de données"
+                  variant="elevated"
+                  :loading="deleteDataset.loading.value ? 'warning' : false"
+                >
+                  <v-card-text>
+                    Voulez-vous vraiment supprimer le jeu de données ? La suppression est définitive et les données ne pourront pas être récupérées.
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer />
+                    <v-btn
+                      variant="text"
+                      :disabled="deleteDataset.loading.value"
+                      @click="showDeleteMenu[dataset.id] = false"
+                    >
+                      Non
+                    </v-btn>
+                    <v-btn
+                      color="warning"
+                      variant="flat"
+                      :loading="deleteDataset.loading.value ? 'warning' : false"
+                      @click="deleteDataset.execute(dataset.id)"
+                    >
+                      Oui
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-menu>
+              <v-menu
+                v-model="showOverwriteMenu[dataset.id]"
+                :close-on-content-click="false"
+                max-width="500"
+              >
+                <template #activator="{ props: createDatasetProps }">
+                  <v-btn
+                    v-bind="createDatasetProps"
+                    color="warning"
+                    density="comfortable"
+                    title="Créer un jeu de données de type &quot;métadonnées seul&quot;"
+                    variant="text"
+                    :loading="createDataset.loading.value"
+                    :icon="mdiImport"
+                  />
+                </template>
+                <v-card
+                  rounded="lg"
+                  title="Écraser le jeu de données"
+                  variant="elevated"
+                  :loading="createDataset.loading.value ? 'warning' : false"
+                >
+                  <v-card-text>
+                    Voulez-vous vraiment écraser les informations déjà importées ?
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer />
+                    <v-btn
+                      variant="text"
+                      :disabled="createDataset.loading.value"
+                      @click="showOverwriteMenu[dataset.id] = false"
+                    >
+                      Non
+                    </v-btn>
+                    <v-btn
+                      color="warning"
+                      variant="flat"
+                      :loading="createDataset.loading.value ? 'warning' : false"
+                      @click="createDataset.execute(dataset)"
+                    >
+                      Oui
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-menu>
+            </template>
           </template>
         </v-card-item>
 
-        <v-card-text class="pa-0">
+        <v-card-text>
           <v-list>
             <v-list-item
               v-for="resource in dataset.resources"
@@ -114,51 +160,97 @@
                   :loading="createDataset.loading.value"
                   @click="createDataset.execute(dataset, resource)"
                 />
-                <v-menu
-                  v-else
-                  v-model="showOverwriteMenu[resource.id]"
-                  :close-on-content-click="false"
-                  max-width="500"
-                >
-                  <template #activator="{ props: createResourceProps }">
-                    <v-btn
-                      v-bind="createResourceProps"
-                      color="warning"
-                      density="comfortable"
-                      title="Créer un jeu de données de type &quot;fichier distant&quot;"
-                      variant="text"
-                      :icon="mdiDownload"
-                    />
-                  </template>
-                  <v-card
-                    rounded="lg"
-                    title="Écraser le jeu de données"
-                    variant="elevated"
-                    :loading="createDataset.loading.value ? 'warning' : false"
+                <v-template v-else>
+                  <v-menu
+                    v-model="showDeleteMenu[resource.id]"
+                    :close-on-content-click="false"
+                    max-width="500"
                   >
-                    <v-card-text>
-                      Voulez-vous vraiment écraser les informations déjà importées ?
-                    </v-card-text>
-                    <v-card-actions>
-                      <v-spacer />
+                    <template #activator="{ props: deleteDatasetProps }">
                       <v-btn
-                        variant="text"
-                        :disabled="createDataset.loading.value"
-                        @click="showOverwriteMenu[resource.id] = false"
-                      >
-                        Non
-                      </v-btn>
-                      <v-btn
+                        v-bind="deleteDatasetProps"
                         color="warning"
-                        variant="flat"
-                        :loading="createDataset.loading.value ? 'warning' : false"
-                        @click="createDataset.execute(dataset, resource)"
-                      >
-                        Oui
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-menu>
+                        density="comfortable"
+                        title="Supprimer le jeu de données"
+                        variant="text"
+                        :loading="deleteDataset.loading.value"
+                        :icon="mdiDelete"
+                      />
+                    </template>
+                    <v-card
+                      rounded="lg"
+                      title="Supprimer le jeu de données"
+                      variant="elevated"
+                      :loading="deleteDataset.loading.value ? 'warning' : false"
+                    >
+                      <v-card-text>
+                        Voulez-vous vraiment supprimer le jeu de données ? La suppression est définitive et les données ne pourront pas être récupérées.
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer />
+                        <v-btn
+                          variant="text"
+                          :disabled="deleteDataset.loading.value"
+                          @click="showDeleteMenu[resource.id] = false"
+                        >
+                          Non
+                        </v-btn>
+                        <v-btn
+                          color="warning"
+                          variant="flat"
+                          :loading="deleteDataset.loading.value ? 'warning' : false"
+                          @click="deleteDataset.execute(resource.id)"
+                        >
+                          Oui
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-menu>
+                  <v-menu
+                    v-model="showOverwriteMenu[resource.id]"
+                    :close-on-content-click="false"
+                    max-width="500"
+                  >
+                    <template #activator="{ props: createResourceProps }">
+                      <v-btn
+                        v-bind="createResourceProps"
+                        color="warning"
+                        density="comfortable"
+                        title="Créer un jeu de données de type &quot;fichier distant&quot;"
+                        variant="text"
+                        :icon="mdiDownload"
+                      />
+                    </template>
+                    <v-card
+                      rounded="lg"
+                      title="Écraser le jeu de données"
+                      variant="elevated"
+                      :loading="createDataset.loading.value ? 'warning' : false"
+                    >
+                      <v-card-text>
+                        Voulez-vous vraiment écraser les informations déjà importées ?
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer />
+                        <v-btn
+                          variant="text"
+                          :disabled="createDataset.loading.value"
+                          @click="showOverwriteMenu[resource.id] = false"
+                        >
+                          Non
+                        </v-btn>
+                        <v-btn
+                          color="warning"
+                          variant="flat"
+                          :loading="createDataset.loading.value ? 'warning' : false"
+                          @click="createDataset.execute(dataset, resource)"
+                        >
+                          Oui
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-menu>
+                </v-template>
               </template>
             </v-list-item>
           </v-list>
@@ -177,6 +269,7 @@ const props = defineProps <{
 }>()
 
 const { catalog } = toRefs(props)
+const showDeleteMenu = ref<Record<string, boolean>>({})
 const showOverwriteMenu = ref<Record<string, boolean>>({})
 const catalogDatasets = useFetch<{ count: string, results: CatalogDataset[] }>(`${$apiPath}/catalogs/${catalog.value._id}/datasets`)
 
@@ -221,6 +314,33 @@ const createDataset = useAsyncAction(
   {
     success: 'Jeu de données créé !',
     error: 'Erreur lors de la création du jeu de données',
+  }
+)
+
+const deleteDataset = useAsyncAction(
+  async (resourceId: string) => {
+    const dataFairId = catalog.value.datasets.find(d => d.id === resourceId)?.dataFairId
+    if (dataFairId) {
+      try {
+        await $fetch(`/data-fair/api/v1/datasets/${dataFairId}`, {
+          method: 'DELETE',
+          baseURL: $sitePath
+        })
+      } catch (error: any) {
+        if (error.status !== 404) throw error
+      }
+    }
+    catalog.value.datasets = catalog.value.datasets.filter(d => d.id !== resourceId)
+    await $fetch(`${$apiPath}/catalogs/${catalog.value._id}`, {
+      method: 'PATCH',
+      body: {
+        datasets: catalog.value.datasets
+      }
+    })
+  },
+  {
+    success: 'Jeu de données supprimé !',
+    error: 'Erreur lors de la suppression du jeu de données',
   }
 )
 

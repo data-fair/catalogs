@@ -49,10 +49,11 @@ const sendCatalogEvent = (
  * Check if the plugin exists
  * Check if the config is valid
  */
-const validateCatalog = async (catalog: Catalog) => {
-  (await import('#types/catalog/index.ts')).returnValid(catalog)
-  const plugin: CatalogPlugin = await findUtils.getPlugin(catalog.plugin)
-  plugin.assertConfigValid(catalog.config)
+const validateCatalog = async (catalog: Partial<Catalog>) => {
+  const validCatalog = (await import('#types/catalog/index.ts')).returnValid(catalog)
+  const plugin: CatalogPlugin = await findUtils.getPlugin(validCatalog.plugin)
+  plugin.assertConfigValid(validCatalog.config)
+  return validCatalog
 }
 
 // Get the list of catalogs
@@ -100,7 +101,7 @@ router.post('', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const { body } = (await import('../../doc/catalogs/post-req/index.ts')).returnValid(req)
 
-  const catalog: any = { ...body }
+  const catalog: Partial<Catalog> = { ...body }
   catalog.owner = catalog.owner ?? sessionState.account
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
@@ -112,13 +113,13 @@ router.post('', async (req, res) => {
     date: new Date().toISOString()
   }
 
-  await validateCatalog(catalog)
-  await mongo.catalogs.insertOne(catalog)
+  const validCatalog = await validateCatalog(catalog)
+  await mongo.catalogs.insertOne(validCatalog)
 
   if (config.privateEventsUrl && config.secretKeys.events) {
-    sendCatalogEvent(catalog, 'a été créé', 'create', sessionState)
+    sendCatalogEvent(validCatalog, 'a été créé', 'create', sessionState)
   }
-  res.status(201).json(catalog)
+  res.status(201).json(validCatalog)
 })
 
 // Get a catalog
@@ -207,7 +208,7 @@ router.post('/:id/dataset', async (req, res) => {
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
 
-  const { body: { dataset, publication } }: { body: { dataset: { owner?: any }, publication: any } } = (await import('../../doc/catalogs/dataset/post-req/index.ts')).returnValid(req)
+  const { dataset, publication } = (await import('../../doc/catalogs/dataset/post-req/index.ts')).returnValid(req.body)
   if (dataset.owner && (catalog.owner.type !== dataset.owner.type || catalog.owner.id !== dataset.owner.id)) {
     throw httpError(403, 'You do not have permission to publish this dataset in this catalog because the owner of the dataset is different from the owner of the catalog')
   }

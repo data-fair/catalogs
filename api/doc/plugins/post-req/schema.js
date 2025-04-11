@@ -7,7 +7,6 @@ export default {
   'x-exports': ['validate', 'types'],
   type: 'object',
   required: ['body'],
-  additionalProperties: false,
   properties: {
     body:
       jsonSchema(PluginSchema)

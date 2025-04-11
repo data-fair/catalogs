@@ -1,6 +1,6 @@
 {
-  "name": "@data-fair/catalog-mock",
-  "description": "A simple mock plugin for the Data Fair catalogs service.",
+  "name": "@data-fair/catalog-udata",
+  "description": "Udata plugin for the Data Fair catalogs service.",
   "version": "0.0.0",
   "scripts": {
     "build-types": "df-build-types ./"

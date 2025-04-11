@@ -5,7 +5,7 @@
     style="background-color: transparent;"
   >
     <v-list-item
-      :to="{ path: '/catalogs/new' }"
+      to="/catalogs/new"
       rounded
     >
       <template #prepend>

@@ -5,7 +5,7 @@
     "validate",
     "schema"
   ],
-  "title": "Configuration",
+  "title": "MockConfig",
   "type": "object",
   "additionalProperties": false,
   "required": [

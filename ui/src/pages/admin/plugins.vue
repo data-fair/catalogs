@@ -127,7 +127,6 @@ import type { Plugin } from '#api/types'
 import type { PluginPost } from '../../../../api/doc/plugins/post-req/index.js'
 
 const session = useSession()
-// const search = useStringSearchParam('q')
 const pluginLocked = ref<string | null>(null)
 const showDeleteMenu = ref<string | null>(null)
 

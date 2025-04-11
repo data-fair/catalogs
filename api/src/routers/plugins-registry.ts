@@ -22,13 +22,19 @@ if (config.npm?.httpsProxy) {
 
 const memoizedSearch = memoize(async (q: string | undefined) => {
   // see https://github.com/npm/registry/blob/master/docs/REGISTRY-API.md#get-v1search
-  const res = await axios.get('https://registry.npmjs.org/-/v1/search', {
-    ...axiosOpts,
-    params: {
-      size: 250,
-      text: `keywords:data-fair-catalogs-plugin ${q || ''}`
-    }
-  })
+  let res
+  try {
+    res = await axios.get('https://registry.npmjs.org/-/v1/search', {
+      ...axiosOpts,
+      params: {
+        size: 20,
+        text: `keywords:data-fair-catalogs-plugin ${q || ''}`
+      }
+    })
+  } catch (error: any) {
+    if (error.status === 429) throw httpError(429, 'Too many requests to NPM registry')
+    throw error
+  }
   const results = []
   for (const o of res.data.objects) {
     if (!o.package.keywords || !o.package.keywords.includes('data-fair-catalogs-plugin')) continue

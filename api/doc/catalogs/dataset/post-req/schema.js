@@ -3,23 +3,25 @@ export default {
   title: 'CatalogsDatasetPostReq',
   'x-exports': ['validate', 'types'],
   type: 'object',
-  required: ['body'],
   additionalProperties: false,
+  required: [
+    'dataset',
+    'publication'
+  ],
   properties: {
-    body: {
-      additionalProperties: false,
+    dataset: {
+      type: 'object', // TODO: use the datafair dataset schema
       required: [
-        'dataset',
-        'publication'
+        'owner',
       ],
       properties: {
-        dataset: {
-          type: 'object'
-        },
-        publication: {
-          type: 'object'
+        owner: {
+          ref: 'https://github.com/data-fair/lib/account'
         }
       }
+    },
+    publication: {
+      type: 'object'
     }
   }
 }

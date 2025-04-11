@@ -160,7 +160,7 @@ const deleteCatalog = useAsyncAction(
     await $fetch(`/catalogs/${catalog?._id}`, {
       method: 'DELETE'
     })
-    await router.push('/catalogs')
+    await router.replace('/catalogs')
     showDeleteMenu.value = false
   },
   {
