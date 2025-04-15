@@ -26,7 +26,7 @@
         />
       </v-form>
     </v-defaults-provider>
-    <list-datasets
+    <list-remote-datasets
       v-if="plugin?.metadata.capabilities.includes('listDatasets')"
       class="mt-4"
       :catalog="catalog"
@@ -117,5 +117,5 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
 
 </script>
 
-<style>
+<style scoped>
 </style>
