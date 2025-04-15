@@ -1,7 +1,7 @@
 <template>
   <v-navigation-drawer
     location="right"
-    class="pt-12"
+    class="pt-6"
     permanent
     floating
     style="background-color: transparent;"

@@ -11,7 +11,7 @@
     >
       <v-stepper-header>
         <v-stepper-item
-          title="Sélection du type de catalogue"
+          :title="t('selectCatalogType')"
           value="1"
           :color="step === '1' ? 'primary' : ''"
           :complete="!!newCatalog.plugin"
@@ -19,7 +19,7 @@
         />
         <v-divider />
         <v-stepper-item
-          title="Informations"
+          :title="t('information')"
           value="2"
           :color="step === '2' ? 'primary' : ''"
           :editable="!!newCatalog.plugin"
@@ -89,14 +89,14 @@
             :loading="createCatalog.loading.value"
             @click="createCatalog.execute()"
           >
-            Créer
+            {{ t('create') }}
           </v-btn>
           <v-btn
             variant="text"
             :disabled="createCatalog.loading.value"
             @click="step = '1'"
           >
-            Retour
+            {{ t('back') }}
           </v-btn>
         </v-stepper-window-item>
       </v-stepper-window>
@@ -115,6 +115,7 @@ import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog/index.ts
 
 const session = useSessionAuthenticated()
 const router = useRouter()
+const { t } = useI18n()
 
 /*
   Permissions
@@ -143,7 +144,7 @@ const ownerRole = computed(() => {
   return userOrg ? userOrg.role : 'anonymous'
 })
 const canAdmin = computed(() => ownerRole.value === 'admin' || !!session.state.user?.adminMode)
-if (!canAdmin.value) throw new Error('Vous n\'avez pas les droits pour créer un catalogue')
+if (!canAdmin.value) throw new Error(t('noRightsToCreateCatalog'))
 
 const installedPluginsFetch = useFetch<{ results: Plugin[], count: number }>(`${$apiPath}/plugins`)
 
@@ -177,17 +178,17 @@ const createCatalog = useAsyncAction(
     showCreateMenu.value = false
   },
   {
-    success: 'Catalogue créé !',
-    error: 'Erreur pendant la création du catalogue',
+    success: t('catalogCreated'),
+    error: t('errorCreatingCatalog'),
   }
 )
 
 onMounted(() => {
   setBreadcrumbs([{
-    text: 'Catalogues',
+    text: t('catalogs'),
     to: '/catalogs'
   }, {
-    text: 'Créer un catalogue'
+    text: t('createCatalog')
   }])
 })
 
@@ -203,6 +204,30 @@ const vjsfOptions: VjsfOptions = {
 }
 
 </script>
+
+<i18n lang="yaml">
+  en:
+    back: Back
+    catalogs: Catalogs
+    catalogCreated: Catalog created!
+    create: Create
+    createCatalog: Create a catalog
+    errorCreatingCatalog: Error while creating the catalog
+    information: Information
+    noRightsToCreateCatalog: You don't have the rights to create a catalog
+    selectCatalogType: Select catalog type
+
+  fr:
+    back: Retour
+    catalogs: Catalogues
+    catalogCreated: Catalogue créé !
+    create: Créer
+    createCatalog: Créer un catalogue
+    errorCreatingCatalog: Erreur lors de la création du catalogue
+    information: Informations
+    noRightsToCreateCatalog: Vous n'avez pas les droits pour créer un catalogue
+    selectCatalogType: Sélection du type de catalogue
+</i18n>
 
 <style scoped>
 </style>

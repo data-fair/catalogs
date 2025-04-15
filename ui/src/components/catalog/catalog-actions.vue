@@ -21,17 +21,17 @@
               :icon="mdiDelete"
             />
           </template>
-          Supprimer
+          {{ t('delete') }}
         </v-list-item>
       </template>
       <v-card
         rounded="lg"
-        title="Suppression du catalogue"
+        :title="t('deleteCatalog')"
         variant="elevated"
         :loading="deleteCatalog.loading.value ? 'warning' : undefined"
       >
         <v-card-text>
-          Voulez-vous vraiment supprimer le catalogue "{{ catalog?.title }}" ? La suppression est définitive et les données ne pourront pas être récupérées.
+          {{ t('confirmDeleteCatalog', { title: catalog?.title }) }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -40,7 +40,7 @@
             :disabled="deleteCatalog.loading.value"
             @click="showDeleteMenu = false"
           >
-            Non
+            {{ t('no') }}
           </v-btn>
           <v-btn
             color="warning"
@@ -48,7 +48,7 @@
             :loading="deleteCatalog.loading.value"
             @click="deleteCatalog.execute()"
           >
-            Oui
+            {{ t('yes') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -71,7 +71,7 @@
               :icon="mdiAccount"
             />
           </template>
-          Changer le proriétaire
+          {{ t('changeOwner') }}
         </v-list-item>
       </template>
       <v-card
@@ -79,7 +79,7 @@
         variant="elevated"
       >
         <v-card-title primary-title>
-          Changer le proriétaire
+          {{ t('changeOwner') }}
         </v-card-title>
         <v-progress-linear
           v-if="changeOwner.loading.value"
@@ -95,8 +95,8 @@
           />
           <v-alert
             type="warning"
-            title="Opération sensible"
-            text="Changer le propriétaire d'un catalogue peut avoir des conséquences sur l'execution du catalogue."
+            :title="t('sensitiveOperation')"
+            :text="t('changeOwnerWarning')"
             variant="outlined"
           />
         </v-card-text>
@@ -107,7 +107,7 @@
             :disabled="changeOwner.loading.value"
             @click="showChangeOwnerMenu = false"
           >
-            Annuler
+            {{ t('cancel') }}
           </v-btn>
           <v-btn
             color="warning"
@@ -116,7 +116,7 @@
             :loading="changeOwner.loading.value"
             @click="changeOwner.execute()"
           >
-            Confirmer
+            {{ t('confirm') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -134,6 +134,7 @@ const { canAdmin, catalog } = defineProps<{
   catalog: Catalog
 }>()
 
+const { t } = useI18n()
 const showDeleteMenu = ref(false)
 const showChangeOwnerMenu = ref(false)
 const ownersReady = ref(false)
@@ -150,8 +151,8 @@ const changeOwner = useAsyncAction(
     showChangeOwnerMenu.value = false
   },
   {
-    success: 'Propriétaire changé !',
-    error: 'Erreur pendant le changement de propriétaire',
+    success: t('ownerChanged'),
+    error: t('errorChangingOwner'),
   }
 )
 
@@ -164,12 +165,45 @@ const deleteCatalog = useAsyncAction(
     showDeleteMenu.value = false
   },
   {
-    success: 'Catalogue supprimé !',
-    error: 'Erreur pendant la suppression du catalogue',
+    success: t('catalogDeleted'),
+    error: t('errorDeletingCatalog'),
   }
 )
-
 </script>
+
+<i18n lang="yaml">
+  en:
+    cancel: Cancel
+    catalogDeleted: Catalog deleted!
+    changeOwner: Change owner
+    changeOwnerWarning: Changing the owner of a catalog may have consequences on the execution of the catalog.
+    confirm: Confirm
+    confirmDeleteCatalog: "Do you really want to delete the catalog \"{title}\"? Deletion is permanent and data cannot be recovered."
+    delete: Delete
+    deleteCatalog: Delete catalog
+    errorChangingOwner: Error while changing the owner
+    errorDeletingCatalog: Error while deleting the catalog
+    no: No
+    ownerChanged: Owner changed!
+    sensitiveOperation: Sensitive operation
+    yes: Yes
+
+  fr:
+    cancel: Annuler
+    catalogDeleted: Catalogue supprimé !
+    changeOwner: Changer le propriétaire
+    changeOwnerWarning: Changer le propriétaire d'un catalogue peut avoir des conséquences sur l'execution du catalogue.
+    confirm: Confirmer
+    confirmDeleteCatalog: "Voulez-vous vraiment supprimer le catalogue \"{title}\" ? La suppression est définitive et les données ne pourront pas être récupérées."
+    delete: Supprimer
+    deleteCatalog: Suppression du catalogue
+    errorChangingOwner: Erreur lors de le changement de propriétaire
+    errorDeletingCatalog: Erreur lors de la suppression du catalogue
+    no: Non
+    ownerChanged: Propriétaire changé !
+    sensitiveOperation: Opération sensible
+    yes: Oui
+</i18n>
 
 <style scoped>
 </style>

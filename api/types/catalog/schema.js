@@ -137,14 +137,20 @@ export default {
   layout: {
     title: null,
     children: [
-      {
-        children: [
-          'title',
-          'description',
-        ],
-        cols: 8,
-      },
-      'config',
+      [
+        {
+          children: [
+            'title',
+            'description',
+          ],
+          cols: 8,
+        },
+        {
+          name: 'activity',
+          cols: 4,
+        }
+      ],
+      'config'
     ]
   }
 }

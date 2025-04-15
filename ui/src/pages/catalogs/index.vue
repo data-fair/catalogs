@@ -1,6 +1,7 @@
 <template>
   <v-container
     data-iframe-height
+    fluid
     style="min-height:500px"
   >
     <v-row
@@ -23,12 +24,6 @@
       </v-col>
     </v-row>
     <template v-else>
-      <v-list-subheader v-if="displayCatalogs.length > 1">
-        {{ displayCatalogs.length }}/{{ catalogsFetch.data.value?.count }} catalogues affichés
-      </v-list-subheader>
-      <v-list-subheader v-else>
-        {{ displayCatalogs.length }}/{{ catalogsFetch.data.value?.count }} catalogue affiché
-      </v-list-subheader>
       <v-row class="d-flex align-stretch">
         <v-col
           v-for="catalog in displayCatalogs"
@@ -67,8 +62,7 @@ const showAll = useBooleanSearchParam('showAll')
 const search = useStringSearchParam('q')
 const plugins = useStringsArraySearchParam('plugin')
 const owners = useStringsArraySearchParam('owner')
-
-onMounted(() => setBreadcrumbs([{ text: 'Catalogues' }]))
+const { t } = useI18n()
 
 const catalogsParams = computed(() => {
   const params: Record<string, any> = {
@@ -100,7 +94,25 @@ const displayCatalogs = computed(() => {
   return catalogs.filter(catalog => catalog.title.toLowerCase().includes(search.value.toLowerCase()))
 })
 
+watch(
+  [() => catalogsFetch.data.value?.count, () => displayCatalogs.value.length],
+  ([count, displayed]) => {
+    setBreadcrumbs([{ text: t('catalogDisplayed', { count: count ?? 0, displayed }) }])
+  },
+  { immediate: true }
+)
+
 </script>
+
+<i18n lang="yaml">
+  en:
+    catalogs: Catalogs
+    catalogDisplayed: No catalogs | {displayed}/{count} catalog displayed | {displayed}/{count} catalogs displayed
+
+  fr:
+    catalogs: Catalogues
+    catalogDisplayed: Aucun catalogue | {displayed}/{count} catalogue affiché | {displayed}/{count} catalogues affichés
+</i18n>
 
 <style scoped>
 </style>

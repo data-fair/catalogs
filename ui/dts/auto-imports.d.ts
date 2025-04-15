@@ -40,7 +40,9 @@ declare global {
   const mdiLock: typeof import('@mdi/js')['mdiLock']
   const mdiLockOpen: typeof import('@mdi/js')['mdiLockOpen']
   const mdiMagnify: typeof import('@mdi/js')['mdiMagnify']
+  const mdiPencil: typeof import('@mdi/js')['mdiPencil']
   const mdiPlusCircle: typeof import('@mdi/js')['mdiPlusCircle']
+  const mdiPlusCircleOutline: typeof import('@mdi/js')['mdiPlusCircleOutline']
   const nextTick: typeof import('vue')['nextTick']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
@@ -150,7 +152,9 @@ declare module 'vue' {
     readonly mdiLock: UnwrapRef<typeof import('@mdi/js')['mdiLock']>
     readonly mdiLockOpen: UnwrapRef<typeof import('@mdi/js')['mdiLockOpen']>
     readonly mdiMagnify: UnwrapRef<typeof import('@mdi/js')['mdiMagnify']>
+    readonly mdiPencil: UnwrapRef<typeof import('@mdi/js')['mdiPencil']>
     readonly mdiPlusCircle: UnwrapRef<typeof import('@mdi/js')['mdiPlusCircle']>
+    readonly mdiPlusCircleOutline: UnwrapRef<typeof import('@mdi/js')['mdiPlusCircleOutline']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>

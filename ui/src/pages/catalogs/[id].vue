@@ -4,7 +4,7 @@
     data-iframe-height
   >
     <h2 class="text-h6">
-      Catalogue {{ catalog.title }}
+      {{ t('catalogTitle', { title: catalog.title }) }}
     </h2>
     <v-defaults-provider
       :defaults="{
@@ -23,7 +23,22 @@
           :schema="catalogSchema"
           :options="vjsfOptions"
           @update:model-value="patch.execute()"
-        />
+        >
+          <template #activity>
+            <v-list-item
+              :prepend-avatar="avatarUrl"
+              :title="catalog.owner.name"
+            />
+            <v-list-item
+              :prepend-icon="mdiPencil"
+              :title="`${catalog.updated.name} - ${dayjs(catalog.updated.date).format('D MMM YYYY HH:mm')}`"
+            />
+            <v-list-item
+              :prepend-icon="mdiPlusCircleOutline"
+              :title="`${catalog.created.name} - ${dayjs(catalog.updated.date).format('D MMM YYYY HH:mm')}`"
+            />
+          </template>
+        </vjsf>
       </v-form>
     </v-defaults-provider>
     <list-remote-datasets
@@ -52,11 +67,18 @@ import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog/index.ts
 
 const route = useRoute<'/catalogs/[id]'>()
 const session = useSessionAuthenticated()
+const { dayjs } = useLocaleDayjs()
+const { t } = useI18n()
 
 const valid = ref(false)
 const editCatalog: Ref<Catalog | null> = ref(null)
 const catalog = ref<Catalog | null>(null)
 const plugin = ref<Plugin | null>(null)
+const avatarUrl = computed(() => {
+  if (!catalog.value) return ''
+  if (catalog.value.owner.department) return `/simple-directory/api/avatars/${catalog.value.owner.type}/${catalog.value.owner.id}/${catalog.value.owner.department}/avatar.png`
+  else return `/simple-directory/api/avatars/${catalog.value.owner.type}/${catalog.value.owner.id}/avatar.png`
+})
 
 onMounted(async () => {
   catalog.value = await $fetch(`/catalogs/${route.params.id}`)
@@ -66,7 +88,7 @@ onMounted(async () => {
   }
 
   setBreadcrumbs([{
-    text: 'Catalogs',
+    text: t('catalogs'),
     to: '/catalogs'
   }, {
     text: catalog.value?.title || ''
@@ -81,7 +103,7 @@ const canAdmin = computed(() => {
 const catalogSchema = computed(() => {
   if (!plugin.value) return
   const schema = jsonSchema(catalogSchemaBase)
-    .addProperty('config', { ...plugin.value.configSchema, title: 'Configuration' })
+    .addProperty('config', { ...plugin.value.configSchema, title: t('configuration') })
     .makePatchSchema()
     .schema
   return schema
@@ -98,7 +120,7 @@ const patch = useAsyncAction(
     Object.assign(catalog.value || {}, editCatalog.value)
   },
   {
-    error: "Erreur pendant l'enregistrement du catalog"
+    error: t('errorSavingCatalog')
   }
 )
 
@@ -114,8 +136,21 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   validateOn: 'blur',
   xI18n: true
 }))
-
 </script>
+
+<i18n lang="yaml">
+  en:
+    catalogs: Catalogs
+    catalogTitle: Catalog {title}
+    configuration: Configuration
+    errorSavingCatalog: Error while saving the catalog
+
+  fr:
+    catalogs: Catalogues
+    catalogTitle: Catalogue {title}
+    configuration: Configuration
+    errorSavingCatalog: Erreur lors de la modification du catalogue
+</i18n>
 
 <style scoped>
 </style>

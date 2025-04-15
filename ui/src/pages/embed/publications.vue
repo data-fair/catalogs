@@ -1,12 +1,12 @@
 <template>
   <v-container data-iframe-height>
     <p v-if="!catalogs.length">
-      Vous n'avez pas encore configuré de calalogue.
+      {{ t('noCatalogs') }}
     </p>
     <template v-else>
       <tutorial-alert
         id="tutorial-publications"
-        text="Vous pouvez publier vos jeux de données sur un ou plusieurs catalogues Open Data. Cette publication rendra vos données plus faciles à trouver et permettra à la communauté Open Data d'échanger avec vous."
+        :text="t('tutorialMessage')"
         persistent
       />
       <v-menu
@@ -19,14 +19,14 @@
             v-bind="props"
             color="primary"
           >
-            Publier sur un catalogue
+            {{ t('publishToCatalog') }}
           </v-btn>
         </template>
         <v-card
           rounded="lg"
-          title="Publication sur un catalogue"
           variant="elevated"
           :loading="publishCatalog.loading.value ? 'primary' : undefined"
+          :title="t('publishToCatalog')"
         >
           <v-card-text>
             <v-form
@@ -47,7 +47,7 @@
               :disabled="publishCatalog.loading.value"
               @click="showPublishMenu = false"
             >
-              Annuler
+              {{ t('cancel') }}
             </v-btn>
             <v-btn
               color="primary"
@@ -55,7 +55,7 @@
               :loading="publishCatalog.loading.value"
               @click="publishCatalog.execute()"
             >
-              Publier
+              {{ t('publish') }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -65,11 +65,11 @@
         v-if="!publications.length"
         class="font-italic mt-4"
       >
-        Aucune publication pour le moment
+        {{ t('noPublications') }}
       </p>
       <template v-else>
         <h3 class="text-h5 mt-4">
-          Liste des publications
+          {{ t('publicationsList') }}
         </h3>
       </template>
     </template>
@@ -81,6 +81,7 @@ import tutorialAlert from '@data-fair/lib-vuetify/tutorial-alert.vue'
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 
 const session = useSessionAuthenticated()
+const { t } = useI18n()
 
 const catalogs = ref(['a'])
 const publications = ref([])
@@ -126,6 +127,26 @@ const vjsfOptions: VjsfOptions = {
 }
 
 </script>
+
+<i18n lang="yaml">
+  en:
+    cancel: Cancel
+    noCatalogs: You have not yet configured any catalog.
+    noPublications: No publications at the moment
+    publicationsList: List of publications
+    publish: Publish
+    publishToCatalog: Publish to a catalog
+    tutorialMessage: You can publish your datasets to one or more Open Data catalogs. This publication will make your data easier to find and allow the Open Data community to engage with you.
+
+  fr:
+    cancel: Annuler
+    noCatalogs: Vous n'avez pas encore configuré de calalogue.
+    noPublications: Aucune publication pour le moment
+    publicationsList: Liste des publications
+    publish: Publier
+    publishToCatalog: Publier sur un catalogue
+    tutorialMessage: Vous pouvez publier vos jeux de données sur un ou plusieurs catalogues Open Data. Cette publication rendra vos données plus faciles à trouver et permettra à la communauté Open Data d'échanger avec vous.
+</i18n>
 
 <style scoped>
 </style>

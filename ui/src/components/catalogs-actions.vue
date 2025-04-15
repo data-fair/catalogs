@@ -14,7 +14,7 @@
           :icon="mdiPlusCircle"
         />
       </template>
-      Créer un nouveau catalogue
+      {{ t('createNewCatalog') }}
     </v-list-item>
     <v-text-field
       v-model="search"
@@ -22,7 +22,7 @@
       class="mt-4 mx-4"
       color="primary"
       density="compact"
-      placeholder="Rechercher..."
+      :placeholder="t('search')"
       variant="outlined"
       autofocus
       hide-details
@@ -35,7 +35,7 @@
       item-value="pluginKey"
       class="mt-4 mx-4"
       density="compact"
-      label="Plugin"
+      :label="t('plugin')"
       rounded="xl"
       variant="outlined"
       hide-details
@@ -48,7 +48,7 @@
       v-if="adminMode"
       v-model="showAll"
       color="admin"
-      label="Voir tous les catalogues"
+      :label="t('showAllCatalogs')"
       hide-details
       class="mt-2 mx-4 text-admin"
     />
@@ -58,7 +58,7 @@
       :items="ownersItems"
       item-title="display"
       item-value="ownerKey"
-      label="Propriétaire"
+      :label="t('owner')"
       chips
       class="mt-2 mx-4 text-admin"
       clearable
@@ -81,6 +81,7 @@ const { adminMode, plugins, facets } = defineProps<{
   facets: CatalogsFacets
 }>()
 
+const { t } = useI18n()
 const search = defineModel('search', { type: String, default: '' })
 const showAll = defineModel('showAll', { type: Boolean, default: false })
 const pluginsSelected = defineModel('pluginsSelected', { type: Array, required: true })
@@ -94,7 +95,7 @@ const pluginsItems = computed(() => {
       ([pluginKey, count]) => {
         const title = plugins.find((plugin) => plugin.id === pluginKey)?.metadata.title
         return {
-          display: `${title || 'Supprimé - ' + pluginKey} (${count})`,
+          display: `${title || t('deletedPlugin', { key: pluginKey })} (${count})`,
           pluginKey
         }
       }
@@ -122,8 +123,25 @@ const ownersItems = computed(() => {
     })
     .sort((a, b) => a.display.localeCompare(b.display))
 })
-
 </script>
+
+<i18n lang="yaml">
+  en:
+    createNewCatalog: Create a new catalog
+    deletedPlugin: "Deleted - {key}"
+    owner: Owner
+    plugin: Plugin
+    search: Search...
+    showAllCatalogs: Show all catalogs
+
+  fr:
+    createNewCatalog: Créer un nouveau catalogue
+    deletedPlugin: "Supprimé - {key}"
+    owner: Propriétaire
+    plugin: Plugin
+    search: Rechercher...
+    showAllCatalogs: Voir tous les catalogues
+</i18n>
 
 <style scoped>
 </style>

@@ -31,7 +31,7 @@ const pluginsCache: Record<string, CatalogPlugin<any>> = {}
 // Get the plugin from the plugins directory or from cache if already loaded
 fs.ensureDirSync(config.dataDir)
 const pluginsDir = path.resolve(config.dataDir, 'plugins')
-export const getPlugin = async (pluginId: string) => {
+export const getPlugin = async (pluginId: string): Promise<CatalogPlugin<any>> => {
   if (pluginsCache[pluginId]) return pluginsCache[pluginId] // Return cached plugin if available
 
   try {

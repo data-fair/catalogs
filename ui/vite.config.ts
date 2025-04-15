@@ -50,7 +50,9 @@ export default defineConfig({
             'mdiFileDownload',
             'mdiImport',
             'mdiMagnify',
+            'mdiPencil',
             'mdiPlusCircle',
+            'mdiPlusCircleOutline',
             'mdiLock',
             'mdiLockOpen'
           ]
