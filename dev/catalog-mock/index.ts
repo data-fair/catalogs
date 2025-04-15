@@ -1,7 +1,7 @@
-import type { CatalogPlugin, CatalogMetadata, CatalogDataset, CatalogContext } from '@data-fair/lib-common-types/catalog.js'
+import type { CatalogPlugin, CatalogMetadata, CatalogDataset } from '@data-fair/lib-common-types/catalog.js'
 import { schema as configSchema, assertValid as assertConfigValid, type MockConfig } from './types/config/index.ts'
 
-const listDatasets = async (context: CatalogContext<MockConfig>, params?: { q?: string }) => {
+const listDatasets = async (catalogConfig: MockConfig, params?: { q?: string }) => {
   const allDatasets: CatalogDataset[] = [
     {
       id: 'dataset-feline-behavior',
@@ -88,12 +88,13 @@ const listDatasets = async (context: CatalogContext<MockConfig>, params?: { q?: 
   }
 }
 
-const getDataset = async (context: CatalogContext<MockConfig>, datasetId: string) => {
-  return (await listDatasets(context)).results.find(d => d.id === datasetId)
+const getDataset = async (catalogConfig: MockConfig, datasetId: string) => {
+  return (await listDatasets(catalogConfig)).results.find(d => d.id === datasetId)
 }
 
-const publishDataset = async (context: CatalogContext<MockConfig>, dataset: any, publication: any) => {
+const publishDataset = async (catalogConfig: MockConfig, dataset: any, publication: any) => {
   console.log('Publishing dataset ' + dataset.id)
+  return publication
 }
 
 const deleteDataset = async () => {

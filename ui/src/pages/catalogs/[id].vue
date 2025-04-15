@@ -81,7 +81,7 @@ const canAdmin = computed(() => {
 const catalogSchema = computed(() => {
   if (!plugin.value) return
   const schema = jsonSchema(catalogSchemaBase)
-    .addProperty('config', plugin.value.configSchema)
+    .addProperty('config', { ...plugin.value.configSchema, title: 'Configuration' })
     .makePatchSchema()
     .schema
   return schema
