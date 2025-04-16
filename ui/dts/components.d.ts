@@ -14,7 +14,6 @@ declare module 'vue' {
     LayoutActions: typeof import('./../src/components/layout/layout-actions.vue')['default']
     LayoutActionsButton: typeof import('./../src/components/layout/layout-actions-button.vue')['default']
     LayoutActionsRight: typeof import('./../src/components/layout/layout-actions-right.vue')['default']
-    ListDatasets: typeof import('./../src/components/catalog/list-datasets.vue')['default']
     ListRemoteDatasets: typeof import('./../src/components/catalog/list-remote-datasets.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

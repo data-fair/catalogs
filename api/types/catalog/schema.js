@@ -64,18 +64,18 @@ export default {
         type: 'object',
         additionalProperties: false,
         required: [
-          'id',
           'dataFairId',
+          'remoteId',
           'title'
         ],
         properties: {
-          id: {
-            type: 'string',
-            description: 'Id of the dataset in the catalog'
-          },
           dataFairId: {
             type: 'string',
-            description: 'Data-fair dataset identifier'
+            description: 'Id of the dataset in the data-fair catalog'
+          },
+          remoteId: {
+            type: 'string',
+            description: 'Id of the dataset or resource in the remote catalog'
           },
           title: {
             type: 'string'

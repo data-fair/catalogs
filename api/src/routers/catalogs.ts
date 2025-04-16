@@ -215,23 +215,21 @@ router.post('/:id/dataset', async (req, res) => {
 
   const plugin = await findUtils.getPlugin(catalog.plugin)
   if (!plugin.publishDataset) throw httpError(501, 'Plugin does not support publishing datasets')
-  await plugin.publishDataset(catalog.config, dataset, publication)
+  const publicationRes = await plugin.publishDataset(catalog.config, dataset, publication)
 
-  res.status(201).json({
-    title: catalog.title
-  })
+  res.status(201).json(publicationRes)
 })
 
 // Unpublish a dataset in a catalog
 router.delete('/:id/dataset/:datasetId', async (req, res) => {
-  const sessionState = await session.reqAuthenticated(req)
+  console.log('Unpublishing dataset', req.params.datasetId)
+  assertReqInternalSecret(req, config.secretKeys.catalogs)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
-  assertAccountRole(sessionState, catalog.owner, 'admin')
 
   const plugin = await findUtils.getPlugin(catalog.plugin)
   if (!plugin.deleteDataset) throw httpError(501, 'Plugin does not support deleting datasets')
-  await plugin.deleteDataset(catalog.config)
+  await plugin.deleteDataset(catalog.config, req.params.datasetId)
 
-  res.status(201)
+  res.sendStatus(204)
 })

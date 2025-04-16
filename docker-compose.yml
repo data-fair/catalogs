@@ -56,7 +56,6 @@ services:
       - EXTRA_NAV_ITEMS=[{"id":"catalogs","can":"contrib","iframe":"http://localhost:5600/catalogs/catalogs","basePath":"/catalogs","icon":"mdi-transit-connection","title":"Catalogues"},{"id":"events","can":"admin","iframe":"http://localhost:5600/events/embed/events","basePath":"/events","icon":"mdi-clipboard-text-clock","title":"Traçabilité"}]
       - EXTRA_ADMIN_NAV_ITEMS=[{"id":"catalogs","iframe":"http://localhost:5600/catalogs/admin","basePath":"/catalogs","icon":"mdi-transit-connection","title":"Plugins - Catalogues"}]
       - OBSERVER_ACTIVE=false
-      - CATALOGS_URL=http://localhost:5600/catalogs
       - PRIVATE_CATALOGS_URL=http://localhost:5600/catalogs
       - SECRET_CATALOGS=secret-catalogs
 

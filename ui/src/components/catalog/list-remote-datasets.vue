@@ -21,7 +21,7 @@
         :key="dataset.id"
         class="mb-4"
       >
-        <v-card-item>
+        <v-card-item class="pb-0">
           <template
             v-if="dataset.private !== undefined"
             #prepend
@@ -35,9 +35,29 @@
           <template #title>
             {{ dataset.title }}
           </template>
+          <template #subtitle>
+            <span v-if="catalog.datasets.find(d => d.remoteId === dataset.id)">
+              <a
+                :href="`/data-fair/dataset/${catalog.datasets.find(d => d.remoteId === dataset.id)!.dataFairId}`"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Voir le jeu de donnée local
+              </a>
+              <span v-if="dataset.origin"> | </span>
+            </span>
+            <a
+              v-if="dataset.origin"
+              :href="dataset.origin"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Voir le jeu de donnée distant
+            </a>
+          </template>
           <template #append>
             <v-btn
-              v-if="!catalog.datasets.find(d => d.id === dataset.id)"
+              v-if="!catalog.datasets.find(d => d.remoteId === dataset.id)"
               color="primary"
               density="comfortable"
               variant="text"
@@ -145,11 +165,31 @@
               v-for="resource in dataset.resources"
               :key="resource.id"
               :title="resource.title"
-              :subtitle="resource.format"
             >
+              <template #subtitle>
+                {{ resource.format }}
+                <span v-if="catalog.datasets.find(d => d.remoteId === resource.id) || resource.url"> | </span>
+                <a
+                  v-if="catalog.datasets.find(d => d.remoteId === resource.id)"
+                  :href="`/data-fair/dataset/${catalog.datasets.find(d => d.remoteId === resource.id)!.dataFairId}`"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Voir le jeu de données local
+                </a>
+                <span v-if="catalog.datasets.find(d => d.remoteId === resource.id) && resource.url"> | </span>
+                <a
+                  v-if="resource.url"
+                  :href="resource.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Voir la ressource distante
+                </a>
+              </template>
               <template #append>
                 <v-btn
-                  v-if="!catalog.datasets.find(d => d.id === resource.id)"
+                  v-if="!catalog.datasets.find(d => d.remoteId === resource.id)"
                   color="primary"
                   density="comfortable"
                   variant="text"
@@ -291,18 +331,18 @@ const createDataset = useAsyncAction(
         title: dataset.title,
         isMetaOnly: true
       }
-      const attachments = dataset.resources.map((res) => {
+      const attachments = dataset.resources?.map((res) => {
         return {
           title: res.title,
           type: 'url',
           url: res.url
         }
       })
-      if (attachments.length > 0) datasetPost.attachments = attachments
+      if ((attachments?.length ?? 0) > 0) datasetPost.attachments = attachments
     }
     addProps(dataset, datasetPost) // Add common properties
 
-    const dataFairId = catalog.value.datasets.find(d => d.id === resourceId)?.dataFairId
+    const dataFairId = catalog.value.datasets.find(d => d.remoteId === resourceId)?.dataFairId
     if (dataFairId) await updateDataFairDataset(resourceId, datasetPost, dataFairId)
     else await createDataFairDataset(resourceId, datasetPost)
   },
@@ -314,7 +354,7 @@ const createDataset = useAsyncAction(
 
 const deleteDataset = useAsyncAction(
   async (resourceId: string) => {
-    const dataFairId = catalog.value.datasets.find(d => d.id === resourceId)?.dataFairId
+    const dataFairId = catalog.value.datasets.find(d => d.remoteId === resourceId)?.dataFairId
     if (dataFairId) {
       try {
         await $fetch(`/data-fair/api/v1/datasets/${dataFairId}`, {
@@ -325,7 +365,7 @@ const deleteDataset = useAsyncAction(
         if (error.status !== 404) throw error
       }
     }
-    catalog.value.datasets = catalog.value.datasets.filter(d => d.id !== resourceId)
+    catalog.value.datasets = catalog.value.datasets.filter(d => d.remoteId !== resourceId)
     await $fetch(`${$apiPath}/catalogs/${catalog.value._id}`, {
       method: 'PATCH',
       body: {
@@ -353,7 +393,7 @@ const createDataFairDataset = async (resourceId: string, datasetPost: any) => {
   })
 
   catalog.value.datasets.push({
-    id: resourceId,
+    remoteId: resourceId,
     dataFairId: createdDataset.id,
     title: createdDataset.title
   })
@@ -417,17 +457,17 @@ const addProps = (dataset: any, resourcePost: any) => {
 
 <i18n lang="yaml">
   en:
-    confirmDeleteDataset: Do you really want to delete this dataset?
+    confirmDeleteDataset: Do you really want to delete this dataset? Warning, this action will delete the dataset from the platform.
     confirmOverwriteDataset: Do you really want to overwrite the already imported information?
     createMetadataOnlyDataset: Create a "metadata only" type dataset
-    createRemoteFileDataset: Create a "remote file" type dataset
+    createRemoteFileDataset: Create a dataset from the remote resource
     datasetCreated: Dataset created!
     datasetDeleted: Dataset deleted!
     datasetIsPrivate: The dataset is private
     datasetIsPublic: The dataset is public
     datasetNotFound: Dataset not found
-    datasetsInCatalog: datasets in the catalog
-    deleteDataset: Delete dataset
+    datasetsInCatalog: No datasets on the catalog | {n} remote dataset | {n} remote datasets
+    deleteDataset: Delete local dataset
     errorCreatingDataset: Error while creating the dataset
     errorDeletingDataset: Error while deleting the dataset
     no: No
@@ -435,17 +475,17 @@ const addProps = (dataset: any, resourcePost: any) => {
     yes: Yes
 
   fr:
-    confirmDeleteDataset: Voulez-vous vraiment supprimer ce jeu de données ?
+    confirmDeleteDataset: Voulez-vous vraiment supprimer ce jeu de données ? Attention, cette action supprime le jeu de donnée de la plateforme.
     confirmOverwriteDataset: Voulez-vous vraiment écraser les informations déjà importées ?
     createMetadataOnlyDataset: Créer un jeu de données de type "métadonnées seul"
-    createRemoteFileDataset: Créer un jeu de données de type "fichier distant"
+    createRemoteFileDataset: Créer un jeu de données depuis la ressource distante
     datasetCreated: Jeu de données créé !
     datasetDeleted: Jeu de données supprimé !
     datasetIsPrivate: Le jeu de données est privé
     datasetIsPublic: Le jeu de données est public
     datasetNotFound: Jeu de données non trouvé
-    datasetsInCatalog: Aucun jeu de données sur le catalogue | {n} jeu de données dans le catalogue | {n} jeux de données dans le catalogue
-    deleteDataset: Supprimer le jeu de données
+    datasetsInCatalog: Aucun jeu de données sur le catalogue | {n} jeu de données distant | {n} jeux de données distants
+    deleteDataset: Supprimer le jeu de données local
     errorCreatingDataset: Erreur lors de la création du jeu de données
     errorDeletingDataset: Erreur lors de la suppression du jeu de données
     no: Non

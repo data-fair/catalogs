@@ -98,22 +98,35 @@ const publishCatalog = useAsyncAction(() => {
 })
 
 const vjsfSchema = {
-  type: 'object',
-  properties: {
-    catalog: {
-      type: 'object',
-      title: 'Catalogue',
-      layout: {
-        getItems: {
-          url: '/catalogs/api/catalogs',
-          itemsResults: 'data.results',
-          itemTitle: 'item.title',
-          itemKey: 'item.id',
+  type: 'array',
+  title: t('publicationsList'),
+  items: {
+    type: 'object',
+    properties: {
+      catalog: {
+        type: 'object',
+        title: 'Catalogue',
+        layout: {
+          getItems: {
+            url: '/catalogs/api/catalogs',
+            itemsResults: 'data.results',
+            itemTitle: 'item.title',
+            itemKey: 'item.id',
+          }
         }
       }
-    }
+    },
+    required: ['catalog']
   },
-  required: ['catalog']
+  layout: {
+    messages: {
+      addItem: t('publishToCatalog'),
+    },
+    listActions: [
+      'add',
+      'delete'
+    ]
+  }
 }
 
 const vjsfOptions: VjsfOptions = {
@@ -135,7 +148,7 @@ const vjsfOptions: VjsfOptions = {
     noPublications: No publications at the moment
     publicationsList: List of publications
     publish: Publish
-    publishToCatalog: Publish to a catalog
+    publishToCatalog: Publish to another catalog
     tutorialMessage: You can publish your datasets to one or more Open Data catalogs. This publication will make your data easier to find and allow the Open Data community to engage with you.
 
   fr:
@@ -144,7 +157,7 @@ const vjsfOptions: VjsfOptions = {
     noPublications: Aucune publication pour le moment
     publicationsList: Liste des publications
     publish: Publier
-    publishToCatalog: Publier sur un catalogue
+    publishToCatalog: Publier sur un autre catalogue
     tutorialMessage: Vous pouvez publier vos jeux de données sur un ou plusieurs catalogues Open Data. Cette publication rendra vos données plus faciles à trouver et permettra à la communauté Open Data d'échanger avec vous.
 </i18n>
 

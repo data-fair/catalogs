@@ -20,8 +20,18 @@ export default {
         }
       }
     },
-    publication: {
-      type: 'object'
+    publication: { // TODO: use the datafair publication schema
+      type: 'object',
+      required: ['publicationId', 'catalogId', 'status'],
+      additionalProperties: false,
+      properties: {
+        publicationId: { type: 'string' },
+        catalogId: { type: 'string' },
+        remoteDatasetId: { type: 'string' },
+        status: { enum: ['waiting', 'published', 'error', 'deleted'] },
+        publishedAt: { type: 'string', format: 'date-time' },
+        error: { type: 'string' }
+      }
     }
   }
 }
