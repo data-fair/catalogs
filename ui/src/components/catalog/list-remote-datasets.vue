@@ -62,7 +62,7 @@
               density="comfortable"
               variant="text"
               :loading="createDataset.loading.value"
-              :icon="mdiImport"
+              :icon="mdiFolderDownload"
               :title="t('createMetadataOnlyDataset')"
               @click="createDataset.execute(dataset)"
             />
@@ -124,7 +124,7 @@
                     density="comfortable"
                     variant="text"
                     :loading="createDataset.loading.value"
-                    :icon="mdiImport"
+                    :icon="mdiFolderDownload"
                     :title="t('createMetadataOnlyDataset')"
                   />
                 </template>
@@ -159,7 +159,7 @@
           </template>
         </v-card-item>
 
-        <v-card-text>
+        <v-card-text v-if="dataset.resources?.length">
           <v-list>
             <v-list-item
               v-for="resource in dataset.resources"

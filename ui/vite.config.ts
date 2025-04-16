@@ -48,7 +48,7 @@ export default defineConfig({
             'mdiDownload',
             'mdiDotsVertical',
             'mdiFileDownload',
-            'mdiImport',
+            'mdiFolderDownload',
             'mdiMagnify',
             'mdiPencil',
             'mdiPlusCircle',

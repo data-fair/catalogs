@@ -222,7 +222,6 @@ router.post('/:id/dataset', async (req, res) => {
 
 // Unpublish a dataset in a catalog
 router.delete('/:id/dataset/:datasetId', async (req, res) => {
-  console.log('Unpublishing dataset', req.params.datasetId)
   assertReqInternalSecret(req, config.secretKeys.catalogs)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
@@ -230,6 +229,19 @@ router.delete('/:id/dataset/:datasetId', async (req, res) => {
   const plugin = await findUtils.getPlugin(catalog.plugin)
   if (!plugin.deleteDataset) throw httpError(501, 'Plugin does not support deleting datasets')
   await plugin.deleteDataset(catalog.config, req.params.datasetId)
+
+  res.sendStatus(204)
+})
+
+// Remove a resource from a dataset in a catalog
+router.delete('/:id/dataset/:datasetId/resources/:resourceId', async (req, res) => {
+  assertReqInternalSecret(req, config.secretKeys.catalogs)
+  const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
+  if (!catalog) throw httpError(404, 'Catalog not found')
+
+  const plugin = await findUtils.getPlugin(catalog.plugin)
+  if (!plugin.deleteDataset) throw httpError(501, 'Plugin does not support deleting datasets')
+  await plugin.deleteDataset(catalog.config, req.params.datasetId, req.params.resourceId)
 
   res.sendStatus(204)
 })
