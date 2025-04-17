@@ -129,6 +129,11 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   initialValidation: 'always',
   locale: session.lang.value,
   plugins: [VjsfMarkdown],
+  pluginsOptions: {
+    markdown: {
+      easyMDEOptions: { maxHeight: '100px' }
+    }
+  },
   readOnly: !canAdmin.value,
   removeAdditional: true,
   titleDepth: 3,

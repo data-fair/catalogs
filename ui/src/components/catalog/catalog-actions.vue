@@ -126,8 +126,7 @@
 
 <script setup lang="ts">
 import type { Catalog } from '#api/types'
-
-import OwnerPick from '@data-fair/lib-vuetify/owner-pick.vue'
+import ownerPick from '@data-fair/lib-vuetify/owner-pick.vue'
 
 const { canAdmin, catalog } = defineProps<{
   canAdmin: boolean
