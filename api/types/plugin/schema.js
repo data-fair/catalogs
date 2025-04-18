@@ -48,15 +48,12 @@ export default {
       properties: {
         title: {
           type: 'string',
-          description: 'The title of the plugin to be displayed in the UI.'
         },
         description: {
           type: 'string',
-          description: 'The description of the plugin to be displayed in the UI.'
         },
         icon: {
           type: 'string',
-          description: 'The SVG Path icon of the plugin.'
         },
         capabilities: {
           type: 'array',
@@ -64,8 +61,9 @@ export default {
             type: 'string',
             enum: [
               'listDatasets',
-              'publishDataset',
-              'publishApplication'
+              'search',
+              'pagination',
+              'publishDataset'
             ]
           },
         }

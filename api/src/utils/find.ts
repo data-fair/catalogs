@@ -26,12 +26,12 @@ export const query = (reqQuery: Record<string, string>, sessionState: SessionSta
 
 // TODO: Demander a Alban si il vaut mieux mettre les plugins en cache => montée en mémoire ou les charger a chaque fois => beaucoup de lecture sur le disque
 // Cache loaded plugins to avoid loading them each time
-const pluginsCache: Record<string, CatalogPlugin<any>> = {}
+const pluginsCache: Record<string, CatalogPlugin> = {}
 
 // Get the plugin from the plugins directory or from cache if already loaded
 fs.ensureDirSync(config.dataDir)
 const pluginsDir = path.resolve(config.dataDir, 'plugins')
-export const getPlugin = async (pluginId: string): Promise<CatalogPlugin<any>> => {
+export const getPlugin = async (pluginId: string): Promise<CatalogPlugin> => {
   if (pluginsCache[pluginId]) return pluginsCache[pluginId] // Return cached plugin if available
 
   try {

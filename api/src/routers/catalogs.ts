@@ -51,7 +51,7 @@ const sendCatalogEvent = (
  */
 const validateCatalog = async (catalog: Partial<Catalog>) => {
   const validCatalog = (await import('#types/catalog/index.ts')).returnValid(catalog)
-  const plugin: CatalogPlugin<any> = await findUtils.getPlugin(validCatalog.plugin)
+  const plugin: CatalogPlugin = await findUtils.getPlugin(validCatalog.plugin)
   plugin.assertConfigValid(validCatalog.config)
   return validCatalog
 }

@@ -30,6 +30,7 @@
     <list-remote-datasets
       v-if="plugin?.metadata.capabilities.includes('listDatasets')"
       :catalog="catalog"
+      :plugin="plugin"
     />
     <layout-actions v-if="canAdmin">
       <catalog-actions

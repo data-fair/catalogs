@@ -1,22 +1,43 @@
 <template>
+  <div
+    v-if="catalogDatasets.data.value?.count"
+    class="d-flex align-center mb-4"
+  >
+    <v-text-field
+      v-if="hasCapability('search')"
+      v-model="search"
+      class="mr-4"
+      color="primary"
+      density="compact"
+      max-width="200"
+      variant="outlined"
+      :append-inner-icon="mdiMagnify"
+      :placeholder="t('search')"
+      autofocus
+      clearable
+      hide-details
+    />
+    <h4 class="text-h5 mb-0">
+      {{ t('datasetsInCatalog', catalogDatasets.data.value?.count) }}
+    </h4>
+    <v-spacer />
+    <v-pagination
+      v-if="hasCapability('pagination') && catalogDatasets.data.value?.count > size"
+      v-model="page"
+      density="comfortable"
+      total-visible="3"
+      :length="Math.ceil(catalogDatasets.data.value?.count / size)"
+    />
+  </div>
   <v-progress-linear
     v-if="catalogDatasets.loading.value"
     color="primary"
     height="2"
     indeterminate
   />
-  <h4
-    v-else-if="catalogDatasets.error.value || !catalogDatasets.data.value"
-    class="text-h5 mb-2"
-  >
-    {{ t('datasetsInCatalog', 0) }}
-  </h4>
   <template v-else>
-    <h4 class="text-h5 mb-2">
-      {{ t('datasetsInCatalog', catalogDatasets.data.value.count) }}
-    </h4>
     <v-card
-      v-for="dataset in catalogDatasets.data.value.results"
+      v-for="dataset in catalogDatasets.data.value?.results"
       :key="dataset.id"
       class="mb-4"
     >
@@ -293,18 +314,46 @@
 </template>
 
 <script setup lang="ts">
-import type { Catalog } from '#api/types'
-import type { CatalogDataset, CatalogResourceDataset } from '@data-fair/lib-common-types/catalog.ts'
+import type { CatalogDataset, CatalogResourceDataset, Capability } from '@data-fair/lib-common-types/catalog.ts'
+import type { Catalog, Plugin } from '#api/types'
 
 const props = defineProps <{
-  catalog: Catalog
+  catalog: Catalog,
+  plugin: Plugin
 }>()
 
 const { t } = useI18n()
 const { catalog } = toRefs(props)
 const showDeleteMenu = ref<Record<string, boolean>>({})
 const showOverwriteMenu = ref<Record<string, boolean>>({})
-const catalogDatasets = useFetch<{ count: number, results: CatalogDataset[] }>(`${$apiPath}/catalogs/${catalog.value._id}/datasets`)
+const search = ref<string>('')
+const page = ref<number>(1)
+const size = 25
+
+/**
+ * Check if the plugin has a specific capability
+ * @param {Capability} capability - The capability to check
+ * @returns {boolean} - True if the plugin has the capability, false otherwise
+ */
+const hasCapability = (capability: Capability): boolean => {
+  return props.plugin.metadata.capabilities.includes(capability)
+}
+
+const fetchQuery = computed(() => ({
+  q: hasCapability('search') ? search.value : undefined,
+  ...(hasCapability('pagination')
+    ? {
+        page: page.value,
+        size
+      }
+    : {}
+  )
+}))
+
+const catalogDatasets = useFetch<{
+  count: number
+  results: CatalogDataset[]
+}>(`${$apiPath}/catalogs/${catalog.value._id}/datasets`, { query: fetchQuery })
 
 const createDataset = useAsyncAction(
   async (dataset: CatalogDataset, resource?: CatalogResourceDataset) => {
@@ -470,6 +519,7 @@ const addProps = (dataset: any, resourcePost: any) => {
     errorDeletingDataset: Error while deleting the dataset
     no: No
     overwriteDataset: Overwrite dataset
+    search: Search...
     yes: Yes
 
   fr:
@@ -488,6 +538,7 @@ const addProps = (dataset: any, resourcePost: any) => {
     errorDeletingDataset: Erreur lors de la suppression du jeu de données
     no: Non
     overwriteDataset: Écraser le jeu de données
+    search: Rechercher...
     yes: Oui
 </i18n>
 

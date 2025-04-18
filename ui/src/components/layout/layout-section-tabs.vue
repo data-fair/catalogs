@@ -20,7 +20,7 @@
         cols="auto"
         :class="mdAndUp ? '' : 'mx-4'"
       >
-        <h3 class="text-h5 my-2">
+        <h3 class="text-h5 my-3">
           {{ title }}
         </h3>
         <p
