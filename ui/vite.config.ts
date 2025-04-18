@@ -49,12 +49,13 @@ export default defineConfig({
             'mdiDotsVertical',
             'mdiFileDownload',
             'mdiFolderDownload',
+            'mdiLock',
+            'mdiLockOpen',
             'mdiMagnify',
             'mdiPencil',
             'mdiPlusCircle',
             'mdiPlusCircleOutline',
-            'mdiLock',
-            'mdiLockOpen'
+            'mdiUpload'
           ]
         }
       ],

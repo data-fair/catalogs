@@ -37,13 +37,13 @@ declare global {
   const mdiDownload: typeof import('@mdi/js')['mdiDownload']
   const mdiFileDownload: typeof import('@mdi/js')['mdiFileDownload']
   const mdiFolderDownload: typeof import('@mdi/js')['mdiFolderDownload']
-  const mdiImport: typeof import('@mdi/js')['mdiImport']
   const mdiLock: typeof import('@mdi/js')['mdiLock']
   const mdiLockOpen: typeof import('@mdi/js')['mdiLockOpen']
   const mdiMagnify: typeof import('@mdi/js')['mdiMagnify']
   const mdiPencil: typeof import('@mdi/js')['mdiPencil']
   const mdiPlusCircle: typeof import('@mdi/js')['mdiPlusCircle']
   const mdiPlusCircleOutline: typeof import('@mdi/js')['mdiPlusCircleOutline']
+  const mdiUpload: typeof import('@mdi/js')['mdiUpload']
   const nextTick: typeof import('vue')['nextTick']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
@@ -156,6 +156,7 @@ declare module 'vue' {
     readonly mdiPencil: UnwrapRef<typeof import('@mdi/js')['mdiPencil']>
     readonly mdiPlusCircle: UnwrapRef<typeof import('@mdi/js')['mdiPlusCircle']>
     readonly mdiPlusCircleOutline: UnwrapRef<typeof import('@mdi/js')['mdiPlusCircleOutline']>
+    readonly mdiUpload: UnwrapRef<typeof import('@mdi/js')['mdiUpload']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>

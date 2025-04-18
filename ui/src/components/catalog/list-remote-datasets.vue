@@ -1,297 +1,295 @@
 <template>
-  <v-container class="pa-0">
-    <v-progress-linear
-      v-if="catalogDatasets.loading.value"
-      color="primary"
-      height="2"
-      indeterminate
-    />
-    <h4
-      v-else-if="catalogDatasets.error.value || !catalogDatasets.data.value"
-      class="text-h5 mb-2"
-    >
-      {{ t('datasetsInCatalog', 0) }}
+  <v-progress-linear
+    v-if="catalogDatasets.loading.value"
+    color="primary"
+    height="2"
+    indeterminate
+  />
+  <h4
+    v-else-if="catalogDatasets.error.value || !catalogDatasets.data.value"
+    class="text-h5 mb-2"
+  >
+    {{ t('datasetsInCatalog', 0) }}
+  </h4>
+  <template v-else>
+    <h4 class="text-h5 mb-2">
+      {{ t('datasetsInCatalog', catalogDatasets.data.value.count) }}
     </h4>
-    <template v-else>
-      <h4 class="text-h5 mb-2">
-        {{ t('datasetsInCatalog', catalogDatasets.data.value.count) }}
-      </h4>
-      <v-card
-        v-for="dataset in catalogDatasets.data.value.results"
-        :key="dataset.id"
-        class="mb-4"
-      >
-        <v-card-item class="pb-0">
-          <template
-            v-if="dataset.private !== undefined"
-            #prepend
-          >
-            <v-icon
-              :title="dataset.private ? t('datasetIsPrivate') : t('datasetIsPublic')"
-              :icon="dataset.private ? mdiLock : mdiLockOpen"
-              color="primary"
-            />
-          </template>
-          <template #title>
-            {{ dataset.title }}
-          </template>
-          <template #subtitle>
-            <span v-if="catalog.datasets.find(d => d.remoteId === dataset.id)">
-              <a
-                :href="`/data-fair/dataset/${catalog.datasets.find(d => d.remoteId === dataset.id)!.dataFairId}`"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Voir le jeu de donnée local
-              </a>
-              <span v-if="dataset.origin"> | </span>
-            </span>
+    <v-card
+      v-for="dataset in catalogDatasets.data.value.results"
+      :key="dataset.id"
+      class="mb-4"
+    >
+      <v-card-item class="pb-0">
+        <template
+          v-if="dataset.private !== undefined"
+          #prepend
+        >
+          <v-icon
+            :title="dataset.private ? t('datasetIsPrivate') : t('datasetIsPublic')"
+            :icon="dataset.private ? mdiLock : mdiLockOpen"
+            color="primary"
+          />
+        </template>
+        <template #title>
+          {{ dataset.title }}
+        </template>
+        <template #subtitle>
+          <span v-if="catalog.datasets.find(d => d.remoteId === dataset.id)">
             <a
-              v-if="dataset.origin"
-              :href="dataset.origin"
+              :href="`/data-fair/dataset/${catalog.datasets.find(d => d.remoteId === dataset.id)!.dataFairId}`"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Voir le jeu de donnée distant
+              Voir le jeu de donnée local
             </a>
-          </template>
-          <template #append>
-            <v-btn
-              v-if="!catalog.datasets.find(d => d.remoteId === dataset.id)"
-              color="primary"
-              density="comfortable"
-              variant="text"
-              :loading="createDataset.loading.value"
-              :icon="mdiFolderDownload"
-              :title="t('createMetadataOnlyDataset')"
-              @click="createDataset.execute(dataset)"
-            />
-            <template v-else>
-              <v-menu
-                v-model="showDeleteMenu[dataset.id]"
-                :close-on-content-click="false"
-                max-width="500"
-              >
-                <template #activator="{ props: deleteDatasetProps }">
-                  <v-btn
-                    v-bind="deleteDatasetProps"
-                    color="warning"
-                    density="comfortable"
-                    variant="text"
-                    :loading="deleteDataset.loading.value"
-                    :icon="mdiDelete"
-                    :title="t('deleteDataset')"
-                  />
-                </template>
-                <v-card
-                  rounded="lg"
-                  variant="elevated"
-                  :loading="deleteDataset.loading.value ? 'warning' : undefined"
-                  :title="t('deleteDataset')"
-                >
-                  <v-card-text>
-                    {{ t('confirmDeleteDataset') }}
-                  </v-card-text>
-                  <v-card-actions>
-                    <v-spacer />
-                    <v-btn
-                      variant="text"
-                      :disabled="deleteDataset.loading.value"
-                      @click="showDeleteMenu[dataset.id] = false"
-                    >
-                      {{ t('no') }}
-                    </v-btn>
-                    <v-btn
-                      color="warning"
-                      variant="flat"
-                      :loading="deleteDataset.loading.value ? 'warning' : false"
-                      @click="deleteDataset.execute(dataset.id)"
-                    >
-                      {{ t('yes') }}
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-menu>
-              <v-menu
-                v-model="showOverwriteMenu[dataset.id]"
-                :close-on-content-click="false"
-                max-width="500"
-              >
-                <template #activator="{ props: createDatasetProps }">
-                  <v-btn
-                    v-bind="createDatasetProps"
-                    color="warning"
-                    density="comfortable"
-                    variant="text"
-                    :loading="createDataset.loading.value"
-                    :icon="mdiFolderDownload"
-                    :title="t('createMetadataOnlyDataset')"
-                  />
-                </template>
-                <v-card
-                  rounded="lg"
-                  variant="elevated"
-                  :loading="createDataset.loading.value ? 'warning' : false"
-                  :title="t('overwriteDataset')"
-                  :text="t('confirmOverwriteDataset')"
-                >
-                  <v-card-actions>
-                    <v-spacer />
-                    <v-btn
-                      variant="text"
-                      :disabled="createDataset.loading.value"
-                      @click="showOverwriteMenu[dataset.id] = false"
-                    >
-                      {{ t('no') }}
-                    </v-btn>
-                    <v-btn
-                      color="warning"
-                      variant="flat"
-                      :loading="createDataset.loading.value ? 'warning' : false"
-                      @click="createDataset.execute(dataset)"
-                    >
-                      {{ t('yes') }}
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-menu>
-            </template>
-          </template>
-        </v-card-item>
-
-        <v-card-text v-if="dataset.resources?.length">
-          <v-list>
-            <v-list-item
-              v-for="resource in dataset.resources"
-              :key="resource.id"
-              :title="resource.title"
+            <span v-if="dataset.origin"> | </span>
+          </span>
+          <a
+            v-if="dataset.origin"
+            :href="dataset.origin"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Voir le jeu de donnée distant
+          </a>
+        </template>
+        <template #append>
+          <v-btn
+            v-if="!catalog.datasets.find(d => d.remoteId === dataset.id)"
+            color="primary"
+            density="comfortable"
+            variant="text"
+            :loading="createDataset.loading.value"
+            :icon="mdiFolderDownload"
+            :title="t('createMetadataOnlyDataset')"
+            @click="createDataset.execute(dataset)"
+          />
+          <template v-else>
+            <v-menu
+              v-model="showDeleteMenu[dataset.id]"
+              :close-on-content-click="false"
+              max-width="500"
             >
-              <template #subtitle>
-                {{ resource.format }}
-                <span v-if="catalog.datasets.find(d => d.remoteId === resource.id) || resource.url"> | </span>
-                <a
-                  v-if="catalog.datasets.find(d => d.remoteId === resource.id)"
-                  :href="`/data-fair/dataset/${catalog.datasets.find(d => d.remoteId === resource.id)!.dataFairId}`"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Voir le jeu de données local
-                </a>
-                <span v-if="catalog.datasets.find(d => d.remoteId === resource.id) && resource.url"> | </span>
-                <a
-                  v-if="resource.url"
-                  :href="resource.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Voir la ressource distante
-                </a>
-              </template>
-              <template #append>
+              <template #activator="{ props: deleteDatasetProps }">
                 <v-btn
-                  v-if="!catalog.datasets.find(d => d.remoteId === resource.id)"
-                  color="primary"
+                  v-bind="deleteDatasetProps"
+                  color="warning"
                   density="comfortable"
                   variant="text"
-                  :icon="mdiDownload"
-                  :loading="createDataset.loading.value"
-                  :title="t('createRemoteFileDataset')"
-                  @click="createDataset.execute(dataset, resource)"
+                  :loading="deleteDataset.loading.value"
+                  :icon="mdiDelete"
+                  :title="t('deleteDataset')"
                 />
-                <template v-else>
-                  <v-menu
-                    v-model="showDeleteMenu[resource.id]"
-                    :close-on-content-click="false"
-                    max-width="500"
-                  >
-                    <template #activator="{ props: deleteResourceProps }">
-                      <v-btn
-                        v-bind="deleteResourceProps"
-                        color="warning"
-                        density="comfortable"
-                        variant="text"
-                        :loading="deleteDataset.loading.value"
-                        :icon="mdiDelete"
-                        :title="t('deleteDataset')"
-                      />
-                    </template>
-                    <v-card
-                      rounded="lg"
-                      variant="elevated"
-                      :loading="deleteDataset.loading.value ? 'warning' : false"
-                      :title="t('deleteDataset')"
-                      :text="t('confirmDeleteDataset')"
-                    >
-                      <v-card-actions>
-                        <v-spacer />
-                        <v-btn
-                          variant="text"
-                          :disabled="deleteDataset.loading.value"
-                          @click="showDeleteMenu[resource.id] = false"
-                        >
-                          {{ t('no') }}
-                        </v-btn>
-                        <v-btn
-                          color="warning"
-                          variant="flat"
-                          :loading="deleteDataset.loading.value ? 'warning' : false"
-                          @click="deleteDataset.execute(resource.id)"
-                        >
-                          {{ t('yes') }}
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-menu>
-                  <v-menu
-                    v-model="showOverwriteMenu[resource.id]"
-                    :close-on-content-click="false"
-                    max-width="500"
-                  >
-                    <template #activator="{ props: createResourceProps }">
-                      <v-btn
-                        v-bind="createResourceProps"
-                        color="warning"
-                        density="comfortable"
-                        variant="text"
-                        :icon="mdiDownload"
-                        :title="t('createRemoteFileDataset')"
-                      />
-                    </template>
-                    <v-card
-                      rounded="lg"
-                      variant="elevated"
-                      :loading="createDataset.loading.value ? 'warning' : false"
-                      :title="t('overwriteDataset')"
-                      :text="t('confirmOverwriteDataset')"
-                    >
-                      <v-card-actions>
-                        <v-spacer />
-                        <v-btn
-                          variant="text"
-                          :disabled="createDataset.loading.value"
-                          @click="showOverwriteMenu[resource.id] = false"
-                        >
-                          {{ t('no') }}
-                        </v-btn>
-                        <v-btn
-                          color="warning"
-                          variant="flat"
-                          :loading="createDataset.loading.value ? 'warning' : false"
-                          @click="createDataset.execute(dataset, resource)"
-                        >
-                          {{ t('yes') }}
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-menu>
-                </template>
               </template>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-      </v-card>
-    </template>
-  </v-container>
+              <v-card
+                rounded="lg"
+                variant="elevated"
+                :loading="deleteDataset.loading.value ? 'warning' : undefined"
+                :title="t('deleteDataset')"
+              >
+                <v-card-text>
+                  {{ t('confirmDeleteDataset') }}
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer />
+                  <v-btn
+                    variant="text"
+                    :disabled="deleteDataset.loading.value"
+                    @click="showDeleteMenu[dataset.id] = false"
+                  >
+                    {{ t('no') }}
+                  </v-btn>
+                  <v-btn
+                    color="warning"
+                    variant="flat"
+                    :loading="deleteDataset.loading.value ? 'warning' : false"
+                    @click="deleteDataset.execute(dataset.id)"
+                  >
+                    {{ t('yes') }}
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-menu>
+            <v-menu
+              v-model="showOverwriteMenu[dataset.id]"
+              :close-on-content-click="false"
+              max-width="500"
+            >
+              <template #activator="{ props: createDatasetProps }">
+                <v-btn
+                  v-bind="createDatasetProps"
+                  color="warning"
+                  density="comfortable"
+                  variant="text"
+                  :loading="createDataset.loading.value"
+                  :icon="mdiFolderDownload"
+                  :title="t('createMetadataOnlyDataset')"
+                />
+              </template>
+              <v-card
+                rounded="lg"
+                variant="elevated"
+                :loading="createDataset.loading.value ? 'warning' : false"
+                :title="t('overwriteDataset')"
+                :text="t('confirmOverwriteDataset')"
+              >
+                <v-card-actions>
+                  <v-spacer />
+                  <v-btn
+                    variant="text"
+                    :disabled="createDataset.loading.value"
+                    @click="showOverwriteMenu[dataset.id] = false"
+                  >
+                    {{ t('no') }}
+                  </v-btn>
+                  <v-btn
+                    color="warning"
+                    variant="flat"
+                    :loading="createDataset.loading.value ? 'warning' : false"
+                    @click="createDataset.execute(dataset)"
+                  >
+                    {{ t('yes') }}
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-menu>
+          </template>
+        </template>
+      </v-card-item>
+
+      <v-card-text v-if="dataset.resources?.length">
+        <v-list>
+          <v-list-item
+            v-for="resource in dataset.resources"
+            :key="resource.id"
+            :title="resource.title"
+          >
+            <template #subtitle>
+              {{ resource.format }}
+              <span v-if="catalog.datasets.find(d => d.remoteId === resource.id) || resource.url"> | </span>
+              <a
+                v-if="catalog.datasets.find(d => d.remoteId === resource.id)"
+                :href="`/data-fair/dataset/${catalog.datasets.find(d => d.remoteId === resource.id)!.dataFairId}`"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Voir le jeu de données local
+              </a>
+              <span v-if="catalog.datasets.find(d => d.remoteId === resource.id) && resource.url"> | </span>
+              <a
+                v-if="resource.url"
+                :href="resource.url"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Voir la ressource distante
+              </a>
+            </template>
+            <template #append>
+              <v-btn
+                v-if="!catalog.datasets.find(d => d.remoteId === resource.id)"
+                color="primary"
+                density="comfortable"
+                variant="text"
+                :icon="mdiDownload"
+                :loading="createDataset.loading.value"
+                :title="t('createRemoteFileDataset')"
+                @click="createDataset.execute(dataset, resource)"
+              />
+              <template v-else>
+                <v-menu
+                  v-model="showDeleteMenu[resource.id]"
+                  :close-on-content-click="false"
+                  max-width="500"
+                >
+                  <template #activator="{ props: deleteResourceProps }">
+                    <v-btn
+                      v-bind="deleteResourceProps"
+                      color="warning"
+                      density="comfortable"
+                      variant="text"
+                      :loading="deleteDataset.loading.value"
+                      :icon="mdiDelete"
+                      :title="t('deleteDataset')"
+                    />
+                  </template>
+                  <v-card
+                    rounded="lg"
+                    variant="elevated"
+                    :loading="deleteDataset.loading.value ? 'warning' : false"
+                    :title="t('deleteDataset')"
+                    :text="t('confirmDeleteDataset')"
+                  >
+                    <v-card-actions>
+                      <v-spacer />
+                      <v-btn
+                        variant="text"
+                        :disabled="deleteDataset.loading.value"
+                        @click="showDeleteMenu[resource.id] = false"
+                      >
+                        {{ t('no') }}
+                      </v-btn>
+                      <v-btn
+                        color="warning"
+                        variant="flat"
+                        :loading="deleteDataset.loading.value ? 'warning' : false"
+                        @click="deleteDataset.execute(resource.id)"
+                      >
+                        {{ t('yes') }}
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-menu>
+                <v-menu
+                  v-model="showOverwriteMenu[resource.id]"
+                  :close-on-content-click="false"
+                  max-width="500"
+                >
+                  <template #activator="{ props: createResourceProps }">
+                    <v-btn
+                      v-bind="createResourceProps"
+                      color="warning"
+                      density="comfortable"
+                      variant="text"
+                      :icon="mdiDownload"
+                      :title="t('createRemoteFileDataset')"
+                    />
+                  </template>
+                  <v-card
+                    rounded="lg"
+                    variant="elevated"
+                    :loading="createDataset.loading.value ? 'warning' : false"
+                    :title="t('overwriteDataset')"
+                    :text="t('confirmOverwriteDataset')"
+                  >
+                    <v-card-actions>
+                      <v-spacer />
+                      <v-btn
+                        variant="text"
+                        :disabled="createDataset.loading.value"
+                        @click="showOverwriteMenu[resource.id] = false"
+                      >
+                        {{ t('no') }}
+                      </v-btn>
+                      <v-btn
+                        color="warning"
+                        variant="flat"
+                        :loading="createDataset.loading.value ? 'warning' : false"
+                        @click="createDataset.execute(dataset, resource)"
+                      >
+                        {{ t('yes') }}
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-menu>
+              </template>
+            </template>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+    </v-card>
+  </template>
 </template>
 
 <script setup lang="ts">

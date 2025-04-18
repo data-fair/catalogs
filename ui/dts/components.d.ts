@@ -10,10 +10,12 @@ declare module 'vue' {
   export interface GlobalComponents {
     CatalogActions: typeof import('./../src/components/catalog/catalog-actions.vue')['default']
     CatalogCard: typeof import('./../src/components/catalog/catalog-card.vue')['default']
+    CatalogConfig: typeof import('./../src/components/catalog/catalog-config.vue')['default']
     CatalogsActions: typeof import('./../src/components/catalogs-actions.vue')['default']
     LayoutActions: typeof import('./../src/components/layout/layout-actions.vue')['default']
     LayoutActionsButton: typeof import('./../src/components/layout/layout-actions-button.vue')['default']
     LayoutActionsRight: typeof import('./../src/components/layout/layout-actions-right.vue')['default']
+    LayoutSectionTabs: typeof import('./../src/components/layout/layout-section-tabs.vue')['default']
     ListRemoteDatasets: typeof import('./../src/components/catalog/list-remote-datasets.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
