@@ -7,7 +7,7 @@
   >
     <v-row no-gutters>
       <v-col
-        v-if="mdAndUp"
+        v-if="$vuetify.display.mdAndUp"
         cols="2"
         class="d-flex align-center"
       >
@@ -18,7 +18,7 @@
       </v-col>
       <v-col
         cols="auto"
-        :class="mdAndUp ? '' : 'mx-4'"
+        :class="$vuetify.display.mdAndUp ? '' : 'px-4'"
       >
         <h3 class="text-h5 my-3">
           {{ title }}
@@ -48,7 +48,6 @@
 </template>
 
 <script setup lang="ts">
-import { useDisplay } from 'vuetify'
 
 const { title, description, src, tabs } = defineProps<{
   title: string
@@ -61,7 +60,6 @@ const { title, description, src, tabs } = defineProps<{
   }[]
 }>()
 
-const { mdAndUp } = useDisplay()
 const activeTab = defineModel<string>()
 
 </script>

@@ -35,6 +35,9 @@ export default {
     configSchema: {
       type: 'object'
     },
+    filtersSchema: {
+      type: 'object'
+    },
     metadata: {
       type: 'object',
       description: 'Metadata about the plugin.',
@@ -63,6 +66,7 @@ export default {
               'listDatasets',
               'search',
               'pagination',
+              'additionalFilters',
               'publishDataset'
             ]
           },

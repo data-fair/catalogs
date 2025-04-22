@@ -160,7 +160,7 @@ const catalogSchema = computed(() => {
   delete catalogSchemaBase.title
 
   const schema = jsonSchema(catalogSchemaBase)
-    .addProperty('config', configSchema)
+    .addProperty('config', { ...configSchema, title: t('configuration') })
     .schema
 
   schema.required = ['title', 'config']
@@ -210,6 +210,7 @@ const vjsfOptions: VjsfOptions = {
     back: Back
     catalogs: Catalogs
     catalogCreated: Catalog created!
+    configuration: Configuration
     create: Create
     createCatalog: Create a catalog
     errorCreatingCatalog: Error while creating the catalog
@@ -221,6 +222,7 @@ const vjsfOptions: VjsfOptions = {
     back: Retour
     catalogs: Catalogues
     catalogCreated: Catalogue créé !
+    configuration: Configuration
     create: Créer
     createCatalog: Créer un catalogue
     errorCreatingCatalog: Erreur lors de la création du catalogue

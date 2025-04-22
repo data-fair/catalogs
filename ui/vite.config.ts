@@ -48,6 +48,7 @@ export default defineConfig({
             'mdiDownload',
             'mdiDotsVertical',
             'mdiFileDownload',
+            'mdiFilterMenu',
             'mdiFolderDownload',
             'mdiLock',
             'mdiLockOpen',

@@ -36,6 +36,7 @@ declare global {
   const mdiDotsVertical: typeof import('@mdi/js')['mdiDotsVertical']
   const mdiDownload: typeof import('@mdi/js')['mdiDownload']
   const mdiFileDownload: typeof import('@mdi/js')['mdiFileDownload']
+  const mdiFilterMenu: typeof import('@mdi/js')['mdiFilterMenu']
   const mdiFolderDownload: typeof import('@mdi/js')['mdiFolderDownload']
   const mdiLock: typeof import('@mdi/js')['mdiLock']
   const mdiLockOpen: typeof import('@mdi/js')['mdiLockOpen']
@@ -149,6 +150,7 @@ declare module 'vue' {
     readonly mdiDotsVertical: UnwrapRef<typeof import('@mdi/js')['mdiDotsVertical']>
     readonly mdiDownload: UnwrapRef<typeof import('@mdi/js')['mdiDownload']>
     readonly mdiFileDownload: UnwrapRef<typeof import('@mdi/js')['mdiFileDownload']>
+    readonly mdiFilterMenu: UnwrapRef<typeof import('@mdi/js')['mdiFilterMenu']>
     readonly mdiFolderDownload: UnwrapRef<typeof import('@mdi/js')['mdiFolderDownload']>
     readonly mdiLock: UnwrapRef<typeof import('@mdi/js')['mdiLock']>
     readonly mdiLockOpen: UnwrapRef<typeof import('@mdi/js')['mdiLockOpen']>

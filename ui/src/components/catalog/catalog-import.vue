@@ -1,8 +1,5 @@
 <template>
-  <div
-    v-if="catalogDatasets.data.value?.count"
-    class="d-flex align-center mb-4"
-  >
+  <div class="d-flex align-center mb-4">
     <v-text-field
       v-if="hasCapability('search')"
       v-model="search"
@@ -18,17 +15,24 @@
       hide-details
     />
     <h4 class="text-h5 mb-0">
-      {{ t('datasetsInCatalog', catalogDatasets.data.value?.count) }}
+      {{ t('datasetsInCatalog', (catalogDatasets.data.value?.count || 0)) }}
     </h4>
+
     <v-spacer />
     <v-pagination
-      v-if="hasCapability('pagination') && catalogDatasets.data.value?.count > size"
+      v-if="hasCapability('pagination') && (catalogDatasets.data.value?.count || 0) > size"
       v-model="page"
       density="comfortable"
       total-visible="3"
-      :length="Math.ceil(catalogDatasets.data.value?.count / size)"
+      :length="Math.ceil((catalogDatasets.data.value?.count || 0) / size)"
     />
   </div>
+  <vjsf
+    v-if="hasCapability('additionalFilters')"
+    v-model="additionalFilters"
+    :schema="plugin.filtersSchema"
+    :options="vjsfOptions"
+  />
   <v-progress-linear
     v-if="catalogDatasets.loading.value"
     color="primary"
@@ -311,11 +315,18 @@
       </v-card-text>
     </v-card>
   </template>
+  <v-pagination
+    v-if="hasCapability('pagination') && (catalogDatasets.data.value?.count || 0) > size"
+    v-model="page"
+    :length="Math.ceil((catalogDatasets.data.value?.count || 0) / size)"
+  />
 </template>
 
 <script setup lang="ts">
 import type { CatalogDataset, CatalogResourceDataset, Capability } from '@data-fair/lib-common-types/catalog.ts'
 import type { Catalog, Plugin } from '#api/types'
+
+import Vjsf from '@koumoul/vjsf'
 
 const props = defineProps <{
   catalog: Catalog,
@@ -326,9 +337,10 @@ const { t } = useI18n()
 const { catalog } = toRefs(props)
 const showDeleteMenu = ref<Record<string, boolean>>({})
 const showOverwriteMenu = ref<Record<string, boolean>>({})
+const additionalFilters = ref({})
 const search = ref<string>('')
 const page = ref<number>(1)
-const size = 25
+const size = 10
 
 /**
  * Check if the plugin has a specific capability
@@ -342,12 +354,13 @@ const hasCapability = (capability: Capability): boolean => {
 const fetchQuery = computed(() => ({
   q: hasCapability('search') ? search.value : undefined,
   ...(hasCapability('pagination')
-    ? {
-        page: page.value,
-        size
-      }
+    ? { page: page.value, size }
     : {}
-  )
+  ),
+  ...(hasCapability('additionalFilters')
+    ? additionalFilters.value
+    : {}
+  ),
 }))
 
 const catalogDatasets = useFetch<{
@@ -498,6 +511,16 @@ const addProps = (dataset: any, resourcePost: any) => {
   if (dataset.image) resourcePost.image = dataset.image
   if (dataset.frequency) resourcePost.frequency = dataset.frequency
   if (dataset.license) resourcePost.license = dataset.license
+}
+
+const vjsfOptions = {
+  density: 'comfortable',
+  initialValidation: 'always',
+  removeAdditional: true,
+  titleDepth: 4,
+  updateOn: 'blur',
+  validateOn: 'blur',
+  xI18n: true
 }
 
 </script>

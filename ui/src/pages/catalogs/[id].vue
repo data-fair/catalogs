@@ -2,12 +2,11 @@
   <v-container
     v-if="catalog"
     data-iframe-height
-    fluid
   >
     <layout-section-tabs
       :title="t('catalogTitle', { title: catalog.title })"
       :src="assetsUrls.checklist"
-      description="Consulter les informations générales du catalogue ou modifier sa configuration."
+      :description="t('description')"
     />
 
     <catalog-config
@@ -19,19 +18,30 @@
     />
 
     <layout-section-tabs
+      v-model="activeTab"
       class="mt-4"
       title="Jeux de données"
       :src="assetsUrls.progress"
       :tabs="[
-        { id: 'import', title: 'Import', icon: mdiDownload },
-        { id: 'export', title: 'Export', icon: mdiUpload },
+        { id: 'import', title: t('import'), icon: mdiDownload },
+        { id: 'export', title: t('export'), icon: mdiUpload },
       ]"
     />
-    <list-remote-datasets
-      v-if="plugin?.metadata.capabilities.includes('listDatasets')"
-      :catalog="catalog"
-      :plugin="plugin"
-    />
+
+    <v-tabs-window v-model="activeTab">
+      <v-tabs-window-item value="import">
+        <catalog-import
+          v-if="plugin?.metadata.capabilities.includes('listDatasets')"
+          :catalog="catalog"
+          :plugin="plugin"
+        />
+      </v-tabs-window-item>
+
+      <v-tabs-window-item value="export">
+        TODO
+      </v-tabs-window-item>
+    </v-tabs-window>
+
     <layout-actions v-if="canAdmin">
       <catalog-actions
         :catalog="catalog"
@@ -53,6 +63,7 @@ const { t } = useI18n()
 
 const catalog = ref<Catalog | null>(null)
 const plugin = ref<Plugin | null>(null)
+const activeTab = ref('import')
 
 onMounted(async () => {
   catalog.value = await $fetch(`/catalogs/${route.params.id}`)
@@ -82,10 +93,17 @@ const assetsUrls = {
   en:
     catalogs: Catalogs
     catalogTitle: Catalog {title}
-
+    datasets: Datasets
+    description: Check the general information of the catalog or modify its configuration.
+    export: Export
+    import: Import
   fr:
     catalogs: Catalogues
     catalogTitle: Catalogue {title}
+    datasets: Jeux de données
+    description: Consulter les informations générales du catalogue ou modifier sa configuration.
+    export: Export
+    import: Import
 </i18n>
 
 <style scoped>
