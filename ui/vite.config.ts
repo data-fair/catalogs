@@ -56,6 +56,7 @@ export default defineConfig({
             'mdiPencil',
             'mdiPlusCircle',
             'mdiPlusCircleOutline',
+            'mdiUpdate',
             'mdiUpload'
           ]
         }

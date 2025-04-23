@@ -16,7 +16,6 @@ const exec = promisify(execCallback)
 const router = Router()
 export default router
 
-fs.ensureDirSync(config.dataDir)
 const pluginsDir = path.resolve(config.dataDir, 'plugins')
 fs.ensureDirSync(pluginsDir)
 const tmpDir = config.tmpDir || path.resolve(config.dataDir, 'tmp')
@@ -29,8 +28,7 @@ router.post('/', async (req, res) => {
   await session.reqAdminMode(req)
   const { body } = (await import('../../doc/plugins/post-req/index.ts')).returnValid(req)
 
-  const pluginDir = path.join(pluginsDir, body.id)
-  const dir = await tmp.dir({ unsafeCleanup: true, tmpdir: tmpDir, prefix: 'plugin-install-' })
+  const dir = await tmp.dir({ unsafeCleanup: true, tmpdir: tmpDir, prefix: 'plugin-install' })
 
   try {
     // create a pseudo npm package with a dependency to the plugin referenced from the registry
@@ -56,7 +54,7 @@ router.post('/', async (req, res) => {
       version: packageJson.version
     }, null, 2))
 
-    await fs.move(dir.path, pluginDir, { overwrite: true })
+    await fs.move(dir.path, path.join(pluginsDir, body.id), { overwrite: true })
     removePluginFromCache(body.id) // Remove the plugin from cache to reload it
   } finally {
     try {

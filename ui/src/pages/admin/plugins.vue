@@ -19,19 +19,27 @@
     />
 
     <v-card
-      v-for="result in installedPluginsFetch.data.value?.results"
-      :key="'installed-' + result.id"
-      :loading="pluginLocked === `${result.id}` ? 'primary' : false"
+      v-for="plugin in installedPluginsFetch.data.value?.results"
+      :key="'installed-' + plugin.id"
+      :loading="pluginLocked === `${plugin.id}` ? 'primary' : false"
       class="mb-4"
     >
       <v-toolbar
         density="compact"
-        :title="result.name"
+        :title="plugin.name"
       >
         <v-spacer />
-        {{ t('usedTimesVersion', { count: installedPluginsFetch.data.value?.facets.usages[result.id], version: result.version }) }}
+        {{ t('usedTimesVersion', { count: installedPluginsFetch.data.value?.facets.usages[plugin.id], version: plugin.version }) }}
+        <v-btn
+          v-if="updateAvailable(plugin)"
+          color="warning"
+          :title="t('update')"
+          :icon="mdiUpdate"
+          :disabled="!!pluginLocked"
+          @click="update(plugin.id)"
+        />
         <v-menu
-          :model-value="showDeleteMenu === result.id"
+          :model-value="showDeleteMenu === plugin.id"
           :close-on-content-click="false"
           max-width="500"
         >
@@ -42,13 +50,13 @@
               :title="t('uninstall')"
               :icon="mdiDelete"
               :disabled="!!pluginLocked"
-              @click="showDeleteMenu = result.id"
+              @click="showDeleteMenu = plugin.id"
             />
           </template>
           <v-card
             :title="t('uninstallPlugin')"
-            :text="t('confirmUninstallPlugin', { name: result.name })"
-            :loading="pluginLocked === result.id ? 'warning' : false"
+            :text="t('confirmUninstallPlugin', { name: plugin.name })"
+            :loading="pluginLocked === plugin.id ? 'warning' : false"
           >
             <v-card-actions>
               <v-spacer />
@@ -61,7 +69,7 @@
               <v-btn
                 color="warning"
                 :disabled="!!pluginLocked"
-                @click="uninstall.execute(result.id)"
+                @click="uninstall.execute(plugin.id)"
               >
                 {{ t('yes') }}
               </v-btn>
@@ -79,8 +87,8 @@
         width="2"
         color="primary"
       />
-      <span v-else-if="availablePluginsFetch.data.value">
-        {{ availablePluginsFetch.data.value.count }}
+      <span v-else-if="availablePlugins">
+        {{ availablePlugins.length }}
       </span>
       {{ t('availablePlugins') }}
     </v-list-subheader>
@@ -89,15 +97,15 @@
       type="list-item-two-line"
     />
     <v-card
-      v-for="result in availablePluginsFetch.data.value?.results"
-      :key="'available-' + result.id"
-      :loading="pluginLocked === `${result.id}` ? 'primary' : false"
+      v-for="plugin in availablePlugins"
+      :key="'available-' + plugin.id"
+      :loading="pluginLocked === `${plugin.id}` ? 'primary' : false"
       class="mb-4"
     >
       <v-toolbar
         density="compact"
         variant="outlined"
-        :title="result.name"
+        :title="plugin.name"
         flat
       >
         <v-spacer />
@@ -106,7 +114,7 @@
           :title="t('install')"
           :icon="mdiDownload"
           :disabled="!!pluginLocked"
-          @click="install.execute(result)"
+          @click="install.execute(plugin)"
         />
       </v-toolbar>
     </v-card>
@@ -138,7 +146,7 @@ const availablePluginsFetch = useFetch<{
 const install = useAsyncAction(
   async (plugin: PluginPost) => {
     pluginLocked.value = plugin.id
-    await $fetch(`/plugins/${plugin.id}`, {
+    await $fetch('/plugins', {
       method: 'POST',
       body: JSON.stringify(plugin)
     })
@@ -164,11 +172,30 @@ const uninstall = useAsyncAction(
     error: t('errorUninstallingPlugin'),
   }
 )
+
+const availablePlugins = computed(() => {
+  const installedPluginIds = installedPluginsFetch.data.value?.results.map(plugin => plugin.id)
+  return availablePluginsFetch.data.value?.results.filter(plugin =>
+    !installedPluginIds?.includes(plugin.id)
+  )
+})
+
+const update = (pluginId: string) => {
+  const plugin = availablePluginsFetch.data.value?.results.find(p => p.id === pluginId)
+  if (!plugin) return
+  install.execute(plugin)
+}
+
+const updateAvailable = (plugin: PluginPost) => {
+  const availablePlugin = availablePluginsFetch.data.value?.results.find(r => (r.name === plugin.name && r.version === plugin.version))
+  if (availablePlugin?.version !== plugin.version) return availablePlugin
+  else return null
+}
 </script>
 
 <i18n lang="yaml">
   en:
-    availablePlugins: available plugins
+    availablePlugins: plugins to install
     confirmUninstallPlugin: "Do you really want to uninstall the plugin {name}?"
     errorInstallingPlugin: Error installing the plugin
     errorUninstallingPlugin: Error uninstalling the plugin
@@ -180,11 +207,12 @@ const uninstall = useAsyncAction(
     pluginUninstalled: Plugin uninstalled!
     uninstall: Uninstall
     uninstallPlugin: Uninstall plugin
+    update: Update
     usedTimesVersion: "Used {count} times - {version}"
     yes: Yes
 
   fr:
-    availablePlugins: plugins disponibles
+    availablePlugins: plugins à installer
     confirmUninstallPlugin: "Voulez-vous vraiment désinstaller le plugin {name} ?"
     errorInstallingPlugin: Erreur lors de l'installation du plugin
     errorUninstallingPlugin: Erreur lors de la désinstallation du plugin
@@ -196,7 +224,8 @@ const uninstall = useAsyncAction(
     pluginUninstalled: Plugin désinstallé !
     uninstall: Désinstaller
     uninstallPlugin: Désinstaller le plugin
-    usedTimesVersion: "Utilisé {count} fois - {version}"
+    update: Mettre à jour
+    usedTimesVersion: "Jamais utilisé - {version} | Utilisé {count} fois - {version} | Utilisé {count} fois - {version}"
     yes: Oui
 </i18n>
 
