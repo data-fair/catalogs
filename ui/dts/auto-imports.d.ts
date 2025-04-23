@@ -32,6 +32,7 @@ declare global {
   const markRaw: typeof import('vue')['markRaw']
   const mdiAccount: typeof import('@mdi/js')['mdiAccount']
   const mdiAlert: typeof import('@mdi/js')['mdiAlert']
+  const mdiContentDuplicate: typeof import('@mdi/js')['mdiContentDuplicate']
   const mdiDelete: typeof import('@mdi/js')['mdiDelete']
   const mdiDotsVertical: typeof import('@mdi/js')['mdiDotsVertical']
   const mdiDownload: typeof import('@mdi/js')['mdiDownload']
@@ -147,6 +148,7 @@ declare module 'vue' {
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly mdiAccount: UnwrapRef<typeof import('@mdi/js')['mdiAccount']>
     readonly mdiAlert: UnwrapRef<typeof import('@mdi/js')['mdiAlert']>
+    readonly mdiContentDuplicate: UnwrapRef<typeof import('@mdi/js')['mdiContentDuplicate']>
     readonly mdiDelete: UnwrapRef<typeof import('@mdi/js')['mdiDelete']>
     readonly mdiDotsVertical: UnwrapRef<typeof import('@mdi/js')['mdiDotsVertical']>
     readonly mdiDownload: UnwrapRef<typeof import('@mdi/js')['mdiDownload']>

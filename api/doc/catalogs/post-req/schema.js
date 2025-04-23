@@ -10,7 +10,7 @@ export default {
   properties: {
     body:
       jsonSchema(CatalogSchema)
-        .pickProperties(['title', 'plugin', 'owner', 'config'])
+        .pickProperties(['title', 'description', 'plugin', 'owner', 'config'])
         .removeId()
         .appendTitle(' post')
         .schema

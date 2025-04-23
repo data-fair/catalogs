@@ -44,6 +44,7 @@ export default defineConfig({
           '@mdi/js': [
             'mdiAccount',
             'mdiAlert',
+            'mdiContentDuplicate',
             'mdiDelete',
             'mdiDownload',
             'mdiDotsVertical',

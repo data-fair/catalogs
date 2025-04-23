@@ -6,10 +6,7 @@
       }
     }"
   >
-    <v-form
-      v-model="valid"
-      autocomplete="off"
-    >
+    <v-form v-model="valid">
       <vjsf
         v-if="catalogSchema"
         v-model="editCatalog"
