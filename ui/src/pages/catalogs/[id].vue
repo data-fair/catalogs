@@ -4,7 +4,7 @@
     data-iframe-height
   >
     <layout-section-tabs
-      :title="t('catalogTitle', { title: catalog.title })"
+      :title="t('metadata')"
       :src="assetsUrls.checklist"
       :description="t('description')"
     />
@@ -37,9 +37,11 @@
         />
       </v-tabs-window-item>
 
+      <!--
       <v-tabs-window-item value="export">
         TODO
       </v-tabs-window-item>
+      -->
     </v-tabs-window>
 
     <layout-actions v-if="canAdmin">
@@ -68,7 +70,6 @@ const activeTab = ref('import')
 onMounted(async () => {
   catalog.value = await $fetch(`/catalogs/${route.params.id}`)
   if (catalog.value) plugin.value = await $fetch(`/plugins/${catalog.value.plugin}`)
-
   setBreadcrumbs([{
     text: t('catalogs'),
     to: '/catalogs'
@@ -92,17 +93,17 @@ const assetsUrls = {
 <i18n lang="yaml">
   en:
     catalogs: Catalogs
-    catalogTitle: Catalog {title}
     datasets: Datasets
     description: Check the general information of the catalog or modify its configuration.
     export: Export
+    metadata: Metadata
     import: Import
   fr:
     catalogs: Catalogues
-    catalogTitle: Catalogue {title}
     datasets: Jeux de données
     description: Consulter les informations générales du catalogue ou modifier sa configuration.
     export: Export
+    metadata: Métadonnées
     import: Import
 </i18n>
 

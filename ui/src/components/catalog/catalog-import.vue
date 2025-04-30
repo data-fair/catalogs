@@ -27,12 +27,14 @@
       :length="Math.ceil((catalogDatasets.data.value?.count || 0) / size)"
     />
   </div>
-  <vjsf
-    v-if="hasCapability('additionalFilters')"
-    v-model="additionalFilters"
-    :schema="plugin.filtersSchema"
-    :options="vjsfOptions"
-  />
+  <v-form>
+    <vjsf
+      v-if="hasCapability('additionalFilters')"
+      v-model="additionalFilters"
+      :schema="plugin.filtersSchema"
+      :options="vjsfOptions"
+    />
+  </v-form>
   <v-progress-linear
     v-if="catalogDatasets.loading.value"
     color="primary"
