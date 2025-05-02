@@ -28,9 +28,11 @@ export default {
         publicationId: { type: 'string' },
         catalogId: { type: 'string' },
         remoteDatasetId: { type: 'string' },
+        remoteResourceId: { type: 'string' },
         status: { enum: ['waiting', 'published', 'error', 'deleted'] },
         publishedAt: { type: 'string', format: 'date-time' },
-        error: { type: 'string' }
+        error: { type: 'string' },
+        isResource: { type: 'boolean' }
       }
     }
   }

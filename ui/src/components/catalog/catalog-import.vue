@@ -381,7 +381,6 @@ const createDataset = useAsyncAction(
         title: resource.title,
         remoteFile: {
           url: resource.url,
-          // catalog: catalog._id // TODO Activate it when data-fair is ready
         }
       }
       if (resource.mimeType) datasetPost.remoteFile.mimeType = resource.mimeType
