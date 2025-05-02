@@ -57,7 +57,7 @@ const validateCatalog = async (catalog: Partial<Catalog>) => {
 }
 
 // Get the list of catalogs
-router.get('', async (req, res) => {
+router.get('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   assertAccountRole(sessionState, sessionState.account, ['contrib', 'admin'])
 
@@ -97,7 +97,7 @@ router.get('', async (req, res) => {
 })
 
 // Create a new catalog
-router.post('', async (req, res) => {
+router.post('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const { body } = (await import('../../doc/catalogs/post-req/index.ts')).returnValid(req)
 
@@ -119,6 +119,20 @@ router.post('', async (req, res) => {
   if (config.privateEventsUrl && config.secretKeys.events) {
     sendCatalogEvent(validCatalog, 'a été créé', 'create', sessionState)
   }
+  res.status(201).json(validCatalog)
+})
+
+// Internal route to create a catalog (for upgrade scripts)
+router.post('/_internal', async (req, res) => {
+  assertReqInternalSecret(req, config.secretKeys.catalogs)
+
+  const catalog: Partial<Catalog> = { ...req.body }
+  catalog._id = nanoid()
+  catalog.datasets = []
+
+  const validCatalog = await validateCatalog(catalog)
+  await mongo.catalogs.insertOne(validCatalog)
+
   res.status(201).json(validCatalog)
 })
 
