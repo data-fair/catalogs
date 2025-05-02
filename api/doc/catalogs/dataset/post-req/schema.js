@@ -16,7 +16,7 @@ export default {
       ],
       properties: {
         owner: {
-          ref: 'https://github.com/data-fair/lib/account'
+          $ref: 'https://github.com/data-fair/lib/account'
         }
       }
     },

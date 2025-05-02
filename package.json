@@ -32,13 +32,13 @@
     "url": "https://github.com/data-fair/catalogs/issues"
   },
   "dependencies": {
-    "@data-fair/lib-types-builder": "^1.7.0"
+    "@data-fair/lib-types-builder": "^1.8.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@data-fair/lib-node": "^2.4.0",
-    "@data-fair/lib-utils": "^1.5.0",
+    "@data-fair/lib-utils": "^1.6.0",
     "@reporters/bail": "^1.2.1",
     "@types/config": "^3.3.5",
     "@types/debug": "^4.1.12",
@@ -54,6 +54,6 @@
   },
   "relativeDependencies": {
     "@data-fair/lib-common-types": "../lib/packages/common-types",
-    "@data-fair/lib-utils": "../lib/packages/utils"
+    "@data-fair/lib-types-builder": "../lib/packages/types-builder"
   }
 }

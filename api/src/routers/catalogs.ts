@@ -1,5 +1,5 @@
 import type { SessionStateAuthenticated } from '@data-fair/lib-express'
-import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog.js'
+import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
 import type { Catalog } from '#types'
 
 import { Router } from 'express'
@@ -196,8 +196,8 @@ router.get('/:id/datasets', async (req, res) => {
 
   // Execute the plugin function
   const plugin = await findUtils.getPlugin(catalog.plugin)
-  if (!plugin.listDatasets) throw httpError(501, 'Plugin does not support listing datasets')
-  const datasets = await plugin.listDatasets(catalog.config, req.query)
+  if (!plugin.metadata.capabilities.includes('listDatasets')) throw httpError(501, 'Plugin does not support listing datasets')
+  const datasets = await plugin.listDatasets(catalog.config, req.query as any)
 
   res.json(datasets)
 })
@@ -214,7 +214,7 @@ router.post('/:id/dataset', async (req, res) => {
   }
 
   const plugin = await findUtils.getPlugin(catalog.plugin)
-  if (!plugin.publishDataset) throw httpError(501, 'Plugin does not support publishing datasets')
+  if (!plugin.metadata.capabilities.includes('publishDatasets')) throw httpError(501, 'Plugin does not support publishing datasets')
   const publicationRes = await plugin.publishDataset(catalog.config, dataset, publication)
 
   res.status(201).json(publicationRes)
@@ -227,7 +227,7 @@ router.delete('/:id/dataset/:datasetId', async (req, res) => {
   if (!catalog) throw httpError(404, 'Catalog not found')
 
   const plugin = await findUtils.getPlugin(catalog.plugin)
-  if (!plugin.deleteDataset) throw httpError(501, 'Plugin does not support deleting datasets')
+  if (!plugin.metadata.capabilities.includes('publishDatasets')) throw httpError(501, 'Plugin does not support deleting datasets')
   await plugin.deleteDataset(catalog.config, req.params.datasetId)
 
   res.sendStatus(204)
@@ -240,7 +240,7 @@ router.delete('/:id/dataset/:datasetId/resources/:resourceId', async (req, res) 
   if (!catalog) throw httpError(404, 'Catalog not found')
 
   const plugin = await findUtils.getPlugin(catalog.plugin)
-  if (!plugin.deleteDataset) throw httpError(501, 'Plugin does not support deleting datasets')
+  if (!plugin.metadata.capabilities.includes('publishDatasets')) throw httpError(501, 'Plugin does not support deleting resource datasets')
   await plugin.deleteDataset(catalog.config, req.params.datasetId, req.params.resourceId)
 
   res.sendStatus(204)

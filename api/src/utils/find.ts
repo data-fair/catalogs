@@ -1,4 +1,4 @@
-import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog.js'
+import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
 
 import { mongoPagination, mongoProjection, mongoSort, type SessionStateAuthenticated } from '@data-fair/lib-express'
 import { httpError } from '@data-fair/lib-utils/http-errors.js'

@@ -39,39 +39,7 @@ export default {
       type: 'object'
     },
     metadata: {
-      type: 'object',
-      description: 'Metadata about the plugin.',
-      additionalProperties: false,
-      required: [
-        'title',
-        'description',
-        'icon',
-        'capabilities'
-      ],
-      properties: {
-        title: {
-          type: 'string',
-        },
-        description: {
-          type: 'string',
-        },
-        icon: {
-          type: 'string',
-        },
-        capabilities: {
-          type: 'array',
-          items: {
-            type: 'string',
-            enum: [
-              'listDatasets',
-              'search',
-              'pagination',
-              'additionalFilters',
-              'publishDataset'
-            ]
-          },
-        }
-      }
+      $ref: 'https://github.com/data-fair/lib/catalog#/$defs/metadata',
     }
   }
 }
