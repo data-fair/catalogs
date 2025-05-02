@@ -325,7 +325,7 @@
 </template>
 
 <script setup lang="ts">
-import type { CatalogDataset, CatalogResourceDataset, Capability } from '@data-fair/lib-common-types/catalog.ts'
+import type { CatalogDataset, CatalogResourceDataset, Capability } from '@data-fair/lib-common-types/catalog/index.ts'
 import type { Catalog, Plugin } from '#api/types'
 
 import Vjsf from '@koumoul/vjsf'
