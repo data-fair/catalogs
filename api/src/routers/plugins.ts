@@ -29,11 +29,12 @@ router.post('/', async (req, res) => {
   const { body } = (await import('../../doc/plugins/post-req/index.ts')).returnValid(req)
 
   const dir = await tmp.dir({ unsafeCleanup: true, tmpdir: tmpDir, prefix: 'plugin-install' })
+  const id = body.name.replace('/', '-')
 
   try {
     // create a pseudo npm package with a dependency to the plugin referenced from the registry
     await fs.writeFile(path.join(dir.path, 'package.json'), JSON.stringify({
-      name: body.id,
+      name: id,
       type: 'module',
       dependencies: {
         [body.name]: '^' + body.version
@@ -48,14 +49,14 @@ router.post('/', async (req, res) => {
     const packageJson = await fs.readJson(path.join(dir.path, 'src', 'package.json'))
     await fs.writeFile(path.join(dir.path, 'index.ts'), `export { default } from './${path.join('src', packageJson.main || 'index.ts')}'`)
     await fs.writeFile(path.join(dir.path, 'plugin.json'), JSON.stringify({
-      id: body.id,
+      id,
       name: packageJson.name,
       description: packageJson.description,
       version: packageJson.version
     }, null, 2))
 
-    await fs.move(dir.path, path.join(pluginsDir, body.id), { overwrite: true })
-    removePluginFromCache(body.id) // Remove the plugin from cache to reload it
+    await fs.move(dir.path, path.join(pluginsDir, id), { overwrite: true })
+    removePluginFromCache(id) // Remove the plugin from cache to reload it
   } finally {
     try {
       await dir.cleanup()
@@ -63,9 +64,8 @@ router.post('/', async (req, res) => {
   }
 
   res.send({
-    id: body.id,
+    id,
     name: body.name,
-    description: body.description,
     version: body.version
   })
 })
