@@ -38,7 +38,7 @@ export const getPlugin = async (pluginId: string): Promise<CatalogPlugin> => {
     pluginsCache[pluginId] = plugin // Store in cache for future use
     return plugin
   } catch (e: any) {
-    if (e.message.includes('Cannot find module')) throw httpError(404, `Plugin ${pluginId} not found`)
+    if (e.message.includes('Cannot find module')) throw httpError(404, `Plugin ${pluginId} not found (or error in plugin : ${e.message})`)
     throw e // Rethrow other errors
   }
 }

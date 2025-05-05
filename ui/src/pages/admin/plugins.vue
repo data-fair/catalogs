@@ -77,6 +77,9 @@
           </v-card>
         </v-menu>
       </v-toolbar>
+      <v-card-text>
+        {{ plugin.description }}
+      </v-card-text>
     </v-card>
 
     <v-list-subheader>
@@ -117,6 +120,9 @@
           @click="install.execute(plugin)"
         />
       </v-toolbar>
+      <v-card-text>
+        {{ plugin.description }}
+      </v-card-text>
     </v-card>
   </v-container>
 </template>
