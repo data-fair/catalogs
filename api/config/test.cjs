@@ -2,7 +2,7 @@ module.exports = {
   dataDir: './data/test',
   mongoUrl: 'mongodb://localhost:27017/data-fair-catalogs-test',
   observer: {
-    port: 9092
+    active: false,
   },
   port: 8082,
   privateDirectoryUrl: 'http://localhost:8080',

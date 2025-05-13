@@ -25,8 +25,9 @@
   "author": "",
   "license": "AGPL-3.0-only",
   "workspaces": [
+    "api",
     "ui",
-    "api"
+    "worker"
   ],
   "bugs": {
     "url": "https://github.com/data-fair/catalogs/issues"

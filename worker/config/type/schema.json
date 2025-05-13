@@ -1,0 +1,84 @@
+{
+  "$id": "https://github.com/data-fair/processings/worker/config",
+  "x-exports": [
+    "types",
+    "validate"
+  ],
+  "x-ajv": {
+    "coerceTypes": "array"
+  },
+  "type": "object",
+  "title": "Worker config",
+  "additionalProperties": false,
+  "required": [
+    "dataDir",
+    "dataFairAPIKey",
+    "dataFairUrl",
+    "mongoUrl",
+    "observer",
+    "upgradeRoot",
+    "worker"
+  ],
+  "properties": {
+    "dataDir": {
+      "type": "string"
+    },
+    "dataFairAPIKey": {
+      "type": "string"
+    },
+    "dataFairUrl": {
+      "type": "string",
+      "pattern": "^https?://"
+    },
+    "mongoUrl": {
+      "type": "string"
+    },
+    "observer": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "port": {
+          "type": "number"
+        }
+      }
+    },
+    "tmpDir": {
+      "type": "string"
+    },
+    "upgradeRoot": {
+      "type": "string"
+    },
+    "worker": {
+      "type": "object",
+      "required": [
+        "interval",
+        "inactiveInterval",
+        "inactivityDelay",
+        "concurrency"
+      ],
+      "properties": {
+        "interval": {
+          "description": "Base interval for polling the database for new resources to work on",
+          "type": "number"
+        },
+        "inactiveInterval": {
+          "description": "Interval for polling the database when the worker is inactive (no resource found recently)",
+          "type": "number"
+        },
+        "inactivityDelay": {
+          "description": "Delay before the worker goes inactive",
+          "type": "number"
+        },
+        "concurrency": {
+          "description": "Number of concurrent processes the worker can run",
+          "type": "number"
+        }
+      }
+    },
+    "util": {},
+    "get": {},
+    "has": {}
+  }
+}

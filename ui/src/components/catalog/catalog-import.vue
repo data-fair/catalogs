@@ -87,10 +87,10 @@
             color="primary"
             density="comfortable"
             variant="text"
-            :loading="createDataset.loading.value"
+            :loading="importDataset.loading.value"
             :icon="mdiFolderDownload"
             :title="t('createMetadataOnlyDataset')"
-            @click="createDataset.execute(dataset)"
+            @click="importDataset.execute(dataset)"
           />
           <template v-else>
             <v-menu
@@ -149,7 +149,7 @@
                   color="warning"
                   density="comfortable"
                   variant="text"
-                  :loading="createDataset.loading.value"
+                  :loading="importDataset.loading.value"
                   :icon="mdiFolderDownload"
                   :title="t('createMetadataOnlyDataset')"
                 />
@@ -157,7 +157,7 @@
               <v-card
                 rounded="lg"
                 variant="elevated"
-                :loading="createDataset.loading.value ? 'warning' : false"
+                :loading="importDataset.loading.value ? 'warning' : false"
                 :title="t('overwriteDataset')"
                 :text="t('confirmOverwriteDataset')"
               >
@@ -165,7 +165,7 @@
                   <v-spacer />
                   <v-btn
                     variant="text"
-                    :disabled="createDataset.loading.value"
+                    :disabled="importDataset.loading.value"
                     @click="showOverwriteMenu[dataset.id] = false"
                   >
                     {{ t('no') }}
@@ -173,8 +173,8 @@
                   <v-btn
                     color="warning"
                     variant="flat"
-                    :loading="createDataset.loading.value ? 'warning' : false"
-                    @click="createDataset.execute(dataset)"
+                    :loading="importDataset.loading.value ? 'warning' : false"
+                    @click="importDataset.execute(dataset)"
                   >
                     {{ t('yes') }}
                   </v-btn>
@@ -220,9 +220,9 @@
                 density="comfortable"
                 variant="text"
                 :icon="mdiDownload"
-                :loading="createDataset.loading.value"
+                :loading="importDataset.loading.value"
                 :title="t('createRemoteFileDataset')"
-                @click="createDataset.execute(dataset, resource)"
+                @click="importDataset.execute(dataset, resource)"
               />
               <template v-else>
                 <v-menu
@@ -286,7 +286,7 @@
                   <v-card
                     rounded="lg"
                     variant="elevated"
-                    :loading="createDataset.loading.value ? 'warning' : false"
+                    :loading="importDataset.loading.value ? 'warning' : false"
                     :title="t('overwriteDataset')"
                     :text="t('confirmOverwriteDataset')"
                   >
@@ -294,7 +294,7 @@
                       <v-spacer />
                       <v-btn
                         variant="text"
-                        :disabled="createDataset.loading.value"
+                        :disabled="importDataset.loading.value"
                         @click="showOverwriteMenu[resource.id] = false"
                       >
                         {{ t('no') }}
@@ -302,8 +302,8 @@
                       <v-btn
                         color="warning"
                         variant="flat"
-                        :loading="createDataset.loading.value ? 'warning' : false"
-                        @click="createDataset.execute(dataset, resource)"
+                        :loading="importDataset.loading.value ? 'warning' : false"
+                        @click="importDataset.execute(dataset, resource)"
                       >
                         {{ t('yes') }}
                       </v-btn>
@@ -370,42 +370,16 @@ const catalogDatasets = useFetch<{
   results: CatalogDataset[]
 }>(`${$apiPath}/catalogs/${catalog.value._id}/datasets`, { query: fetchQuery })
 
-const createDataset = useAsyncAction(
+const importDataset = useAsyncAction(
   async (dataset: CatalogDataset, resource?: CatalogResourceDataset) => {
-    let datasetPost: Record<string, any>
-    let resourceId: string
-
-    if (resource) { // Case when creating dataset from a specific resource
-      resourceId = resource.id
-      datasetPost = {
-        title: resource.title,
-        remoteFile: {
-          url: resource.url,
-        }
+    await $fetch(`${$apiPath}/imports`, {
+      method: 'POST',
+      body: {
+        catalogId: catalog.value._id,
+        remoteDatasetId: dataset.id,
+        remoteResourceId: resource ? resource.id : undefined
       }
-      if (resource.mimeType) datasetPost.remoteFile.mimeType = resource.mimeType
-      if (resource.fileName) datasetPost.remoteFile.name = resource.fileName
-      if (resource.size) datasetPost.remoteFile.size = resource.size
-    } else { // Case when creating a meta-only dataset with all resources as attachments
-      resourceId = dataset.id
-      datasetPost = {
-        title: dataset.title,
-        isMetaOnly: true
-      }
-      const attachments = dataset.resources?.map((res) => {
-        return {
-          title: res.title,
-          type: 'url',
-          url: res.url
-        }
-      })
-      if ((attachments?.length ?? 0) > 0) datasetPost.attachments = attachments
-    }
-    addProps(dataset, datasetPost) // Add common properties
-
-    const dataFairId = catalog.value.datasets.find(d => d.remoteId === resourceId)?.dataFairId
-    if (dataFairId) await updateDataFairDataset(resourceId, datasetPost, dataFairId)
-    else await createDataFairDataset(resourceId, datasetPost)
+    })
   },
   {
     success: t('datasetCreated'),
@@ -440,79 +414,6 @@ const deleteDataset = useAsyncAction(
     error: t('errorDeletingDataset'),
   }
 )
-
-/**
- * Create a dataset in Data-Fair
- * @param {string} resourceId - The ID of the catalog resource or catalog dataset
- * @param {any} datasetPost - The dataset data to be created
- */
-const createDataFairDataset = async (resourceId: string, datasetPost: any) => {
-  const createdDataset = await $fetch('/data-fair/api/v1/datasets', {
-    method: 'POST',
-    body: datasetPost,
-    baseURL: $sitePath
-  })
-
-  catalog.value.datasets.push({
-    remoteId: resourceId,
-    dataFairId: createdDataset.id,
-    title: createdDataset.title
-  })
-
-  await $fetch(`${$apiPath}/catalogs/${catalog.value._id}`, {
-    method: 'PATCH',
-    body: {
-      datasets: catalog.value.datasets
-    }
-  })
-}
-
-/**
- * Update a dataset in Data-Fair or create it if it doesn't exist
- * @param {string} resourceId - The ID of the catalog resource or catalog dataset
- * @param {any} datasetPost - The dataset data to be updated
- */
-const updateDataFairDataset = async (resourceId: string, datasetPost: any, dataFairId: string) => {
-  try {
-    const datasetPostCopy = { ...datasetPost }
-    delete datasetPostCopy.isMetaOnly
-    await $fetch(`/data-fair/api/v1/datasets/${dataFairId}`, {
-      method: 'PATCH',
-      body: datasetPostCopy,
-      baseURL: $sitePath
-    })
-  } catch (error: any) {
-    if (error.status === 404) {
-      // Delete the dataset from the catalog
-      catalog.value.datasets = catalog.value.datasets.filter(d => d.dataFairId !== dataFairId)
-      await $fetch(`${$apiPath}/catalogs/${catalog.value._id}`, {
-        method: 'PATCH',
-        body: {
-          datasets: catalog.value.datasets
-        }
-      })
-      // Create the dataset again
-      await createDataFairDataset(resourceId, datasetPost)
-    } else {
-      throw error
-    }
-  }
-  showOverwriteMenu.value[resourceId] = false
-}
-
-/**
- * Add properties to the dataset post or resource post
- * @param {any} dataset - The dataset object
- * @param {any} resourcePost - The resource post object
- */
-const addProps = (dataset: any, resourcePost: any) => {
-  if (dataset.description) resourcePost.description = dataset.description
-  if (dataset.origin) resourcePost.origin = dataset.origin
-  if (dataset.keywords) resourcePost.keywords = dataset.keywords
-  if (dataset.image) resourcePost.image = dataset.image
-  if (dataset.frequency) resourcePost.frequency = dataset.frequency
-  if (dataset.license) resourcePost.license = dataset.license
-}
 
 const vjsfOptions = {
   density: 'comfortable',

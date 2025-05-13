@@ -3,7 +3,7 @@ import resolvePath from 'resolve-path'
 import { app } from './app.ts'
 import { session } from '@data-fair/lib-express'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { startObserver, stopObserver } from '@data-fair/lib-node/observer.js'
+import { startObserver, stopObserver, internalError } from '@data-fair/lib-node/observer.js'
 import { createHttpTerminator } from 'http-terminator'
 import { exec as execCallback } from 'child_process'
 import { promisify } from 'util'
@@ -30,7 +30,7 @@ export const start = async () => {
   await mongo.init()
   if (config.privateEventsUrl) {
     if (!config.secretKeys.events) {
-      console.error('Missing secretKeys.events in config')
+      internalError('catalogs', 'Missing secretKeys.events in config')
     } else {
       await eventsQueue.start({ eventsUrl: config.privateEventsUrl, eventsSecret: config.secretKeys.events })
     }

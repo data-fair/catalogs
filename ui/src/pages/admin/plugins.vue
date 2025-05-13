@@ -182,8 +182,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Plugin } from '#api/types'
-import type { PluginPost } from '../../../../api/doc/plugins/post-req/index.js'
+import type { PluginsGetRes, PluginPost } from '#api/doc'
 
 const session = useSession()
 const { t } = useI18n()
@@ -194,12 +193,7 @@ const forceInstallPlugin = ref<PluginPost>({ name: '', version: '' })
 
 if (!session.state.user?.adminMode) throw new Error(t('noPermissionAdminPage'))
 
-const installedPluginsFetch = useFetch<{
-  results: Plugin[],
-  facets: { usages: Record <string, number> },
-  count: number
-}>(`${$apiPath}/plugins`)
-
+const installedPluginsFetch = useFetch<PluginsGetRes>(`${$apiPath}/plugins`)
 const availablePluginsFetch = useFetch<{
   results: (PluginPost & { description: string })[],
   count: number
@@ -210,8 +204,12 @@ const install = useAsyncAction(
     pluginLocked.value = plugin.name
     await $fetch('/plugins', {
       method: 'POST',
-      body: JSON.stringify(plugin)
+      body: {
+        name: plugin.name,
+        version: plugin.version
+      }
     })
+    installedPluginsFetch.refresh()
     pluginLocked.value = null
   },
   {
@@ -226,6 +224,7 @@ const uninstall = useAsyncAction(
     await $fetch(`/plugins/${pluginId}`, {
       method: 'DELETE'
     })
+    installedPluginsFetch.refresh()
     pluginLocked.value = null
     showDeleteMenu.value = null
   },

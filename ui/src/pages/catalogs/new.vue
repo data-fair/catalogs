@@ -47,15 +47,6 @@
                     {{ plugin.metadata.title }}
                   </span>
                 </template>
-                <template
-                  v-if="plugin.metadata.icon"
-                  #prepend
-                >
-                  <v-icon
-                    :color="newCatalog.plugin !== plugin.id ? 'primary' : ''"
-                    :icon="plugin.metadata.icon"
-                  />
-                </template>
                 <v-card-text>{{ plugin.metadata.description }}</v-card-text>
               </v-card>
             </v-col>

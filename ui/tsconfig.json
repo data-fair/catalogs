@@ -21,6 +21,7 @@
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
+      "#api/doc": ["../api/doc/index.ts"],
       "#api/types": ["../api/types/index.ts"],
       "#api/types/*": ["../api/types/*"],
       "~/*": ["./src/*"]

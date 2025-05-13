@@ -10,7 +10,6 @@ import { assertAccountRole, session, httpError, assertReqInternalSecret } from '
 import { resolvedSchema as catalogSchema } from '#types/catalog/index.ts'
 import mongo from '#mongo'
 import config from '#config'
-// import harvester from '../utils/harvester.ts'
 import findUtils from '../utils/find.ts'
 import { catalogFacets } from '../utils/facets.ts'
 
@@ -119,7 +118,7 @@ router.post('/', async (req, res) => {
   if (config.privateEventsUrl && config.secretKeys.events) {
     sendCatalogEvent(validCatalog, 'a été créé', 'create', sessionState)
   }
-  res.status(201).json(validCatalog)
+  res.status(200).json(validCatalog)
 })
 
 // Internal route to create a catalog (for upgrade scripts)

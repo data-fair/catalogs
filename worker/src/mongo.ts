@@ -1,4 +1,4 @@
-import type { Catalog, Import } from '#types'
+import type { Catalog, Import } from '#api/types'
 
 import { Mongo } from '@data-fair/lib-node/mongo.js'
 import config from '#config'

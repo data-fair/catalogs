@@ -20,6 +20,10 @@ layout {
         command "${DEV_SHELL}"
         args "-ic" "nvm use > /dev/null 2>&1 && npm -w api run dev"
       }
+      pane name="worker" {
+        command "${DEV_SHELL}"
+        args "-ic" "nvm use > /dev/null 2>&1 && npm -w worker run dev"
+      }
     }
     pane size=1 borderless=true {
         command "bash"

@@ -17,8 +17,7 @@
       >
         <v-skeleton-loader
           :class="$vuetify.theme.current.dark ? 'w-100' : 'w-100 skeleton'"
-          height="200"
-          type="article"
+          type="heading"
         />
       </v-col>
     </v-row>
@@ -53,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Catalog, CatalogsFacets, Plugin, PluginsFacets } from '#api/types'
+import type { CatalogsGetRes, PluginsGetRes } from '#api/doc'
 import { getAccountRole } from '@data-fair/lib-vue/session'
 
 const session = useSessionAuthenticated()
@@ -75,17 +74,9 @@ const catalogsParams = computed(() => {
   return params
 })
 
-const catalogsFetch = useFetch<{
-  results: Catalog[]
-  facets: CatalogsFacets
-  count: number
-}>(`${$apiPath}/catalogs`, { query: catalogsParams })
+const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, { query: catalogsParams })
 
-const pluginsFetch = useFetch<{
-  results: Plugin[]
-  facets: PluginsFacets
-  count: number
-}>(`${$apiPath}/plugins`)
+const pluginsFetch = useFetch<PluginsGetRes>(`${$apiPath}/plugins`)
 
 const displayCatalogs = computed(() => {
   const catalogs = (catalogsFetch.data.value?.results ?? [])

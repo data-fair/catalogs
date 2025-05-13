@@ -73,7 +73,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Plugin, CatalogsFacets } from '#api/types'
+import type { Plugin } from '#api/types'
+import type { CatalogsFacets } from '#api/doc'
 
 const { adminMode, plugins, facets } = defineProps<{
   adminMode: boolean

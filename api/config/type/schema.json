@@ -16,7 +16,8 @@
     "observer",
     "port",
     "privateDirectoryUrl",
-    "secretKeys"
+    "secretKeys",
+    "serveUi"
   ],
   "properties": {
     "dataDir": {

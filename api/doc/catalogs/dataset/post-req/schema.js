@@ -20,20 +20,8 @@ export default {
         }
       }
     },
-    publication: { // TODO: use the datafair publication schema
-      type: 'object',
-      required: ['publicationId', 'catalogId', 'status'],
-      additionalProperties: false,
-      properties: {
-        publicationId: { type: 'string' },
-        catalogId: { type: 'string' },
-        remoteDatasetId: { type: 'string' },
-        remoteResourceId: { type: 'string' },
-        status: { enum: ['waiting', 'published', 'error', 'deleted'] },
-        publishedAt: { type: 'string', format: 'date-time' },
-        error: { type: 'string' },
-        isResource: { type: 'boolean' }
-      }
+    publication: {
+      $ref: 'https://github.com/data-fair/lib/catalog#/$defs/publication'
     }
   }
 }
