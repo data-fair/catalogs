@@ -111,7 +111,13 @@ async function iter (importD: Import) {
     return internalError('worker-missing-plugin', 'found an import without associated plugin, weird')
   }
 
-  await execute(catalog, plugin, importD)
+  try {
+    await execute(catalog, plugin, importD)
+  } catch (e) {
+    debug('Error during import', e)
+    await mongo.imports.updateOne({ _id: importD._id }, { $set: { status: 'error', error: e } })
+    return
+  }
   await locks.release(importD._id)
 }
 

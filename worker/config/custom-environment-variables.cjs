@@ -1,7 +1,7 @@
 module.exports = {
   dataDir: 'DATA_DIR',
   dataFairAPIKey: 'DATA_FAIR_API_KEY',
-  dataFairUrl: 'DATA_FAIR_URL',
+  privateDataFairUrl: 'PRIVATE_DATA_FAIR_URL',
   mongoUrl: 'MONGO_URL',
   observer: {
     active: 'OBSERVER_ACTIVE',

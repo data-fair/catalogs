@@ -1,4 +1,4 @@
 data/
 node_modules/
-config/local-*
+**/config/local-*
 .type/

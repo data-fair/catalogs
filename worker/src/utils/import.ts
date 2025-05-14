@@ -1,11 +1,22 @@
 import type { Catalog, Import } from '#api/types'
-import type { Account } from '@data-fair/lib-common-types/session/index.js'
 import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
+import type { AxiosRequestConfig } from 'axios'
 
 import { internalError } from '@data-fair/lib-node/observer.js'
 import axios from '@data-fair/lib-node/axios.js'
 import config from '#config'
 import mongo from '#mongo'
+
+const getAxiosOptions = (catalog: Catalog): AxiosRequestConfig => {
+  return {
+    baseURL: config.privateDataFairUrl,
+    headers: {
+      'x-apiKey': config.dataFairAPIKey,
+      'x-account': JSON.stringify(catalog.owner),
+      'User-Agent': `@data-fair/catalogs (${catalog.plugin})`
+    }
+  }
+}
 
 export const execute = async (catalog: Catalog, plugin: CatalogPlugin, importD: Import) => {
   let datasetPost: Record<string, any>
@@ -50,8 +61,9 @@ export const execute = async (catalog: Catalog, plugin: CatalogPlugin, importD: 
   }
   addProps(remoteDataset, datasetPost) // Add common properties
 
-  if (importD.dataFairDatasetId) await updateDataFairDataset(resourceId, datasetPost, importD.dataFairDatasetId, catalog.owner)
-  else await createDataFairDataset(resourceId, datasetPost, catalog.owner)
+  const axiosOptions = getAxiosOptions(catalog)
+  if (importD.dataFairDatasetId) await updateDataFairDataset(resourceId, datasetPost, importD.dataFairDatasetId, axiosOptions)
+  else await createDataFairDataset(resourceId, datasetPost, axiosOptions)
 }
 
 /**
@@ -73,9 +85,9 @@ const addProps = (dataset: any, resourcePost: any) => {
  * @param resourceId - The ID of the catalog resource or catalog dataset
  * @param datasetPost - The dataset data to be created
  */
-const createDataFairDataset = async (resourceId: string, datasetPost: any, account: Account) => {
+const createDataFairDataset = async (resourceId: string, datasetPost: any, account: AxiosRequestConfig) => {
   const createdDataset = await axios.post('/api/v1/datasets', datasetPost, {
-    baseURL: config.dataFairUrl,
+    baseURL: config.privateDataFairUrl,
     headers: {
       'x-apiKey': config.dataFairAPIKey,
       'x-account': JSON.stringify(account)
@@ -95,16 +107,10 @@ const createDataFairDataset = async (resourceId: string, datasetPost: any, accou
  * @param resourceId - The ID of the catalog resource or catalog dataset
  * @param datasetPost - The dataset data to be updated
  */
-const updateDataFairDataset = async (resourceId: string, datasetPost: any, dataFairId: string, account: Account) => {
+const updateDataFairDataset = async (resourceId: string, datasetPost: any, dataFairId: string, axiosOptions: AxiosRequestConfig) => {
   try {
     delete datasetPost.isMetaOnly
-    await axios.patch(`/api/v1/datasets/${dataFairId}`, datasetPost, {
-      baseURL: config.dataFairUrl,
-      headers: {
-        'x-apiKey': config.dataFairAPIKey,
-        'x-account': JSON.stringify(account)
-      }
-    })
+    await axios.patch(`/api/v1/datasets/${dataFairId}`, datasetPost, axiosOptions)
     await mongo.imports.updateOne({
       _id: resourceId
     }, {
@@ -113,7 +119,7 @@ const updateDataFairDataset = async (resourceId: string, datasetPost: any, dataF
       }
     })
   } catch (error: any) {
-    if (error.status === 404) await createDataFairDataset(resourceId, datasetPost, account)
+    if (error.status === 404) await createDataFairDataset(resourceId, datasetPost, axiosOptions)
     else throw error
   }
 }

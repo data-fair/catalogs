@@ -13,7 +13,7 @@
   "required": [
     "dataDir",
     "dataFairAPIKey",
-    "dataFairUrl",
+    "privateDataFairUrl",
     "mongoUrl",
     "observer",
     "upgradeRoot",
@@ -26,7 +26,7 @@
     "dataFairAPIKey": {
       "type": "string"
     },
-    "dataFairUrl": {
+    "privateDataFairUrl": {
       "type": "string",
       "pattern": "^https?://"
     },
