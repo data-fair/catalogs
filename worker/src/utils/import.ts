@@ -13,7 +13,8 @@ const getAxiosOptions = (catalog: Catalog): AxiosRequestConfig => {
     headers: {
       'x-apiKey': config.dataFairAPIKey,
       'x-account': JSON.stringify(catalog.owner),
-      'User-Agent': `@data-fair/catalogs (${catalog.plugin})`
+      'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
+      host: config.host,
     }
   }
 }
@@ -85,14 +86,8 @@ const addProps = (dataset: any, resourcePost: any) => {
  * @param resourceId - The ID of the catalog resource or catalog dataset
  * @param datasetPost - The dataset data to be created
  */
-const createDataFairDataset = async (resourceId: string, datasetPost: any, account: AxiosRequestConfig) => {
-  const createdDataset = await axios.post('/api/v1/datasets', datasetPost, {
-    baseURL: config.privateDataFairUrl,
-    headers: {
-      'x-apiKey': config.dataFairAPIKey,
-      'x-account': JSON.stringify(account)
-    }
-  })
+const createDataFairDataset = async (resourceId: string, datasetPost: any, axiosOptions: AxiosRequestConfig) => {
+  const createdDataset = await axios.post('/api/v1/datasets', datasetPost, axiosOptions)
 
   await mongo.imports.updateOne({ _id: resourceId }, {
     $set: {

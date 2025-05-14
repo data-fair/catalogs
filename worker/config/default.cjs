@@ -1,6 +1,7 @@
 module.exports = {
   dataDir: '/app/data',
   dataFairAPIKey: undefined,
+  host: undefined,
   privateDataFairUrl: undefined,
   mongoUrl: 'mongodb://localhost:27017/data-fair-catalogs',
   observer: {

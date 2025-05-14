@@ -13,6 +13,7 @@
   "required": [
     "dataDir",
     "dataFairAPIKey",
+    "host",
     "privateDataFairUrl",
     "mongoUrl",
     "observer",
@@ -25,6 +26,10 @@
     },
     "dataFairAPIKey": {
       "type": "string"
+    },
+    "host": {
+      "type": "string",
+      "description": "This is used to define the 'host' header in the requests to the DataFair API."
     },
     "privateDataFairUrl": {
       "type": "string",
