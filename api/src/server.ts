@@ -22,9 +22,8 @@ server.keepAliveTimeout = (60 * 1000) + 1000
 server.headersTimeout = (60 * 1000) + 2000
 
 export const start = async () => {
-  if (!existsSync(config.dataDir) && process.env.NODE_ENV === 'production') {
-    throw new Error(`Data directory ${resolvePath(config.dataDir)} was not mounted`)
-  }
+  if (!existsSync(config.dataDir)) throw new Error(`Data directory ${resolvePath(config.dataDir)} was not mounted`)
+
   if (config.observer.active) await startObserver(config.observer.port)
   session.init(config.privateDirectoryUrl)
   await mongo.init()

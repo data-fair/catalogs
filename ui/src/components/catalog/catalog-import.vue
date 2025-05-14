@@ -68,7 +68,7 @@
               target="_blank"
               rel="noopener noreferrer"
             >
-              Voir le jeu de donnée local
+              Voir le jeu de données local
             </a>
             <span v-if="dataset.origin"> | </span>
           </span>
@@ -78,7 +78,7 @@
             target="_blank"
             rel="noopener noreferrer"
           >
-            Voir le jeu de donnée distant
+            Voir le jeu de données distant
           </a>
         </template>
         <template #append>
@@ -382,7 +382,6 @@ const importDataset = useAsyncAction(
     })
   },
   {
-    success: t('datasetCreated'),
     error: t('errorCreatingDataset'),
   }
 )
@@ -429,11 +428,10 @@ const vjsfOptions = {
 
 <i18n lang="yaml">
   en:
-    confirmDeleteDataset: Do you really want to delete this dataset? Warning, this action will delete the dataset from the platform.
+    confirmDeleteDataset: Do you really want to delete this dataset? Warning, this action will permanently delete the dataset from the platform.
     confirmOverwriteDataset: Do you really want to overwrite the already imported information?
     createMetadataOnlyDataset: Create a "metadata only" type dataset
     createRemoteFileDataset: Create a dataset from the remote resource
-    datasetCreated: Dataset created!
     datasetDeleted: Dataset deleted!
     datasetIsPrivate: The dataset is private
     datasetIsPublic: The dataset is public
@@ -448,11 +446,10 @@ const vjsfOptions = {
     yes: Yes
 
   fr:
-    confirmDeleteDataset: Voulez-vous vraiment supprimer ce jeu de données ? Attention, cette action supprime le jeu de donnée de la plateforme.
+    confirmDeleteDataset: Voulez-vous vraiment supprimer ce jeu de données ? Attention, cette action supprime définitivement le jeu de données de la plateforme.
     confirmOverwriteDataset: Voulez-vous vraiment écraser les informations déjà importées ?
     createMetadataOnlyDataset: Créer un jeu de données de type "métadonnées seul"
     createRemoteFileDataset: Créer un jeu de données depuis la ressource distante
-    datasetCreated: Jeu de données créé !
     datasetDeleted: Jeu de données supprimé !
     datasetIsPrivate: Le jeu de données est privé
     datasetIsPublic: Le jeu de données est public

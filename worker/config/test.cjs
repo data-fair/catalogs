@@ -1,6 +1,6 @@
 module.exports = {
   dataDir: './data/test',
-  mongoUrl: 'mongodb://localhost:27017/data-fair-processings-test',
+  mongoUrl: 'mongodb://localhost:27017/data-fair-catalogs-test',
   observer: {
     active: false
   },

@@ -1,5 +1,5 @@
 {
-  "$id": "https://github.com/data-fair/processings/worker/config",
+  "$id": "https://github.com/data-fair/catalogs/worker/config",
   "x-exports": [
     "types",
     "validate"

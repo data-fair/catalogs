@@ -18,7 +18,7 @@ export class CatalogsMongo {
   }
 
   get imports () {
-    return this.mongo.db.collection<Import>('import')
+    return this.mongo.db.collection<Import>('imports')
   }
 
   constructor () {

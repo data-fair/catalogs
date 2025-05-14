@@ -8,78 +8,59 @@
 
 ## Install dependencies
 
-1) Install npm dependencies for all workspaces :
+1. Install npm dependencies for all workspaces :
 
 ```sh
 npm i
 ```
 
-2) Pull images at first and then once in a while :
-
-```sh
-docker compose pull
-```
-
-3) Then run the containers :
-
-```sh
-npm run dev-deps
-```
-
-*Stop the containers with this command :*
-
-```sh
-npm run stop-dev-deps
-```
-
-## Working on @data-fair/catalogs/api
-
-The API is a small [Express](https://expressjs.com) server.  
-Run a development server (access it at http://localhost:8082/api/) :
-
-```sh
-npm run dev-api
-```
-
-## Working on @data-fair/catalogs/ui
-
-The UI is a [Vue 3](https://vuejs.org/) project that uses [Vuetify 3](https://vuetifyjs.com/).  
-Run a development server (access it at http://localhost:3039/) :
-
-```sh
-npm run dev-ui
-```
-
-## Working on types
-
-Update the types based on schemas :
+2. Build / Update the types based on schemas :
 
 ```sh
 npm run build-types
 ```
 
-## Building and running the Docker image
+## Start the development environment
 
-Build the images :
+```sh
+npm run dev-zellij
+```
+
+*Note : This command will start a Zellij session with 4 panes, each one running a part of the project. You can also run the environment manually by running the commands below in 4 different terminals.*
+
+<details>
+<summary>Services</summary>
+
+- **Dev dependencies** : `npm run dev-deps`
+- **Api** : `npm run dev-api`
+- **UI** : `npm run dev-ui`
+- **Worker** : `npm run dev-worker`
+
+</details>
+
+## Stop the development environment
+
+```sh
+npm run stop-dev-deps
+```
+
+## Building the Docker images
 
 ```sh
 docker build --progress=plain --target=main -t data-fair/catalogs:dev .
+docker build --progress=plain --target=worker -t data-fair/processings/worker:dev .
 ```
 
 ## Running the tests
-
-Run the test suite :
 
 ```sh
 npm run test
 ```
 
-## All-in-one development
-
-You can run all services at once thanks to Zellij.
+## Zellij installation
 
 <details>
-<summary>First time instructions</summary>
+<summary>Guide</summary>
 
 1) Install Rust's Cargo
 
@@ -100,18 +81,9 @@ cargo install --locked zellij
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
 nvm install
 ```
-
-</details>
-
-Run the Zellij command :
-
-```sh
-npm run dev-zellij
-```
-
-Access the running services at <http://localhost:5600/openapi-viewer>
-
 *Tips :*
 
 - Use <kbd>Ctrl</kbd> + <kbd>Q</kbd> to quit Zellij.
 - Click on a panel, then use <kbd>Ctrl</kbd> + <kbd>C</kbd> then <kbd>Esc</kbd> to stop a terminal and regain access of the panel.
+
+</details>

@@ -1,3 +1,3 @@
 module.exports = {
-  dataFairAPIKey: 'bzpFblRnQjJVYkg6RWF1SXNOaFV1bldfS0xsLW1pMllI',
+  dataFairAPIKey: 'dTpzdXBlcmFkbWluOnY1VUFCQW1DUHRyVFhQdHI0NmhPRA',
 }
