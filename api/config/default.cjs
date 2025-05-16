@@ -10,11 +10,11 @@ module.exports = {
   },
   port: 8080,
   privateDirectoryUrl: 'http://simple-directory:8080',
-  privateEventsUrl: null,
+  privateEventsUrl: undefined,
   secretKeys: {
-    events: null,
-    catalogs: null
+    events: undefined,
+    catalogs: undefined
   },
   serveUi: true,
-  tmpDir: null,
+  tmpDir: undefined,
 }

@@ -102,6 +102,7 @@ watch(
   fr:
     catalogs: Catalogues
     catalogDisplayed: Aucun catalogue | {displayed}/{count} catalogue affiché | {displayed}/{count} catalogues affichés
+
 </i18n>
 
 <style scoped>

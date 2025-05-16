@@ -30,18 +30,19 @@
 
     <v-tabs-window v-model="activeTab">
       <v-tabs-window-item value="import">
-        <catalog-import
+        <imports
           v-if="plugin?.metadata.capabilities.includes('listDatasets')"
           :catalog="catalog"
           :plugin="plugin"
         />
       </v-tabs-window-item>
 
-      <!--
       <v-tabs-window-item value="export">
-        TODO
+        <exports
+          v-if="plugin?.metadata.capabilities.includes('publishDataset')"
+          :catalog-id="catalog._id"
+        />
       </v-tabs-window-item>
-      -->
     </v-tabs-window>
 
     <layout-actions v-if="canAdmin">
@@ -105,6 +106,7 @@ const assetsUrls = {
     export: Export
     metadata: Métadonnées
     import: Import
+
 </i18n>
 
 <style scoped>

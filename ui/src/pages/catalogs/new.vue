@@ -99,7 +99,6 @@
 import type { Plugin } from '#api/types'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
-import VjsfMarkdown from '@koumoul/vjsf-markdown'
 import OwnerPick from '@data-fair/lib-vuetify/owner-pick.vue'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog/index.ts'
@@ -148,13 +147,13 @@ const valid = ref(false)
 const catalogSchema = computed(() => {
   const configSchema = installedPluginsFetch.data.value?.results.find(p => p.id === newCatalog.value.plugin)?.configSchema
   if (!configSchema) return
-  delete catalogSchemaBase.title
+  catalogSchemaBase.layout.children = ['title', 'description', 'config'] // Remove activity layout
 
   const schema = jsonSchema(catalogSchemaBase)
     .addProperty('config', { ...configSchema, title: t('configuration') })
     .schema
 
-  schema.required = ['title', 'config']
+  schema.required = ['catalogId', 'action']
   return schema
 })
 
@@ -187,9 +186,9 @@ const vjsfOptions: VjsfOptions = {
   density: 'comfortable',
   initialValidation: 'always',
   locale: session.lang.value,
-  plugins: [VjsfMarkdown],
   readOnlyPropertiesMode: 'hide',
   titleDepth: 4,
+  useExamples: 'help',
   validateOn: 'blur',
   xI18n: true
 }
@@ -220,6 +219,7 @@ const vjsfOptions: VjsfOptions = {
     information: Informations
     noRightsToCreateCatalog: Vous n'avez pas les droits pour créer un catalogue
     selectCatalogType: Sélection du type de catalogue
+
 </i18n>
 
 <style scoped>

@@ -15,20 +15,7 @@
         @update:model-value="patch.execute()"
       >
         <template #activity>
-          <v-list-item
-            :prepend-avatar="avatarUrl"
-            :title="catalog.owner.name"
-          />
-          <v-list-item
-            :prepend-icon="mdiPencil"
-            :title="`${catalog.updated.name}`"
-            :subtitle="`${dayjs(catalog.updated.date).format('D MMM YYYY HH:mm')}`"
-          />
-          <v-list-item
-            :prepend-icon="mdiPlusCircleOutline"
-            :title="`${catalog.created.name}`"
-            :subtitle="`${dayjs(catalog.created.date).format('D MMM YYYY HH:mm')}`"
-          />
+          <activity :resource="editCatalog" />
         </template>
       </vjsf>
     </v-form>
@@ -39,7 +26,6 @@
 import type { Catalog, Plugin } from '#api/types'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
-import VjsfMarkdown from '@koumoul/vjsf-markdown'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog/index.ts'
 
@@ -51,7 +37,6 @@ const { catalog, plugin, catalogId, canAdmin } = defineProps<{
 }>()
 
 const session = useSessionAuthenticated()
-const { dayjs } = useLocaleDayjs()
 const { t } = useI18n()
 
 const valid = ref(false)
@@ -80,25 +65,15 @@ const patch = useAsyncAction(
   }
 )
 
-const avatarUrl = computed(() => {
-  if (catalog.owner.department) return `/simple-directory/api/avatars/${catalog.owner.type}/${catalog.owner.id}/${catalog.owner.department}/avatar.png`
-  else return `/simple-directory/api/avatars/${catalog.owner.type}/${catalog.owner.id}/avatar.png`
-})
-
 const vjsfOptions = computed<VjsfOptions>(() => ({
   density: 'comfortable',
   initialValidation: 'always',
   locale: session.lang.value,
-  plugins: [VjsfMarkdown],
-  pluginsOptions: {
-    markdown: {
-      easyMDEOptions: { maxHeight: '100px' }
-    }
-  },
   readOnly: !canAdmin,
   removeAdditional: true,
   titleDepth: 3,
   updateOn: 'blur',
+  useExamples: 'help',
   validateOn: 'blur',
   xI18n: true
 }))
@@ -113,6 +88,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   fr:
     configuration: Configuration
     errorSavingCatalog: Erreur lors de la modification du catalogue
+
 </i18n>
 
 <style scoped>

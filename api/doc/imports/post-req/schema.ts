@@ -1,16 +1,16 @@
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
-import PluginSchema from '#types/plugin/schema.js'
+import ImportSchema from '#types/import/schema.ts'
 
 export default {
-  $id: 'https://github.com/data-fair/catalogs/plugins/post-req',
-  title: 'PluginsPostReq',
+  $id: 'https://github.com/data-fair/catalogs/import/post-req',
+  title: 'ImportPostReq',
   'x-exports': ['validate', 'types'],
   type: 'object',
   required: ['body'],
   properties: {
     body:
-      jsonSchema(PluginSchema)
-        .pickProperties(['name', 'version'])
+      jsonSchema(ImportSchema)
+        .pickProperties(['catalogId', 'remoteDatasetId', 'remoteResourceId'])
         .removeId()
         .appendTitle(' post')
         .schema

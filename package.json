@@ -4,7 +4,7 @@
   "description": "Import/export catalogs between Data Fair and other services.",
   "type": "module",
   "scripts": {
-    "build-types": "df-build-types ./",
+    "build-types": "export NODE_OPTIONS='--experimental-strip-types' && df-build-types ./",
     "check-types": "tsc",
     "dev-api": "npm -w api run dev",
     "dev-deps": "docker compose --profile dev up -d --wait",

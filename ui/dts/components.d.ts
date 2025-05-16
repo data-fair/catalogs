@@ -8,11 +8,17 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    Activity: typeof import('./../src/components/activity.vue')['default']
     CatalogActions: typeof import('./../src/components/catalog/catalog-actions.vue')['default']
     CatalogCard: typeof import('./../src/components/catalog/catalog-card.vue')['default']
     CatalogConfig: typeof import('./../src/components/catalog/catalog-config.vue')['default']
-    CatalogImport: typeof import('./../src/components/catalog/catalog-import.vue')['default']
+    CatalogImport: typeof import('../src/components/catalog/imports.vue')['default']
     CatalogsActions: typeof import('./../src/components/catalogs-actions.vue')['default']
+    ExportList: typeof import('./../src/components/export/export-list.vue')['default']
+    ExportNew: typeof import('./../src/components/export/export-new.vue')['default']
+    Exports: typeof import('./../src/components/exports/index.vue')['default']
+    ExportsList: typeof import('./../src/components/exports/exports-list.vue')['default']
+    Imports: typeof import('./../src/components/imports.vue')['default']
     LayoutActions: typeof import('./../src/components/layout/layout-actions.vue')['default']
     LayoutActionsButton: typeof import('./../src/components/layout/layout-actions-button.vue')['default']
     LayoutActionsRight: typeof import('./../src/components/layout/layout-actions-right.vue')['default']

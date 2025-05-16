@@ -14,7 +14,6 @@ export default {
     'plugin',
     'owner',
     'config',
-    'datasets',
     'created',
     'updated'
   ],
@@ -44,44 +43,19 @@ export default {
       'x-i18n-description': {
         fr: 'Une zone de texte libre pour écrire des commentaires sur le catalogue'
       },
-      layout: 'markdown'
+      layout: 'textarea'
     },
     plugin: {
       type: 'string',
       readOnly: true
     },
     owner: {
-      $ref: 'https://github.com/data-fair/lib/account'
+      $ref: 'https://github.com/data-fair/lib/account',
+      readOnly: true,
     },
     config: {
       type: 'object',
-      description: 'Plugin-specific configuration : this content varies depending on the used plugin'
-    },
-    datasets: {
-      type: 'array',
-      description: 'List of data-fair datasets imported or exported by this catalog',
-      items: {
-        type: 'object',
-        additionalProperties: false,
-        required: [
-          'dataFairId',
-          'remoteId',
-          'title'
-        ],
-        properties: {
-          dataFairId: {
-            type: 'string',
-            description: 'Id of the dataset in the data-fair catalog'
-          },
-          remoteId: {
-            type: 'string',
-            description: 'Id of the dataset or resource in the remote catalog'
-          },
-          title: {
-            type: 'string'
-          }
-        }
-      }
+      description: 'Plugin-specific configuration : this content varies dewaiting on the used plugin'
     },
     created: {
       type: 'object',

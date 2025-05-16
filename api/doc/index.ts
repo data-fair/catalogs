@@ -1,3 +1,4 @@
 export type { CatalogsGetRes, CatalogsFacets } from './catalogs/get-res/index.ts'
+export type { ExportsGetRes } from './exports/get-res/index.ts'
 export type { PluginPost } from './plugins/post-req/index.ts'
 export type { PluginsGetRes } from './plugins/get-res/index.ts'

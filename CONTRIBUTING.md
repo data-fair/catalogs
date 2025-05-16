@@ -48,7 +48,7 @@ npm run stop-dev-deps
 
 ```sh
 docker build --progress=plain --target=main -t data-fair/catalogs:dev .
-docker build --progress=plain --target=worker -t data-fair/processings/worker:dev .
+docker build --progress=plain --target=worker -t data-fair/catalogs/worker:dev .
 ```
 
 ## Running the tests

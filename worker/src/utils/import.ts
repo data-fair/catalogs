@@ -110,7 +110,8 @@ const updateDataFairDataset = async (resourceId: string, datasetPost: any, dataF
       _id: resourceId
     }, {
       $set: {
-        status: 'done'
+        status: 'done',
+        lastImportDate: new Date().toISOString()
       }
     })
   } catch (error: any) {

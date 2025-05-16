@@ -295,6 +295,7 @@ const duplicateCatalog = useAsyncAction(
     ownerChanged: Propriétaire changé !
     sensitiveOperation: Opération sensible
     yes: Oui
+
 </i18n>
 
 <style scoped>

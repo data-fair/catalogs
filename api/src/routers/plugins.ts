@@ -1,6 +1,6 @@
 import type { Plugin } from '#types'
 
-import { exec as execCallback } from 'child_process'
+import { exec } from 'child_process'
 import { promisify } from 'util'
 import { Router } from 'express'
 import fs from 'fs-extra'
@@ -11,7 +11,7 @@ import findUtils, { removePluginFromCache } from '../utils/find.ts'
 import mongo from '#mongo'
 import config from '#config'
 
-const exec = promisify(execCallback)
+const execAsync = promisify(exec)
 
 const router = Router()
 export default router
@@ -37,10 +37,10 @@ router.post('/', async (req, res) => {
       name: id,
       type: 'module',
       dependencies: {
-        [body.name]: '^' + body.version
+        [body.name]: body.version
       }
     }, null, 2))
-    await exec('npm install --omit=dev', { cwd: dir.path })
+    await execAsync('npm install', { cwd: dir.path })
 
     // move the plugin to the src directory (Stripping types is currently unsupported for files under node_modules)
     await fs.move(path.join(dir.path, 'node_modules', body.name), path.join(dir.path, 'src'), { overwrite: true })
@@ -57,10 +57,8 @@ router.post('/', async (req, res) => {
 
     await fs.move(dir.path, path.join(pluginsDir, id), { overwrite: true })
     removePluginFromCache(id) // Remove the plugin from cache to reload it
-  } finally {
-    try {
-      await dir.cleanup()
-    } catch (err) { } // ignore, directory was moved
+  } catch (err) {
+    await dir.cleanup()
   }
 
   res.send({

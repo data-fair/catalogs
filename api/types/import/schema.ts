@@ -10,27 +10,29 @@ export default {
   additionalProperties: false,
   required: [
     '_id',
-    'catalogId',
-    'remoteDatasetId',
     'owner',
-    'created'
+    'status',
+    'catalogId',
+    'remoteDatasetId'
   ],
   properties: {
     _id: {
       type: 'string',
-      description: 'Unique identifier for this import',
-      readOnly: true
+      description: 'Unique identifier for this import'
+    },
+    owner: {
+      $ref: 'https://github.com/data-fair/lib/account'
     },
     status: {
       type: 'string',
       description: 'Status of the import',
       enum: [
-        'pending',
+        'waiting',
         'running',
         'done',
         'error'
       ],
-      default: 'pending'
+      default: 'waiting'
     },
     catalogId: {
       type: 'string',
@@ -48,39 +50,10 @@ export default {
       type: 'string',
       description: 'Id of the resource in the dataset in the remote catalog'
     },
-    owner: {
-      $ref: 'https://github.com/data-fair/lib/account'
-    },
-    created: {
-      type: 'object',
-      additionalProperties: false,
-      required: [
-        'id',
-        'name',
-        'date'
-      ],
-      readOnly: true,
-      properties: {
-        id: {
-          type: 'string',
-          description: 'Id of the user that created this import'
-        },
-        name: {
-          type: 'string',
-          description: 'Name of the user that created this import'
-        },
-        date: {
-          type: 'string',
-          description: 'Creation date of this import',
-          format: 'date-time'
-        }
-      }
-    },
-    importedAt: {
+    lastImportDate: {
       type: 'string',
       description: 'Date of the end of the import process',
-      format: 'date-time',
-      readOnly: true
+      format: 'date-time'
     }
   }
 }

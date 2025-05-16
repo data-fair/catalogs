@@ -285,6 +285,7 @@ const updateAvailable = (plugin: PluginPost) => {
     update: Mettre à jour
     usedTimesVersion: "Jamais utilisé - {version} | Utilisé {count} fois - {version} | Utilisé {count} fois - {version}"
     yes: Oui
+
 </i18n>
 
 <style scoped>

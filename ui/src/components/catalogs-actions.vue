@@ -142,6 +142,7 @@ const ownersItems = computed(() => {
     plugin: Plugin
     search: Rechercher...
     showAllCatalogs: Voir tous les catalogues
+
 </i18n>
 
 <style scoped>

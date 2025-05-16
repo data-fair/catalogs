@@ -6,7 +6,7 @@ import { Router } from 'express'
 import { nanoid } from 'nanoid'
 
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { assertAccountRole, session, httpError, assertReqInternalSecret } from '@data-fair/lib-express'
+import { assertAccountRole, session, httpError } from '@data-fair/lib-express'
 import { resolvedSchema as catalogSchema } from '#types/catalog/index.ts'
 import mongo from '#mongo'
 import config from '#config'
@@ -105,7 +105,6 @@ router.post('/', async (req, res) => {
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
   catalog._id = nanoid()
-  catalog.datasets = []
   catalog.created = catalog.updated = {
     id: sessionState.user.id,
     name: sessionState.user.name,
@@ -122,18 +121,18 @@ router.post('/', async (req, res) => {
 })
 
 // Internal route to create a catalog (for upgrade scripts)
-router.post('/_internal', async (req, res) => {
-  assertReqInternalSecret(req, config.secretKeys.catalogs)
+// router.post('/_internal', async (req, res) => {
+//   assertReqInternalSecret(req, config.secretKeys.catalogs)
 
-  const catalog: Partial<Catalog> = { ...req.body }
-  catalog._id = nanoid()
-  catalog.datasets = []
+//   const catalog: Partial<Catalog> = { ...req.body }
+//   catalog._id = nanoid()
+//   catalog.datasets = []
 
-  const validCatalog = await validateCatalog(catalog)
-  await mongo.catalogs.insertOne(validCatalog)
+//   const validCatalog = await validateCatalog(catalog)
+//   await mongo.catalogs.insertOne(validCatalog)
 
-  res.status(201).json(validCatalog)
-})
+//   res.status(201).json(validCatalog)
+// })
 
 // Get a catalog
 router.get('/:id', async (req, res) => {
@@ -187,6 +186,7 @@ router.patch('/:id', async (req, res) => {
 })
 
 // Delete a catalog
+// TODO: Delete also all exports for this catalog ?
 router.delete('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
@@ -200,7 +200,7 @@ router.delete('/:id', async (req, res) => {
   res.sendStatus(204)
 })
 
-// Get the list of datasets from a catalog
+// Get the list of remote datasets from a catalog
 router.get('/:id/datasets', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
@@ -213,48 +213,4 @@ router.get('/:id/datasets', async (req, res) => {
   const datasets = await plugin.listDatasets(catalog.config, req.query as any)
 
   res.json(datasets)
-})
-
-// Publish a dataset in a catalog
-router.post('/:id/dataset', async (req, res) => {
-  assertReqInternalSecret(req, config.secretKeys.catalogs)
-  const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
-  if (!catalog) throw httpError(404, 'Catalog not found')
-
-  const { dataset, publication } = (await import('../../doc/catalogs/dataset/post-req/index.ts')).returnValid(req.body)
-  if (dataset.owner && (catalog.owner.type !== dataset.owner.type || catalog.owner.id !== dataset.owner.id)) {
-    throw httpError(403, 'You do not have permission to publish this dataset in this catalog because the owner of the dataset is different from the owner of the catalog')
-  }
-
-  const plugin = await findUtils.getPlugin(catalog.plugin)
-  if (!plugin.metadata.capabilities.includes('publishDatasets')) throw httpError(501, 'Plugin does not support publishing datasets')
-  const publicationRes = await plugin.publishDataset(catalog.config, dataset, publication)
-
-  res.status(201).json(publicationRes)
-})
-
-// Unpublish a dataset in a catalog
-router.delete('/:id/dataset/:datasetId', async (req, res) => {
-  assertReqInternalSecret(req, config.secretKeys.catalogs)
-  const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
-  if (!catalog) throw httpError(404, 'Catalog not found')
-
-  const plugin = await findUtils.getPlugin(catalog.plugin)
-  if (!plugin.metadata.capabilities.includes('publishDatasets')) throw httpError(501, 'Plugin does not support deleting datasets')
-  await plugin.deleteDataset(catalog.config, req.params.datasetId)
-
-  res.sendStatus(204)
-})
-
-// Remove a resource from a dataset in a catalog
-router.delete('/:id/dataset/:datasetId/resources/:resourceId', async (req, res) => {
-  assertReqInternalSecret(req, config.secretKeys.catalogs)
-  const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
-  if (!catalog) throw httpError(404, 'Catalog not found')
-
-  const plugin = await findUtils.getPlugin(catalog.plugin)
-  if (!plugin.metadata.capabilities.includes('publishDatasets')) throw httpError(501, 'Plugin does not support deleting resource datasets')
-  await plugin.deleteDataset(catalog.config, req.params.datasetId, req.params.resourceId)
-
-  res.sendStatus(204)
 })

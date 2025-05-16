@@ -81,7 +81,7 @@ const mainLoop = async () => {
     const importD = await acquireNext()
     if (!importD) continue // No import to process
 
-    debugLoop(`import ${importD.remoteResourceId ? `remote resource ${importD.remoteResourceId} from ` : ''} remote dataset ${importD.remoteDatasetId} from catalog ${importD.catalogId}`)
+    debugLoop(`import ${importD.remoteResourceId ? `remote resource ${importD.remoteResourceId} from` : ''} remote dataset ${importD.remoteDatasetId} from catalog ${importD.catalogId}`)
     lastActivity = new Date().getTime()
 
     const iterPromise = iter(importD)
@@ -126,7 +126,7 @@ async function iter (importD: Import) {
  */
 async function acquireNext (): Promise<Import | undefined> {
   const cursor = mongo.imports.aggregate<Import>([
-    { $match: { status: 'pending' } }, { $sample: { size: 10 } }
+    { $match: { status: 'waiting' } }, { $sample: { size: 10 } }
   ])
 
   while (await cursor.hasNext()) {

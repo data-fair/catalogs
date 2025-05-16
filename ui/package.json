@@ -24,7 +24,6 @@
     "@intlify/unplugin-vue-i18n": "^6.0.5",
     "@koumoul/v-iframe": "^2.4.5",
     "@koumoul/vjsf": "^3.14.0",
-    "@koumoul/vjsf-markdown": "^0.3.2",
     "@mdi/js": "^7.4.47",
     "@types/config": "^3.3.5",
     "@vitejs/plugin-vue": "^5.2.3",
