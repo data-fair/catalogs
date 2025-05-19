@@ -23,6 +23,9 @@ export default {
     q: {
       type: 'string'
     },
+    catalogId: {
+      type: 'string'
+    },
     dataFairDatasetId: {
       type: 'string'
     }

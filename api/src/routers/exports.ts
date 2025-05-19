@@ -12,8 +12,8 @@ export default router
 /**
  * Check that an export object is valid
  */
-const validateExport = async (exportD: Partial<Export>) => {
-  return (await import('#types/export/index.ts')).returnValid(exportD)
+const validateExport = async (exp: Partial<Export>) => {
+  return (await import('#types/export/index.ts')).returnValid(exp)
 }
 
 // Get the list of exports
@@ -46,25 +46,17 @@ router.post('/', async (req, res) => {
   const catalogExists = await mongo.catalogs.countDocuments({ _id: body.catalogId }) === 1
   if (!catalogExists) throw httpError(404, 'Catalog not found')
 
-  // TODO: we consider that the ui don't allow the user to create an export with a dataset where the owner is not the same as the catalog
-  // In the worker, we get the dataset and check if the owner is the same as the catalog, then we can publish the dataset by calling the plugin
-  // const { dataset, publication } = (await import('../../doc/catalogs/dataset/post-req/index.ts')).returnValid(req.body)
-  // if (dataset.owner && (catalog.owner.type !== dataset.owner.type || catalog.owner.id !== dataset.owner.id)) {
-  //   throw httpError(403, 'You do not have permission to publish this dataset in this catalog because the owner of the dataset is different from the owner of the catalog')
-  // }
+  const exp: Partial<Export> = { ...body }
+  exp._id = nanoid()
+  exp.owner = sessionState.account
+  exp.status = 'waiting'
+  exp.created = {
+    id: sessionState.user.id,
+    name: sessionState.user.name,
+    date: new Date().toISOString()
+  }
 
-  // TODO: Move to the worker
-  // const plugin = await findUtils.getPlugin(catalog.plugin)
-  // if (!plugin.metadata.capabilities.includes('publishDatasets')) throw httpError(501, 'Plugin does not support publishing datasets')
-  // const publicationRes = await plugin.publishDataset(catalog.config, dataset, publication)
-
-  const exportD: Partial<Export> = { ...body }
-
-  exportD._id = nanoid()
-  exportD.owner = sessionState.account
-  exportD.status = 'waiting'
-
-  const validExport = await validateExport(exportD)
+  const validExport = await validateExport(exp)
   await mongo.exports.insertOne(validExport)
 
   res.status(201).json(validExport)

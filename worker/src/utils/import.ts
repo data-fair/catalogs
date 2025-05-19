@@ -19,20 +19,20 @@ const getAxiosOptions = (catalog: Catalog): AxiosRequestConfig => {
   }
 }
 
-export const execute = async (catalog: Catalog, plugin: CatalogPlugin, importD: Import) => {
+export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Import) => {
   let datasetPost: Record<string, any>
   let resourceId: string
-  const remoteDataset = await plugin.getDataset(catalog.config, importD.remoteDatasetId)
+  const remoteDataset = await plugin.getDataset(catalog.config, imp.remoteDatasetId)
   if (!remoteDataset) {
-    await mongo.imports.deleteOne({ _id: importD._id })
+    await mongo.imports.deleteOne({ _id: imp._id })
     return internalError('worker-missing-dataset', 'found an import without associated dataset, weird')
   }
 
-  if (importD.remoteResourceId) { // Case when creating dataset from a specific resource
-    resourceId = importD.remoteResourceId
-    const remoteResource = remoteDataset.resources?.find(r => r.id === importD.remoteResourceId)
+  if (imp.remoteResourceId) { // Case when creating dataset from a specific resource
+    resourceId = imp.remoteResourceId
+    const remoteResource = remoteDataset.resources?.find(r => r.id === imp.remoteResourceId)
     if (!remoteResource) {
-      await mongo.imports.deleteOne({ _id: importD._id })
+      await mongo.imports.deleteOne({ _id: imp._id })
       return internalError('worker-missing-resource', 'found an import without associated resource, weird')
     }
 
@@ -46,7 +46,7 @@ export const execute = async (catalog: Catalog, plugin: CatalogPlugin, importD: 
     if (remoteResource.fileName) datasetPost.remoteFile.name = remoteResource.fileName
     if (remoteResource.size) datasetPost.remoteFile.size = remoteResource.size
   } else { // Case when creating a meta-only dataset with all resources as attachments
-    resourceId = importD.remoteDatasetId
+    resourceId = imp.remoteDatasetId
     datasetPost = {
       title: remoteDataset.title,
       isMetaOnly: true
@@ -63,7 +63,7 @@ export const execute = async (catalog: Catalog, plugin: CatalogPlugin, importD: 
   addProps(remoteDataset, datasetPost) // Add common properties
 
   const axiosOptions = getAxiosOptions(catalog)
-  if (importD.dataFairDatasetId) await updateDataFairDataset(resourceId, datasetPost, importD.dataFairDatasetId, axiosOptions)
+  if (imp.dataFairDatasetId) await updateDataFairDataset(resourceId, datasetPost, imp.dataFairDatasetId, axiosOptions)
   else await createDataFairDataset(resourceId, datasetPost, axiosOptions)
 }
 
@@ -111,7 +111,7 @@ const updateDataFairDataset = async (resourceId: string, datasetPost: any, dataF
     }, {
       $set: {
         status: 'done',
-        lastImportDate: new Date().toISOString()
+        lastImpate: new Date().toISOString()
       }
     })
   } catch (error: any) {
@@ -119,3 +119,5 @@ const updateDataFairDataset = async (resourceId: string, datasetPost: any, dataF
     else throw error
   }
 }
+
+export default { process }

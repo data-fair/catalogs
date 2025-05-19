@@ -9,7 +9,8 @@
     "#config": "./src/config.ts",
     "#mongo": "./src/mongo.ts",
     "#locks": "./src/locks.ts",
-    "#types": "./src/types.ts"
+    "#types": "./src/types.ts",
+    "#api/types/*": "../api/types/*"
   },
   "devDependencies": {
     "@data-fair/lib-common-types": "^1.10.1",

@@ -40,9 +40,7 @@
           sm="6"
           cols="12"
         >
-          <pre>
-            {{ exp }}
-          </pre>
+          <export-card :exp="exp" />
         </v-col>
       </v-row>
     </template>

@@ -1,14 +1,11 @@
 <template>
-  <v-container
-    v-if="typeof $route.query.dataFairDatasetId === 'string'"
-    data-iframe-height
-  >
+  <v-container data-iframe-height>
     <p v-if="!catalogsFetch.data.value?.results.length">
       {{ t('noCatalogs') }}
     </p>
     <export-list
       v-else
-      :data-fair-dataset-id="$route.query.dataFairDatasetId"
+      :data-fair-dataset-id="datasetId"
     />
   </v-container>
 </template>
@@ -17,6 +14,7 @@
 import type { CatalogsGetRes } from '#api/doc'
 
 const { t } = useI18n()
+const datasetId = useStringSearchParam('dataset-id')
 
 // TODO: Filter by catalogs that have the capability to publish
 const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, {

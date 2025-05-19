@@ -190,6 +190,10 @@ export default {
       type: 'string',
       description: 'Date of the end of the export process',
       format: 'date-time'
+    },
+    error: {
+      type: 'string',
+      description: 'Error message if the export failed'
     }
   },
   layout: {

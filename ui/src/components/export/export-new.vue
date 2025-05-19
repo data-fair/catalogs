@@ -56,9 +56,9 @@ const newExport = ref<Record<string, any>>(initExport())
 const exportSchema = computed(() => {
   const schema = clone(exportSchemaBase)
   schema.required = ['catalogId', 'dataFairDatasetId', 'action']
-  if (newExport.value?.action === 'addAsResource' || newExport.value?.action === 'overwrite') {
-    schema.required.push('remoteDatasetId')
-  }
+  // if (newExport.value?.action === 'addAsResource' || newExport.value?.action === 'overwrite') {
+  //   schema.required.push('remoteDatasetId')
+  // }
   return schema
 })
 

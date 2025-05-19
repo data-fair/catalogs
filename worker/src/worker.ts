@@ -1,4 +1,4 @@
-import type { Import } from '#api/types'
+import type { Export, Import } from '#api/types'
 import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
 
 import Debug from 'debug'
@@ -8,7 +8,8 @@ import path from 'path'
 import * as wsEmitter from '@data-fair/lib-node/ws-emitter.js'
 import { startObserver, stopObserver, internalError } from '@data-fair/lib-node/observer.js'
 import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
-import { execute } from './utils/import.ts'
+import importTask from './utils/import.ts'
+import exportTask from './utils/export.ts'
 import config from '#config'
 import mongo from '#mongo'
 import locks from '#locks'
@@ -20,6 +21,9 @@ const debugLoop = Debug('worker-loop')
 let mainLoopPromise: Promise<void>
 let stopped = false
 const promisePool: (Promise<void> | null)[] = new Array(config.worker.concurrency).fill(null)
+
+const types = ['import', 'export'] as const
+type Task = Import | Export
 
 // Start the worker (start the mail loop and all dependencies)
 export const start = async () => {
@@ -78,13 +82,19 @@ const mainLoop = async () => {
     const freeSlot = promisePool.findIndex(p => !p)
     debugLoop('index of a free slot', freeSlot)
 
-    const importD = await acquireNext()
-    if (!importD) continue // No import to process
+    let type, task
+    for (const taskType of types) {
+      if (stopped) break
+      task = await acquireNext(taskType)
+      type = taskType
+      if (task) break
+    }
+    if (!task || !type) continue // No task to process
 
-    debugLoop(`import ${importD.remoteResourceId ? `remote resource ${importD.remoteResourceId} from` : ''} remote dataset ${importD.remoteDatasetId} from catalog ${importD.catalogId}`)
+    // debugLoop(`import ${importD.remoteResourceId ? `remote resource ${importD.remoteResourceId} from` : ''} remote dataset ${importD.remoteDatasetId} from catalog ${importD.catalogId}`)
     lastActivity = new Date().getTime()
 
-    const iterPromise = iter(importD)
+    const iterPromise = iter(task, type)
     promisePool[freeSlot] = iterPromise
     // empty the slot after the promise is finished
     // do not catch failure, they should trigger a restart of the loop
@@ -93,50 +103,55 @@ const mainLoop = async () => {
 }
 
 /**
- * Manage an import
+ * Execute a task
  */
-async function iter (importD: Import) {
-  const catalog = await mongo.catalogs.findOne({ _id: importD.catalogId })
+async function iter (task: Task, type: typeof types[number]) {
+  debug('Processing', type, task._id)
 
+  const catalog = await mongo.catalogs.findOne({ _id: task.catalogId })
   if (!catalog) {
-    await mongo.imports.deleteOne({ _id: importD._id })
-    return internalError('worker-missing-catalog', 'found an import without associated catalog, weird')
+    await mongo.imports.deleteOne({ _id: task._id })
+    return internalError('worker-missing-catalog', 'found a task without associated catalog, weird')
   }
   debug(`Catalog ${catalog.title}`)
 
-  // TODO: Use getPlugin function
+  // TODO: Maybe be use the getPlugin function ?
   const plugin: CatalogPlugin = (await import(path.resolve(config.dataDir, 'plugins', catalog.plugin, 'index.ts'))).default
   if (!plugin) {
-    await mongo.imports.deleteOne({ _id: importD._id })
-    return internalError('worker-missing-plugin', 'found an import without associated plugin, weird')
+    await mongo.imports.deleteOne({ _id: task._id })
+    return internalError('worker-missing-plugin', 'found a task without associated plugin, weird')
   }
 
   try {
-    await execute(catalog, plugin, importD)
-  } catch (e) {
-    debug('Error during import', e)
-    await mongo.imports.updateOne({ _id: importD._id }, { $set: { status: 'error', error: e } })
+    if (type === 'import') {
+      await importTask.process(catalog, plugin, task as Import)
+    } else {
+      await exportTask.process(catalog, plugin, task as Export)
+    }
+  } catch (e: any) {
+    debug('Error while process', type, task._id, e)
+    const collection = type === 'import' ? mongo.imports : mongo.exports
+    await collection.updateOne({ _id: task._id }, { $set: { status: 'error', error: e.message } })
     return
   }
-  await locks.release(importD._id)
+  await locks.release(task._id)
 }
 
 /**
- * Acquire the next import to process
+ * Acquire the next task to process
  */
-async function acquireNext (): Promise<Import | undefined> {
-  const cursor = mongo.imports.aggregate<Import>([
+async function acquireNext (type: typeof types[number]): Promise<Task | undefined> {
+  const collection = type === 'import' ? mongo.imports : mongo.exports
+  const cursor = collection.aggregate<Task>([
     { $match: { status: 'waiting' } }, { $sample: { size: 10 } }
   ])
 
   while (await cursor.hasNext()) {
-    const importD = (await cursor.next())!
-    const ack = await locks.acquire(importD._id, 'worker-loop-iter')
-    debug('Try to acquire the lock for', importD._id)
-    if (ack) {
-      debug('Lock acquired for', importD._id)
-      await mongo.imports.updateOne({ _id: importD._id }, { $set: { status: 'running' } })
-      return importD
-    }
+    const task = (await cursor.next())!
+    const ack = await locks.acquire(`${type}:${task._id}`, 'worker-loop-iter')
+    debug('Try to acquire the lock to', type, task._id)
+    if (!ack) continue
+    debug('Lock acquired to', type, task._id)
+    return task
   }
 }

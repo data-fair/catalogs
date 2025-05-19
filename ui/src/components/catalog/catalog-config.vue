@@ -15,7 +15,7 @@
         @update:model-value="patch.execute()"
       >
         <template #activity>
-          <activity :resource="editCatalog" />
+          <activity :resource="Object.assign(catalog, editCatalog)" />
         </template>
       </vjsf>
     </v-form>
@@ -53,12 +53,14 @@ const catalogSchema = computed(() => {
 const patch = useAsyncAction(
   async () => {
     if (!valid.value || !canAdmin) return
-    await $fetch(`/catalogs/${catalogId}`, {
+    const res = await $fetch(`/catalogs/${catalogId}`, {
       method: 'PATCH',
       body: JSON.stringify(editCatalog.value),
     })
 
-    Object.assign(catalog || {}, editCatalog.value)
+    Object.assign(editCatalog.value, {
+      updated: res.updated
+    })
   },
   {
     error: t('errorSavingCatalog')
