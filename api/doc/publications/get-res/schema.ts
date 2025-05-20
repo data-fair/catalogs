@@ -1,10 +1,6 @@
 export default {
-  $id: 'https://github.com/data-fair/catalogs/exports/get-res',
-  'x-exports': [
-    'types',
-    'validate'
-  ],
-  title: 'ExportsGetRes',
+  $id: 'https://github.com/data-fair/catalogs/publications/get-res',
+  title: 'PublicationsGetRes',
   type: 'object',
   additionalProperties: false,
   required: [
@@ -19,7 +15,7 @@ export default {
     results: {
       type: 'array',
       items: {
-        $ref: 'https://github.com/data-fair/catalogs/export'
+        $ref: 'https://github.com/data-fair/catalogs/publication'
       }
     }
   },

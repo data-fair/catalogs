@@ -1,10 +1,11 @@
 <template>
-  <export-new
+  <publication-new
     :catalog-id="catalogId"
-    :data-fair-dataset-id="dataFairDatasetId"
+    :data-fair-dataset-slug="dataFairDatasetSlug"
+    @on-publish="publicationsFetch.refresh()"
   />
   <p
-    v-if="!exportsFetch.data.value?.results.length"
+    v-if="!publicationsFetch.data.value?.results.length"
     class="font-italic mt-4"
   >
     {{ t('noPublications') }}
@@ -14,7 +15,7 @@
       {{ t('publicationsList') }}
     </h3>
     <v-row
-      v-if="exportsFetch.loading.value"
+      v-if="publicationsFetch.loading.value"
       class="d-flex align-stretch"
     >
       <v-col
@@ -34,13 +35,13 @@
     <template v-else>
       <v-row class="d-flex align-stretch">
         <v-col
-          v-for="exp in exportsFetch.data.value.results"
-          :key="exp._id"
+          v-for="publication in publicationsFetch.data.value.results"
+          :key="publication._id"
           md="4"
           sm="6"
           cols="12"
         >
-          <export-card :exp="exp" />
+          <publication-card :publication="publication" />
         </v-col>
       </v-row>
     </template>
@@ -48,20 +49,21 @@
 </template>
 
 <script setup lang="ts">
-import type { ExportsGetRes } from '#api/doc'
+import type { PublicationsGetRes } from '#api/doc'
 
 const { t } = useI18n()
 
-const { catalogId, dataFairDatasetId } = defineProps<{
+/** Filter by */
+const { catalogId, dataFairDatasetSlug } = defineProps<{
   catalogId?: string,
-  dataFairDatasetId?: string,
+  dataFairDatasetSlug?: string,
 }>()
 
-const exportsFetch = useFetch<ExportsGetRes>(`${$apiPath}/exports`, {
+const publicationsFetch = useFetch<PublicationsGetRes>(`${$apiPath}/publications`, {
   query: {
     sort: 'updated.date:-1',
-    dataFairDatasetId,
-    catalogId
+    catalogId,
+    dataFairDatasetSlug
   }
 })
 
@@ -73,7 +75,7 @@ const exportsFetch = useFetch<ExportsGetRes>(`${$apiPath}/exports`, {
     publicationsList: List of publications
 
   fr:
-    noPublications: Ce jeu de données n'est encore publié sur aucun catalogue
+    noPublications: Ce jeu de données n'est publié sur un aucun catalogue
     publicationsList: Liste des publications
 
 </i18n>

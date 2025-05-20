@@ -10,10 +10,10 @@
       }
     }"
   >
-    <v-form v-model="validExport">
+    <v-form v-model="validPublication">
       <vjsf
-        v-model="newExport"
-        :schema="exportSchema"
+        v-model="newPublication"
+        :schema="publicationSchema"
         :options="vjsfOptions"
       />
     </v-form>
@@ -22,7 +22,7 @@
     class="mt-2"
     color="primary"
     variant="flat"
-    :disabled="!validExport"
+    :disabled="!validPublication"
     :loading="publishCatalog.loading.value"
     @click="publishCatalog.execute()"
   >
@@ -34,49 +34,52 @@
 import tutorialAlert from '@data-fair/lib-vuetify/tutorial-alert.vue'
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import clone from '@data-fair/lib-utils/clone.js'
-import { resolvedSchema as exportSchemaBase } from '#api/types/export/index.ts'
+import { resolvedSchema as publicationSchemaBase } from '#api/types/publication/index.ts'
 
 const { t } = useI18n()
 const session = useSessionAuthenticated()
 
-const { catalogId, dataFairDatasetId } = defineProps<{
+// Optional default values
+const { catalogId, dataFairDatasetSlug } = defineProps<{
   catalogId?: string,
-  dataFairDatasetId?: string,
+  dataFairDatasetSlug?: string,
 }>()
 
-const initExport = () => {
-  const exp: Record<string, any> = {}
-  if (catalogId) exp.catalogId = catalogId
-  if (dataFairDatasetId) exp.dataFairDatasetId = dataFairDatasetId
-  return exp
-}
-const validExport = ref(false)
-const newExport = ref<Record<string, any>>(initExport())
+// Notify parent component when a new publication is created
+const emit = defineEmits(['onPublish'])
 
-const exportSchema = computed(() => {
-  const schema = clone(exportSchemaBase)
-  schema.required = ['catalogId', 'dataFairDatasetId', 'action']
-  // if (newExport.value?.action === 'addAsResource' || newExport.value?.action === 'overwrite') {
-  //   schema.required.push('remoteDatasetId')
-  // }
+const initPublication = () => {
+  const pub: Record<string, any> = {}
+  if (catalogId) pub.catalog = { id: catalogId }
+  if (dataFairDatasetSlug) pub.dataFairDataset = { slug: dataFairDatasetSlug }
+  return pub
+}
+const validPublication = ref(false)
+const newPublication = ref<Record<string, any>>(initPublication())
+
+const publicationSchema = computed(() => {
+  const schema = clone(publicationSchemaBase)
+  schema.required = ['catalog', 'action', 'dataFairDataset']
+  // TODO: make required remoteDatasetId if action is not create
   return schema
 })
 
 const publishCatalog = useAsyncAction(
   async () => {
-    if (!validExport.value) return
-    await $fetch('/exports', {
+    if (!validPublication.value) return
+    await $fetch('/publications', {
       method: 'POST',
-      body: newExport.value,
+      body: newPublication.value,
     })
-    newExport.value = initExport()
+    newPublication.value = initPublication()
+    emit('onPublish')
   }
 )
 
 const vjsfOptions: VjsfOptions = {
   context: {
     catalogId,
-    dataFairDatasetId,
+    dataFairDatasetSlug,
     origin: window.location.origin
   },
   density: 'comfortable',

@@ -1,4 +1,4 @@
-import type { Export, Import } from '#api/types'
+import type { Publication, Import } from '#api/types'
 import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
 
 import Debug from 'debug'
@@ -9,7 +9,7 @@ import * as wsEmitter from '@data-fair/lib-node/ws-emitter.js'
 import { startObserver, stopObserver, internalError } from '@data-fair/lib-node/observer.js'
 import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
 import importTask from './utils/import.ts'
-import exportTask from './utils/export.ts'
+import publicationTask from './utils/publication.ts'
 import config from '#config'
 import mongo from '#mongo'
 import locks from '#locks'
@@ -22,8 +22,8 @@ let mainLoopPromise: Promise<void>
 let stopped = false
 const promisePool: (Promise<void> | null)[] = new Array(config.worker.concurrency).fill(null)
 
-const types = ['import', 'export'] as const
-type Task = Import | Export
+const types = ['import', 'publication'] as const
+type Task = Import | Publication
 
 // Start the worker (start the mail loop and all dependencies)
 export const start = async () => {
@@ -108,7 +108,7 @@ const mainLoop = async () => {
 async function iter (task: Task, type: typeof types[number]) {
   debug('Processing', type, task._id)
 
-  const catalog = await mongo.catalogs.findOne({ _id: task.catalogId })
+  const catalog = await mongo.catalogs.findOne({ _id: task.catalog.id })
   if (!catalog) {
     await mongo.imports.deleteOne({ _id: task._id })
     return internalError('worker-missing-catalog', 'found a task without associated catalog, weird')
@@ -126,11 +126,11 @@ async function iter (task: Task, type: typeof types[number]) {
     if (type === 'import') {
       await importTask.process(catalog, plugin, task as Import)
     } else {
-      await exportTask.process(catalog, plugin, task as Export)
+      await publicationTask.process(catalog, plugin, task as Publication)
     }
   } catch (e: any) {
     debug('Error while process', type, task._id, e)
-    const collection = type === 'import' ? mongo.imports : mongo.exports
+    const collection = type === 'import' ? mongo.imports : mongo.publications
     await collection.updateOne({ _id: task._id }, { $set: { status: 'error', error: e.message } })
     return
   }
@@ -141,7 +141,7 @@ async function iter (task: Task, type: typeof types[number]) {
  * Acquire the next task to process
  */
 async function acquireNext (type: typeof types[number]): Promise<Task | undefined> {
-  const collection = type === 'import' ? mongo.imports : mongo.exports
+  const collection = type === 'import' ? mongo.imports : mongo.publications
   const cursor = collection.aggregate<Task>([
     { $match: { status: 'waiting' } }, { $sample: { size: 10 } }
   ])

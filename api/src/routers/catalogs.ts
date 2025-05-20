@@ -64,8 +64,8 @@ router.get('/', async (req, res) => {
   const sort = findUtils.sort(params.sort)
   const { skip, size } = findUtils.pagination(params)
   const project = findUtils.project(params.select)
-  const query = findUtils.query(params, sessionState) // Check permissions
-  const queryWithFilters = { ...query }
+  const query = findUtils.filterPermissions(params, sessionState)
+  const queryWithFilters = Object.assign(findUtils.query(params, { plugins: 'plugin', owners: 'owner' }), query)
 
   // Filter by plugins
   const plugins = params.plugins ? params.plugins.split(',') : []
@@ -186,7 +186,7 @@ router.patch('/:id', async (req, res) => {
 })
 
 // Delete a catalog
-// TODO: Delete also all exports for this catalog ?
+// TODO: Delete also all publications for this catalog ?
 router.delete('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })

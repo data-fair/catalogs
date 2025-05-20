@@ -3,9 +3,9 @@
     <p v-if="!catalogsFetch.data.value?.results.length">
       {{ t('noCatalogs') }}
     </p>
-    <export-list
+    <publications-list
       v-else
-      :data-fair-dataset-id="datasetId"
+      :data-fair-dataset-slug="datasetSlug"
     />
   </v-container>
 </template>
@@ -14,7 +14,7 @@
 import type { CatalogsGetRes } from '#api/doc'
 
 const { t } = useI18n()
-const datasetId = useStringSearchParam('dataset-id')
+const datasetSlug = useStringSearchParam('dataset-slug')
 
 // TODO: Filter by catalogs that have the capability to publish
 const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, {

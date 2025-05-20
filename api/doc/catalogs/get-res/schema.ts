@@ -1,9 +1,5 @@
 export default {
   $id: 'https://github.com/data-fair/catalogs/catalogs/get-res',
-  'x-exports': [
-    'types',
-    'validate'
-  ],
   title: 'CatalogsGetRes',
   type: 'object',
   additionalProperties: false,

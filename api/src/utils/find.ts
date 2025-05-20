@@ -6,11 +6,11 @@ import config from '#config'
 import fs from 'fs-extra'
 import path from 'path'
 
-// Util functions shared accross the main find (GET on collection) endpoints
-export const query = (reqQuery: Record<string, string>, sessionState: SessionStateAuthenticated) => {
+/**
+ * Show all if super admin, otherwise filter by owner
+ */
+export const filterPermissions = async (reqQuery: Record<string, string>, sessionState: SessionStateAuthenticated) => {
   const query: Record<string, any> = {}
-
-  if (reqQuery.q) query.$text = { $search: reqQuery.q }
 
   const showAll = reqQuery.showAll === 'true'
   if (showAll && !sessionState.user.adminMode) {
@@ -21,6 +21,23 @@ export const query = (reqQuery: Record<string, string>, sessionState: SessionSta
     query['owner.id'] = sessionState.account.id
     if (sessionState.account.department) query['owner.department'] = sessionState.account.department
   }
+  return query
+}
+
+/**
+ * Generate a MongoDB query from the request query parameters
+ * Use q reqQuery parameter to a text search
+ * @param reqQuery The request query parameters
+ * @param fieldsMap The mapping of request query parameters to MongoDB fields
+ */
+export const query = (reqQuery: Record<string, string>, fieldsMap: Record<string, string> = {}) => {
+  const query: Record<string, any> = {}
+
+  if (reqQuery.q) query.$text = { $search: reqQuery.q }
+
+  Object.keys(fieldsMap).filter(name => reqQuery[name] !== undefined).forEach(name => {
+    query[fieldsMap[name]] = { $in: reqQuery[name].split(',') }
+  })
   return query
 }
 
@@ -47,6 +64,7 @@ export const removePluginFromCache = (pluginId: string) => delete pluginsCache[p
 
 export default {
   query,
+  filterPermissions,
   getPlugin,
   sort: mongoSort,
   pagination: mongoPagination,

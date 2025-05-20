@@ -24,7 +24,7 @@
       :src="assetsUrls.progress"
       :tabs="[
         { id: 'import', title: t('import'), icon: mdiDownload },
-        { id: 'export', title: t('export'), icon: mdiUpload },
+        { id: 'publication', title: t('publication'), icon: mdiUpload },
       ]"
     />
 
@@ -37,8 +37,8 @@
         />
       </v-tabs-window-item>
 
-      <v-tabs-window-item value="export">
-        <export-list
+      <v-tabs-window-item value="publication">
+        <publications-list
           v-if="plugin?.metadata.capabilities.includes('publishDataset')"
           :catalog-id="catalog._id"
         />
@@ -96,16 +96,16 @@ const assetsUrls = {
     catalogs: Catalogs
     datasets: Datasets
     description: Check the general information of the catalog or modify its configuration.
-    export: Export
     metadata: Metadata
     import: Import
+    publication: Publications
   fr:
     catalogs: Catalogues
     datasets: Jeux de données
     description: Consulter les informations générales du catalogue ou modifier sa configuration.
-    export: Export
     metadata: Métadonnées
     import: Import
+    publication: Publications
 
 </i18n>
 

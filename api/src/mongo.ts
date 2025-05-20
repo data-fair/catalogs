@@ -1,4 +1,4 @@
-import type { Catalog, Export, Import } from '#types'
+import type { Catalog, Publication, Import } from '#types'
 
 import { Mongo } from '@data-fair/lib-node/mongo.js'
 import config from '#config'
@@ -17,12 +17,12 @@ export class CatalogsMongo {
     return this.mongo.db.collection<Catalog>('catalogs')
   }
 
-  get exports () {
-    return this.mongo.db.collection<Export>('exports')
-  }
-
   get imports () {
     return this.mongo.db.collection<Import>('imports')
+  }
+
+  get publications () {
+    return this.mongo.db.collection<Publication>('publications')
   }
 
   constructor () {
@@ -35,10 +35,10 @@ export class CatalogsMongo {
       catalogs: {
         main: { 'owner.type': 1, 'owner.id': 1 } // Frequently get catalogs by owner
       },
-      exports: {
-        main: { catalogId: 1, 'owner.type': 1, 'owner.id': 1 }, // Frequently get exports by catalogId and owner
-        dataset: { dataFairDatasetId: 1, 'owner.type': 1, 'owner.id': 1 }, // Frequently get exports of a dataset
-        status: { status: 1 }, // For each worker loop, we get random exports with status waiting or running
+      publications: {
+        main: { catalogId: 1, 'owner.type': 1, 'owner.id': 1 }, // Frequently get publications by catalogId and owner
+        dataset: { dataFairDatasetId: 1, 'owner.type': 1, 'owner.id': 1 }, // Frequently get publications of a dataset
+        status: { status: 1 }, // For each worker loop, we get random publications with status waiting or running
       },
       imports: {
         main: { catalogId: 1, 'owner.type': 1, 'owner.id': 1 }, // Frequently get imports by catalogId and owner

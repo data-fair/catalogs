@@ -7,7 +7,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import tmp from 'tmp-promise'
 import { assertAccountRole, httpError, session } from '@data-fair/lib-express'
-import findUtils, { removePluginFromCache } from '../utils/find.ts'
+import { getPlugin, removePluginFromCache } from '../utils/find.ts'
 import mongo from '#mongo'
 import config from '#config'
 
@@ -77,7 +77,7 @@ router.get('/', async (req, res) => {
   const results: Plugin[] = []
   for (const dir of dirs) {
     const pluginInfo = await fs.readJson(path.join(pluginsDir, dir, 'plugin.json'))
-    const plugin = await findUtils.getPlugin(dir)
+    const plugin = await getPlugin(dir)
 
     results.push({
       id: pluginInfo.id,
@@ -115,7 +115,7 @@ router.get('/:id', async (req, res) => {
   } catch (e: any) {
     throw httpError(404, 'Plugin not found')
   }
-  const plugin = await findUtils.getPlugin(req.params.id)
+  const plugin = await getPlugin(req.params.id)
 
   res.send({
     id: pluginInfo.id,

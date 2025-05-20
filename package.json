@@ -1,7 +1,7 @@
 {
   "name": "@data-fair/catalogs",
   "version": "0.0.0",
-  "description": "Import/export catalogs between Data Fair and other services.",
+  "description": "Import/publish datasets between Data Fair and other services.",
   "type": "module",
   "scripts": {
     "build-types": "export NODE_OPTIONS='--experimental-strip-types' && df-build-types ./",

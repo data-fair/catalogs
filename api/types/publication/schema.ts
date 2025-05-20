@@ -1,11 +1,11 @@
 export default {
-  $id: 'https://github.com/data-fair/catalogs/export',
+  $id: 'https://github.com/data-fair/catalogs/publication',
   'x-exports': [
     'types',
     'validate',
     'resolvedSchema'
   ],
-  title: 'Export',
+  title: 'Publication',
   type: 'object',
   additionalProperties: false,
   required: [
@@ -14,13 +14,13 @@ export default {
     'created',
     'status',
     'action',
-    'catalogId',
-    'dataFairDatasetId'
+    'catalog',
+    'dataFairDataset'
   ],
   properties: {
     _id: {
       type: 'string',
-      description: 'Unique identifier for this export'
+      description: 'Unique identifier for this publication'
     },
     owner: {
       $ref: 'https://github.com/data-fair/lib/account'
@@ -100,11 +100,23 @@ export default {
         ]
       }
     },
-    catalogId: {
-      type: 'string',
+    catalog: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['id'],
       title: 'Catalog',
       'x-i18n-title': {
         fr: 'Catalogue'
+      },
+      properties: {
+        id: {
+          type: 'string',
+          description: 'Id of the catalog'
+        },
+        title: {
+          type: 'string',
+          description: 'Title of the catalog'
+        }
       },
       layout: {
         if: {
@@ -123,20 +135,37 @@ export default {
           url: '${context.origin}/catalogs/api/catalogs?sort=updated.date:-1&select=_id,title',
           itemsResults: 'data.results',
           itemTitle: 'item.title',
-          itemValue: 'item._id',
+          itemValue: '{ id: item._id, title: item.title }',
+          itemKey: 'item._id',
           qSearchParam: 'q',
         }
       }
     },
-    dataFairDatasetId: {
-      type: 'string',
+    dataFairDataset: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['slug'],
       title: 'Local dataset',
       'x-i18n-title': {
         fr: 'Jeu de données local'
       },
+      properties: {
+        id: {
+          type: 'string',
+          description: 'Id of the dataset'
+        },
+        slug: {
+          type: 'string',
+          description: 'Slug of the dataset'
+        },
+        title: {
+          type: 'string',
+          description: 'Title of the dataset'
+        }
+      },
       layout: {
         if: {
-          expr: '!context.dataFairDatasetId',
+          expr: '!context.dataFairDatasetSlug',
           pure: false
         },
         props: {
@@ -147,10 +176,10 @@ export default {
         },
         getItems: {
           // eslint-disable-next-line no-template-curly-in-string
-          url: '${context.origin}/data-fair/api/v1/datasets?raw=true&select=id,title',
+          url: '${context.origin}/data-fair/api/v1/datasets?raw=true&select=id,title,slug',
           itemsResults: 'data.results',
           itemTitle: 'item.title',
-          itemValue: 'item.id',
+          itemKey: 'item.slug',
           qSearchParam: 'q'
         }
       }
@@ -174,7 +203,7 @@ export default {
         },
         getItems: {
           // eslint-disable-next-line no-template-curly-in-string
-          url: '${context.origin}/catalogs/api/catalogs/${rootData.catalogId}/datasets',
+          url: '${context.origin}/catalogs/api/catalogs/${rootData.catalog.id}/datasets',
           itemsResults: 'data.results',
           itemTitle: 'item.title',
           itemValue: 'item.id',
@@ -186,9 +215,9 @@ export default {
       type: 'string',
       description: 'Id of the resource in the dataset in the remote catalog'
     },
-    lastExportDate: {
+    lastPublishedAt: {
       type: 'string',
-      description: 'Date of the end of the export process',
+      description: 'Date of the end of the publication process',
       format: 'date-time'
     },
     error: {
@@ -199,8 +228,8 @@ export default {
   layout: {
     title: null,
     children: [
-      'catalogId',
-      'dataFairDatasetId',
+      'catalog',
+      'dataFairDataset',
       'action',
       'remoteDatasetId'
     ],

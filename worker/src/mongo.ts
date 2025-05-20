@@ -1,4 +1,4 @@
-import type { Catalog, Export, Import } from '#api/types'
+import type { Catalog, Publication, Import } from '#api/types'
 
 import { Mongo } from '@data-fair/lib-node/mongo.js'
 import config from '#config'
@@ -17,12 +17,12 @@ export class CatalogsMongo {
     return this.mongo.db.collection<Catalog>('catalogs')
   }
 
-  get exports () {
-    return this.mongo.db.collection<Export>('exports')
-  }
-
   get imports () {
     return this.mongo.db.collection<Import>('imports')
+  }
+
+  get publications () {
+    return this.mongo.db.collection<Publication>('publications')
   }
 
   constructor () {

@@ -1,6 +1,6 @@
 export default {
-  $id: 'https://github.com/data-fair/catalogs/exports/get-req',
-  title: 'ExportsGetReq',
+  $id: 'https://github.com/data-fair/catalogs/publications/get-req',
+  title: 'PublicationsGetReq',
   type: 'object',
   additionalProperties: false,
   properties: {
@@ -26,7 +26,7 @@ export default {
     catalogId: {
       type: 'string'
     },
-    dataFairDatasetId: {
+    dataFairDatasetSlug: {
       type: 'string'
     }
   }
