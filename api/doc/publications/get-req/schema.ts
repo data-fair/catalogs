@@ -26,7 +26,7 @@ export default {
     catalogId: {
       type: 'string'
     },
-    dataFairDatasetSlug: {
+    dataFairDatasetId: {
       type: 'string'
     }
   }

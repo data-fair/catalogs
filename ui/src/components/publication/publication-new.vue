@@ -40,9 +40,9 @@ const { t } = useI18n()
 const session = useSessionAuthenticated()
 
 // Optional default values
-const { catalogId, dataFairDatasetSlug } = defineProps<{
+const { catalogId, dataFairDatasetId } = defineProps<{
   catalogId?: string,
-  dataFairDatasetSlug?: string,
+  dataFairDatasetId?: string,
 }>()
 
 // Notify parent component when a new publication is created
@@ -51,7 +51,7 @@ const emit = defineEmits(['onPublish'])
 const initPublication = () => {
   const pub: Record<string, any> = {}
   if (catalogId) pub.catalog = { id: catalogId }
-  if (dataFairDatasetSlug) pub.dataFairDataset = { slug: dataFairDatasetSlug }
+  if (dataFairDatasetId) pub.dataFairDataset = { id: dataFairDatasetId }
   return pub
 }
 const validPublication = ref(false)
@@ -60,7 +60,7 @@ const newPublication = ref<Record<string, any>>(initPublication())
 const publicationSchema = computed(() => {
   const schema = clone(publicationSchemaBase)
   schema.required = ['catalog', 'action', 'dataFairDataset']
-  // TODO: make required remoteDatasetId if action is not create
+  // TODO: make required remoteDataset if action is not create
   return schema
 })
 
@@ -79,7 +79,7 @@ const publishCatalog = useAsyncAction(
 const vjsfOptions: VjsfOptions = {
   context: {
     catalogId,
-    dataFairDatasetSlug,
+    dataFairDatasetId,
     origin: window.location.origin
   },
   density: 'comfortable',
@@ -87,7 +87,6 @@ const vjsfOptions: VjsfOptions = {
   locale: session.lang.value,
   readOnlyPropertiesMode: 'hide',
   titleDepth: 4,
-  useExamples: 'help',
   validateOn: 'blur',
   xI18n: true
 }

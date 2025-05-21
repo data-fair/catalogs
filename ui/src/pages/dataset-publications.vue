@@ -5,7 +5,7 @@
     </p>
     <publications-list
       v-else
-      :data-fair-dataset-slug="datasetSlug"
+      :data-fair-dataset-id="datasetId"
     />
   </v-container>
 </template>
@@ -14,7 +14,7 @@
 import type { CatalogsGetRes } from '#api/doc'
 
 const { t } = useI18n()
-const datasetSlug = useStringSearchParam('dataset-slug')
+const datasetId = useStringSearchParam('dataset-id')
 
 // TODO: Filter by catalogs that have the capability to publish
 const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, {

@@ -91,7 +91,6 @@ const mainLoop = async () => {
     }
     if (!task || !type) continue // No task to process
 
-    // debugLoop(`import ${importD.remoteResourceId ? `remote resource ${importD.remoteResourceId} from` : ''} remote dataset ${importD.remoteDatasetId} from catalog ${importD.catalogId}`)
     lastActivity = new Date().getTime()
 
     const iterPromise = iter(task, type)

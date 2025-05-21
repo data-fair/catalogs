@@ -52,7 +52,7 @@ export default {
     },
     status: {
       type: 'string',
-      description: 'Status of the export',
+      description: 'Status of the publication',
       enum: [
         'waiting',
         'running',
@@ -144,28 +144,22 @@ export default {
     dataFairDataset: {
       type: 'object',
       additionalProperties: false,
-      required: ['slug'],
+      required: ['id'],
       title: 'Local dataset',
       'x-i18n-title': {
         fr: 'Jeu de données local'
       },
       properties: {
         id: {
-          type: 'string',
-          description: 'Id of the dataset'
-        },
-        slug: {
-          type: 'string',
-          description: 'Slug of the dataset'
+          type: 'string'
         },
         title: {
-          type: 'string',
-          description: 'Title of the dataset'
+          type: 'string'
         }
       },
       layout: {
         if: {
-          expr: '!context.dataFairDatasetSlug',
+          expr: '!context.dataFairDatasetId',
           pure: false
         },
         props: {
@@ -176,19 +170,29 @@ export default {
         },
         getItems: {
           // eslint-disable-next-line no-template-curly-in-string
-          url: '${context.origin}/data-fair/api/v1/datasets?raw=true&select=id,title,slug',
+          url: '${context.origin}/data-fair/api/v1/datasets?raw=true&select=id,title',
           itemsResults: 'data.results',
           itemTitle: 'item.title',
-          itemKey: 'item.slug',
+          itemKey: 'item.id',
           qSearchParam: 'q'
         }
       }
     },
-    remoteDatasetId: {
-      type: 'string',
+    remoteDataset: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['id'],
       title: 'Remote dataset',
       'x-i18n-title': {
         fr: 'Jeu de données distant'
+      },
+      properties: {
+        id: {
+          type: 'string'
+        },
+        title: {
+          type: 'string'
+        }
       },
       layout: {
         if: {
@@ -211,18 +215,27 @@ export default {
         }
       }
     },
-    remoteResourceId: {
-      type: 'string',
-      description: 'Id of the resource in the dataset in the remote catalog'
+    remoteResource: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['id'],
+      properties: {
+        id: {
+          type: 'string'
+        },
+        title: {
+          type: 'string'
+        }
+      }
     },
-    lastPublishedAt: {
+    lastPublicationDate: {
       type: 'string',
-      description: 'Date of the end of the publication process',
+      description: 'Date of the end of the last publication process',
       format: 'date-time'
     },
     error: {
       type: 'string',
-      description: 'Error message if the export failed'
+      description: 'Error message if the publication failed'
     }
   },
   layout: {
@@ -231,7 +244,7 @@ export default {
       'catalog',
       'dataFairDataset',
       'action',
-      'remoteDatasetId'
+      'remoteDataset'
     ],
     cols: 6
   }

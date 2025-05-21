@@ -75,7 +75,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   removeAdditional: true,
   titleDepth: 3,
   updateOn: 'blur',
-  useExamples: 'help',
+  // useExamples: 'help',
   validateOn: 'blur',
   xI18n: true
 }))

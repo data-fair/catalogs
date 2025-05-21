@@ -153,7 +153,7 @@ const catalogSchema = computed(() => {
     .addProperty('config', { ...configSchema, title: t('configuration') })
     .schema
 
-  schema.required = ['catalogId', 'action']
+  schema.required = ['title', 'config']
   return schema
 })
 
@@ -187,8 +187,8 @@ const vjsfOptions: VjsfOptions = {
   initialValidation: 'always',
   locale: session.lang.value,
   readOnlyPropertiesMode: 'hide',
-  titleDepth: 4,
-  useExamples: 'help',
+  titleDepth: 3,
+  // useExamples: 'help',
   validateOn: 'blur',
   xI18n: true
 }

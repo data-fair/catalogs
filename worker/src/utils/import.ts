@@ -20,17 +20,20 @@ const getAxiosOptions = (catalog: Catalog): AxiosRequestConfig => {
 }
 
 export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Import) => {
+  /** The body for the post to the data-fair's api */
   let datasetPost: Record<string, any>
+
+  /** The ID of the resource or dataset in the catalog */
   let resourceId: string
-  const remoteDataset = await plugin.getDataset(catalog.config, imp.remoteDatasetId)
+  const remoteDataset = await plugin.getDataset(catalog.config, imp.remoteDataset.id)
   if (!remoteDataset) {
     await mongo.imports.deleteOne({ _id: imp._id })
     return internalError('worker-missing-dataset', 'found an import without associated dataset, weird')
   }
 
-  if (imp.remoteResourceId) { // Case when creating dataset from a specific resource
-    resourceId = imp.remoteResourceId
-    const remoteResource = remoteDataset.resources?.find(r => r.id === imp.remoteResourceId)
+  if (imp.remoteResource) { // Case when creating dataset from a specific resource
+    resourceId = imp.remoteResource.id
+    const remoteResource = remoteDataset.resources?.find(r => r.id === resourceId)
     if (!remoteResource) {
       await mongo.imports.deleteOne({ _id: imp._id })
       return internalError('worker-missing-resource', 'found an import without associated resource, weird')
@@ -46,7 +49,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
     if (remoteResource.fileName) datasetPost.remoteFile.name = remoteResource.fileName
     if (remoteResource.size) datasetPost.remoteFile.size = remoteResource.size
   } else { // Case when creating a meta-only dataset with all resources as attachments
-    resourceId = imp.remoteDatasetId
+    resourceId = imp.remoteDataset.id
     datasetPost = {
       title: remoteDataset.title,
       isMetaOnly: true
@@ -63,7 +66,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
   addProps(remoteDataset, datasetPost) // Add common properties
 
   const axiosOptions = getAxiosOptions(catalog)
-  if (imp.dataFairDatasetId) await updateDataFairDataset(resourceId, datasetPost, imp.dataFairDatasetId, axiosOptions)
+  if (imp.dataFairDataset) await updateDataFairDataset(resourceId, datasetPost, imp.dataFairDataset.id, axiosOptions)
   else await createDataFairDataset(resourceId, datasetPost, axiosOptions)
 }
 
@@ -87,11 +90,14 @@ const addProps = (dataset: any, resourcePost: any) => {
  * @param datasetPost - The dataset data to be created
  */
 const createDataFairDataset = async (resourceId: string, datasetPost: any, axiosOptions: AxiosRequestConfig) => {
-  const createdDataset = await axios.post('/api/v1/datasets', datasetPost, axiosOptions)
+  const createdDataset = await axios.post('/api/v1/datasets', datasetPost, axiosOptions) // Create the dataset in Data-Fair
 
   await mongo.imports.updateOne({ _id: resourceId }, {
     $set: {
-      dataFairDatasetId: createdDataset.data._id,
+      dataFairDataset: {
+        id: createdDataset.data.id,
+        title: createdDataset.data.title,
+      },
       status: 'done'
     }
   })
@@ -102,16 +108,16 @@ const createDataFairDataset = async (resourceId: string, datasetPost: any, axios
  * @param resourceId - The ID of the catalog resource or catalog dataset
  * @param datasetPost - The dataset data to be updated
  */
-const updateDataFairDataset = async (resourceId: string, datasetPost: any, dataFairId: string, axiosOptions: AxiosRequestConfig) => {
+const updateDataFairDataset = async (resourceId: string, datasetPost: any, dataFairDatasetId: string, axiosOptions: AxiosRequestConfig) => {
   try {
     delete datasetPost.isMetaOnly
-    await axios.patch(`/api/v1/datasets/${dataFairId}`, datasetPost, axiosOptions)
+    await axios.patch(`/api/v1/datasets/${dataFairDatasetId}`, datasetPost, axiosOptions)
     await mongo.imports.updateOne({
       _id: resourceId
     }, {
       $set: {
         status: 'done',
-        lastImpate: new Date().toISOString()
+        lastImportDate: new Date().toISOString()
       }
     })
   } catch (error: any) {

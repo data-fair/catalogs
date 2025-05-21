@@ -11,9 +11,10 @@ export default {
   required: [
     '_id',
     'owner',
+    'created',
     'status',
-    'catalogId',
-    'remoteDatasetId'
+    'catalog',
+    'remoteDataset'
   ],
   properties: {
     _id: {
@@ -22,6 +23,31 @@ export default {
     },
     owner: {
       $ref: 'https://github.com/data-fair/lib/account'
+    },
+    created: {
+      type: 'object',
+      additionalProperties: false,
+      required: [
+        'id',
+        'name',
+        'date'
+      ],
+      readOnly: true,
+      properties: {
+        id: {
+          type: 'string',
+          description: 'Id of the user that created this catalog'
+        },
+        name: {
+          type: 'string',
+          description: 'Name of the user that created this catalog'
+        },
+        date: {
+          type: 'string',
+          description: 'Creation date of this catalog',
+          format: 'date-time'
+        }
+      }
     },
     status: {
       type: 'string',
@@ -34,25 +60,64 @@ export default {
       ],
       default: 'waiting'
     },
-    catalogId: {
-      type: 'string',
-      description: 'Id of the catalog this import belongs to'
+    catalog: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['id'],
+      description: 'The catalog this import belongs to',
+      properties: {
+        id: {
+          type: 'string'
+        },
+        title: {
+          type: 'string'
+        }
+      }
     },
-    dataFairDatasetId: {
-      type: 'string',
-      description: 'Id of the dataset in the local catalog'
+    dataFairDataset: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['id'],
+      properties: {
+        id: {
+          type: 'string'
+        },
+        title: {
+          type: 'string'
+        }
+      }
     },
-    remoteDatasetId: {
-      type: 'string',
-      description: 'Id of the dataset in the remote catalog'
+    remoteDataset: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['id'],
+      description: 'The remote dataset this import belongs to',
+      properties: {
+        id: {
+          type: 'string'
+        },
+        title: {
+          type: 'string'
+        }
+      }
     },
-    remoteResourceId: {
-      type: 'string',
-      description: 'Id of the resource in the dataset in the remote catalog'
+    remoteResource: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['id'],
+      description: 'The remote resource this import belongs to',
+      properties: {
+        id: {
+          type: 'string'
+        },
+        title: {
+          type: 'string'
+        }
+      }
     },
     lastImportDate: {
       type: 'string',
-      description: 'Date of the end of the import process',
+      description: 'Date of the end of the last import process',
       format: 'date-time'
     }
   }

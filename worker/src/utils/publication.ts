@@ -21,7 +21,7 @@ const getAxiosOptions = (catalog: Catalog): AxiosRequestConfig => {
 
 export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication) => {
   // 1. Get the Data Fair Dataset
-  const dataFairDataset = (await axios.get(`/api/v1/dataset/${pub.dataFairDataset.id}`, getAxiosOptions(catalog))).data
+  const dataFairDataset = (await axios.get(`/api/v1/datasets/${pub.dataFairDataset.id}`, getAxiosOptions(catalog))).data
   if (!dataFairDataset) {
     await mongo.publications.deleteOne({ _id: pub._id })
     return internalError('worker-missing-dataset', 'found a publication without associated dataset, weird')
@@ -39,12 +39,18 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
   }
 
   // 3. Publish the dataset
-  if (!plugin.metadata.capabilities.includes('publishDatasets')) {
+  if (!plugin.metadata.capabilities.includes('publishDataset')) {
     await mongo.publications.deleteOne({ _id: pub._id })
     return internalError('worker-missing-capabilities', 'found a publication without the capability to publish datasets, weird')
   }
-  const publicationRes = await plugin.publishDataset(catalog.config, dataFairDataset, pub)
-  const validPublication = (await import('#api/types/publication/index.ts')).returnValid(publicationRes)
+  const publicationRes = await plugin.publishDataset(catalog.config, dataFairDataset, {
+    remoteDataset: pub.remoteDataset,
+    remoteResource: pub.remoteResource,
+  })
+  Object.assign(pub, publicationRes)
+  pub.status = 'done'
+  pub.lastPublicationDate = new Date().toISOString()
+  const validPublication = (await import('../../../api/types/publication/index.ts')).returnValid(pub)
 
   // 4. Update the export status
   await mongo.publications.updateOne({ _id: pub._id }, { $set: validPublication })

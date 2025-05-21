@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
   assertAccountRole(sessionState, sessionState.account, ['contrib', 'admin'])
 
   const params = (await import('../../doc/publications/get-req/index.ts')).returnValid(req.query)
-  const sort = findUtils.sort(params.sort)
+  const sort = findUtils.sort(params.sort || 'lastPublicationDate:-1,created.date:-1')
   const { skip, size } = findUtils.pagination(params)
   const project = findUtils.project(params.select)
   const query = findUtils.filterPermissions(params, sessionState)

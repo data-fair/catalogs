@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
   assertAccountRole(sessionState, sessionState.account, 'admin')
 
   // Check if the catalog exists
-  const catalogExists = await mongo.catalogs.countDocuments({ _id: body.catalogId }) === 1
+  const catalogExists = await mongo.catalogs.countDocuments({ _id: body.catalog.id }) === 1
   if (!catalogExists) throw httpError(404, 'Catalog not found')
 
   const importD: Partial<Import> = { ...body }
