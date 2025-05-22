@@ -174,7 +174,10 @@ const importDataset = useAsyncAction(
     await $fetch(`${$apiPath}/imports`, {
       method: 'POST',
       body: {
-        catalog: catalog.value,
+        catalog: {
+          id: catalog.value._id,
+          title: catalog.value.title
+        },
         remoteDataset: {
           id: dataset.id,
           title: dataset.title

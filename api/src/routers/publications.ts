@@ -70,17 +70,3 @@ router.post('/', async (req, res) => {
 
   res.status(201).json(validPublication)
 })
-
-// Delete an published dataset (change status to deleted for the publication, that will be processed by the worker)
-// router.delete('/:id/dataset/:datasetId', async (req, res) => {
-//   assertReqInternalSecret(req, config.secretKeys.catalogs)
-//   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
-//   if (!catalog) throw httpError(404, 'Catalog not found')
-
-//   const plugin = await findUtils.getPlugin(catalog.plugin)
-//   if (!plugin.metadata.capabilities.includes('publishDatasets')) throw httpError(501, 'Plugin does not support deleting datasets')
-//   await plugin.deleteDataset(catalog.config, req.params.datasetId)
-//   // await plugin.deleteDataset(catalog.config, req.params.datasetId, req.params.resourceId) // Can also manage resources
-
-//   res.sendStatus(204)
-// })

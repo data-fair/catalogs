@@ -40,9 +40,15 @@ const { t } = useI18n()
 const session = useSessionAuthenticated()
 
 // Optional default values
-const { catalogId, dataFairDatasetId } = defineProps<{
-  catalogId?: string,
-  dataFairDatasetId?: string,
+const { catalog, dataFairDataset } = defineProps<{
+  catalog?: {
+    id: string
+    title?: string
+  },
+  dataFairDataset?: {
+    id: string
+    title?: string
+  },
 }>()
 
 // Notify parent component when a new publication is created
@@ -50,8 +56,8 @@ const emit = defineEmits(['onPublish'])
 
 const initPublication = () => {
   const pub: Record<string, any> = {}
-  if (catalogId) pub.catalog = { id: catalogId }
-  if (dataFairDatasetId) pub.dataFairDataset = { id: dataFairDatasetId }
+  if (catalog) pub.catalog = { id: catalog.id }
+  if (dataFairDataset) pub.dataFairDataset = { id: dataFairDataset.id }
   return pub
 }
 const validPublication = ref(false)
@@ -78,8 +84,14 @@ const publishCatalog = useAsyncAction(
 
 const vjsfOptions: VjsfOptions = {
   context: {
-    catalogId,
-    dataFairDatasetId,
+    catalog: {
+      id: catalog?.id,
+      title: catalog?.title
+    },
+    dataFairDataset: {
+      id: dataFairDataset?.id,
+      title: dataFairDataset?.title
+    },
     origin: window.location.origin
   },
   density: 'comfortable',

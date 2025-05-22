@@ -120,20 +120,6 @@ router.post('/', async (req, res) => {
   res.status(200).json(validCatalog)
 })
 
-// Internal route to create a catalog (for upgrade scripts)
-// router.post('/_internal', async (req, res) => {
-//   assertReqInternalSecret(req, config.secretKeys.catalogs)
-
-//   const catalog: Partial<Catalog> = { ...req.body }
-//   catalog._id = nanoid()
-//   catalog.datasets = []
-
-//   const validCatalog = await validateCatalog(catalog)
-//   await mongo.catalogs.insertOne(validCatalog)
-
-//   res.status(201).json(validCatalog)
-// })
-
 // Get a catalog
 router.get('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)

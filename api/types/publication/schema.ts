@@ -120,7 +120,7 @@ export default {
       },
       layout: {
         if: {
-          expr: '!context.catalogId',
+          expr: '!context.catalog.id',
           pure: false
         },
         props: {
@@ -159,7 +159,7 @@ export default {
       },
       layout: {
         if: {
-          expr: '!context.dataFairDatasetId',
+          expr: '!context.dataFairDataset.id',
           pure: false
         },
         props: {

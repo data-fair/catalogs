@@ -47,12 +47,13 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
     remoteDataset: pub.remoteDataset,
     remoteResource: pub.remoteResource,
   })
+
+  // 4. Update the export status
   Object.assign(pub, publicationRes)
   pub.status = 'done'
   pub.lastPublicationDate = new Date().toISOString()
   const validPublication = (await import('../../../api/types/publication/index.ts')).returnValid(pub)
 
-  // 4. Update the export status
   await mongo.publications.updateOne({ _id: pub._id }, { $set: validPublication })
 }
 

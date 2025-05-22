@@ -1,7 +1,7 @@
 <template>
   <publication-new
-    :catalog-id="catalogId"
-    :data-fair-dataset-id="dataFairDatasetId"
+    :catalog="catalog"
+    :data-fair-dataset="dataFairDataset"
     @on-publish="publicationsFetch.refresh()"
   />
   <p
@@ -53,16 +53,22 @@ import type { PublicationsGetRes } from '#api/doc'
 
 const { t } = useI18n()
 
-/** Filter by */
-const { catalogId, dataFairDatasetId } = defineProps<{
-  catalogId?: string,
-  dataFairDatasetId?: string,
+// Used to filter the publications
+const { catalog, dataFairDataset } = defineProps<{
+  catalog?: {
+    id: string
+    title?: string
+  },
+  dataFairDataset?: {
+    id: string
+    title?: string
+  },
 }>()
 
 const publicationsFetch = useFetch<PublicationsGetRes>(`${$apiPath}/publications`, {
   query: {
-    catalogId,
-    dataFairDatasetId
+    catalogId: catalog?.id,
+    dataFairDatasetId: dataFairDataset?.id
   }
 })
 

@@ -82,7 +82,7 @@
       </v-card-text>
     </v-card>
 
-    <v-list-subheader>
+    <v-list-subheader class="mb-2">
       <v-progress-circular
         v-if="availablePluginsFetch.loading.value"
         indeterminate
@@ -117,15 +117,17 @@
             <v-text-field
               v-model="forceInstallPlugin.name"
               class="mb-2"
-              label="Plugin name"
               placeholder="@data-fair/catalog-catalogName"
+              :label="t('pluginName')"
               :loading="availablePluginsFetch.loading.value"
               :disabled="!!pluginLocked"
+              autofocus
               hide-details
             />
             <v-text-field
               v-model="forceInstallPlugin.version"
-              label="Plugin version"
+              placeholder="0.0.0"
+              :label="t('pluginVersion')"
               :disabled="!!pluginLocked"
               hide-details
             />
@@ -134,7 +136,7 @@
             <v-spacer />
             <v-btn
               :disabled="!!pluginLocked"
-              @click="showDeleteMenu = null"
+              @click="showForceInstall = false"
             >
               {{ t('cancel') }}
             </v-btn>
@@ -260,7 +262,9 @@ const updateAvailable = (plugin: PluginPost) => {
     no: No
     noPermissionAdminPage: You don't have permission to access this page, you need to be connected and have super-admin mode enabled.
     pluginInstalled: Plugin installed!
+    pluginName: Plugin name
     pluginUninstalled: Plugin uninstalled!
+    pluginVersion: Plugin version
     uninstall: Uninstall
     uninstallPlugin: Uninstall plugin
     update: Update
@@ -279,7 +283,9 @@ const updateAvailable = (plugin: PluginPost) => {
     no: Non
     noPermissionAdminPage: Vous n'avez pas la permission d'accéder à cette page, il faut être connecté et avoir activé le mode super-administration.
     pluginInstalled: Plugin installé !
+    pluginName: Nom du plugin
     pluginUninstalled: Plugin désinstallé !
+    pluginVersion: Version du plugin
     uninstall: Désinstaller
     uninstallPlugin: Désinstaller le plugin
     update: Mettre à jour

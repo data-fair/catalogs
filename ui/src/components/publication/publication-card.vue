@@ -3,8 +3,8 @@
     :class="$vuetify.theme.current.dark ? 'w-100' : 'w-100 skeleton'"
   >
     <v-card-text>
-      Catalogue : {{ publication.catalog.title }}<br>
-      Jeu de données : {{ publication.dataFairDataset.title }}<br>
+      <span>Catalogue : {{ publication.catalog.title || publication.catalog.id }}<br></span>
+      Jeu de données : {{ publication.dataFairDataset.title || publication.dataFairDataset.id }}<br>
       Status: {{ publication.status }}
       <template v-if="publication.status === 'error'">
         <br>Erreur : {{ publication.error }}
