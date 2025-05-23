@@ -1,8 +1,9 @@
 import type { Plugin } from '#types'
 
+import Debug from 'debug'
 import { exec } from 'child_process'
-import { promisify } from 'util'
 import { Router } from 'express'
+import { promisify } from 'util'
 import fs from 'fs-extra'
 import path from 'path'
 import tmp from 'tmp-promise'
@@ -12,6 +13,7 @@ import mongo from '#mongo'
 import config from '#config'
 
 const execAsync = promisify(exec)
+const debug = Debug('plugins')
 
 const router = Router()
 export default router
@@ -25,6 +27,7 @@ tmp.setGracefulCleanup()
 
 // Install a new plugin or update an existing one
 router.post('/', async (req, res) => {
+  debug('Installing a new plugin', req.body)
   await session.reqAdminMode(req)
   const { body } = (await import('../../doc/plugins/post-req/index.ts')).returnValid(req)
 
@@ -70,7 +73,7 @@ router.post('/', async (req, res) => {
 // List installed plugins
 router.get('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  assertAccountRole(sessionState, sessionState.account, ['contrib', 'admin'])
+  assertAccountRole(sessionState, sessionState.account, 'admin')
 
   const dirs = await fs.readdir(pluginsDir)
   const results: Plugin[] = []
@@ -107,7 +110,7 @@ router.get('/', async (req, res) => {
 // Get a plugin with its metadata
 router.get('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  assertAccountRole(sessionState, sessionState.account, ['contrib', 'admin'])
+  assertAccountRole(sessionState, sessionState.account, 'admin')
   let pluginInfo
   try {
     pluginInfo = await fs.readJson(path.join(pluginsDir, req.params.id, 'plugin.json'))

@@ -9,7 +9,7 @@ import config from '#config'
 const router = Router()
 export default router
 
-// Update publications when a dataset is updated
+// Update/Delete publications when a dataset is updated/deleted in Data Fair
 router.post('/', async (req, res) => {
   assertReqInternalSecret(req, config.secretKeys.catalogs)
 
@@ -23,14 +23,13 @@ router.post('/', async (req, res) => {
     { $set: { status: 'waiting' } }
   )
 
+  // If the dataset is deleted, it will no longer be accessible in the catalog, so it must also be deleted from the catalog.
   await mongo.publications.updateMany(
     { 'dataFairDataset.id': { $in: req.body.delete || [] } },
     {
       $set: {
         action: 'delete',
-        // TODO: We really delete the publication when the dataset is deleted ?
-        // Or just deleting the publication document, but not the remote dataset ?
-        // status: 'waiting'
+        status: 'waiting'
       }
     }
   )

@@ -58,7 +58,7 @@ const validateCatalog = async (catalog: Partial<Catalog>) => {
 // Get the list of catalogs
 router.get('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  assertAccountRole(sessionState, sessionState.account, ['contrib', 'admin'])
+  assertAccountRole(sessionState, sessionState.account, 'admin')
 
   const params = (await import('../../doc/catalogs/get-req/index.ts')).returnValid(req.query)
   const sort = findUtils.sort(params.sort)
@@ -125,8 +125,7 @@ router.get('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
-  assertAccountRole(sessionState, catalog.owner, ['contrib', 'admin'])
-  // TODO: Remove sensitive parts like apiKeys
+  assertAccountRole(sessionState, catalog.owner, 'admin')
   res.status(200).json(catalog)
 })
 
@@ -137,7 +136,7 @@ router.patch('/:id', async (req, res) => {
   if (!catalog) throw httpError(404, 'Catalog not found')
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
-  // Restrict the parts of the catalog that can be edited by API
+  // Restrict the parts of the catalog that can be edited
   const acceptedParts = Object.keys(catalogSchema.properties)
     .filter(k => sessionState.user.adminMode || !(catalogSchema.properties)[k].readOnly)
   for (const key in req.body) {
@@ -171,8 +170,8 @@ router.patch('/:id', async (req, res) => {
   res.status(200).json(patchedCatalog)
 })
 
-// Delete a catalog
-// TODO: Delete also all publications for this catalog ?
+// Delete a catalog (and all its publications if deletePublications query)
+// TODO: Delete also all publications for this catalog ? Maybe not ? It's an option ?
 router.delete('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
@@ -180,10 +179,20 @@ router.delete('/:id', async (req, res) => {
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
   await mongo.catalogs.deleteOne({ _id: req.params.id })
-  if (config.privateEventsUrl && config.secretKeys.events) {
-    sendCatalogEvent(catalog, 'a été supprimé', 'delete', sessionState)
+
+  // Delete also all publications for this catalog if asked
+  if (req.query.deletePublications) {
+    await mongo.publications.updateMany(
+      { 'catalog.id': req.params.id },
+      { $set: { action: 'delete', status: 'waiting' } }
+    )
   }
-  res.sendStatus(204)
+
+  if (config.privateEventsUrl && config.secretKeys.events) {
+    const msg = req.query.deletePublications ? 'a été supprimé avec ses publications' : 'a été supprimé'
+    sendCatalogEvent(catalog, msg, 'delete', sessionState)
+  }
+  res.status(204).send()
 })
 
 // Get the list of remote datasets from a catalog
@@ -191,12 +200,12 @@ router.get('/:id/datasets', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
-  assertAccountRole(sessionState, catalog.owner, ['contrib', 'admin'])
+  assertAccountRole(sessionState, catalog.owner, 'admin')
 
   // Execute the plugin function
   const plugin = await findUtils.getPlugin(catalog.plugin)
   if (!plugin.metadata.capabilities.includes('listDatasets')) throw httpError(501, 'Plugin does not support listing datasets')
   const datasets = await plugin.listDatasets(catalog.config, req.query as any)
 
-  res.json(datasets)
+  res.status(200).json(datasets)
 })

@@ -26,6 +26,7 @@ services:
       - ADMINS=["superadmin@test.com"]
       - CIPHER_PASSWORD=dev
       - CONTACT=contact@test.com
+      - MANAGE_DEPARTMENTS=true
       - MONGO_URL=mongodb://localhost:27017/simple-directory
       - OBSERVER_ACTIVE=false
       - PUBLIC_URL=http://localhost:5600/simple-directory
@@ -38,7 +39,7 @@ services:
     profiles:
       - dev
       - test
-    image: ghcr.io/data-fair/data-fair:feat-export-catalogs-service
+    image: ghcr.io/data-fair/data-fair:feat-catalogs-integration
     restart: on-failure:10
     network_mode: host
     depends_on:

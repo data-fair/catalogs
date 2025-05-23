@@ -87,3 +87,13 @@ nvm install
 - Click on a panel, then use <kbd>Ctrl</kbd> + <kbd>C</kbd> then <kbd>Esc</kbd> to stop a terminal and regain access of the panel.
 
 </details>
+
+## Permissions rules
+
+- Only admin and superadmins can create, read, update and delete catalogs.
+- Only admin and superadmins can import or publish datasets.
+- We can import a dataset only if the owner of the dataset is the same as the owner of the catalog.
+- We can see a catalog, import, publication only if the owner is the same of the active account.
+- In the UI, if we have the right to see a catalob, but the active account is not the same as the owner,
+  an alert is shown to the user to inform him to change the active account.
+- Plugins are available for all users !

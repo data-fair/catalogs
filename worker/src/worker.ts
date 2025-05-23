@@ -106,10 +106,11 @@ const mainLoop = async () => {
  */
 async function iter (task: Task, type: typeof types[number]) {
   debug('Processing', type, task._id)
+  const collection = type === 'import' ? mongo.imports : mongo.publications
 
   const catalog = await mongo.catalogs.findOne({ _id: task.catalog.id })
   if (!catalog) {
-    await mongo.imports.deleteOne({ _id: task._id })
+    await collection.deleteOne({ _id: task._id })
     return internalError('worker-missing-catalog', 'found a task without associated catalog, weird')
   }
   debug(`Catalog ${catalog.title}`)
@@ -117,7 +118,7 @@ async function iter (task: Task, type: typeof types[number]) {
   // TODO: Maybe be use the getPlugin function ?
   const plugin: CatalogPlugin = (await import(path.resolve(config.dataDir, 'plugins', catalog.plugin, 'index.ts'))).default
   if (!plugin) {
-    await mongo.imports.deleteOne({ _id: task._id })
+    await collection.deleteOne({ _id: task._id })
     return internalError('worker-missing-plugin', 'found a task without associated plugin, weird')
   }
 
@@ -129,11 +130,10 @@ async function iter (task: Task, type: typeof types[number]) {
     }
   } catch (e: any) {
     debug('Error while process', type, task._id, e)
-    const collection = type === 'import' ? mongo.imports : mongo.publications
     await collection.updateOne({ _id: task._id }, { $set: { status: 'error', error: e.message } })
-    return
+  } finally {
+    await locks.release(task._id)
   }
-  await locks.release(task._id)
 }
 
 /**
@@ -148,7 +148,7 @@ async function acquireNext (type: typeof types[number]): Promise<Task | undefine
   while (await cursor.hasNext()) {
     const task = (await cursor.next())!
     const ack = await locks.acquire(`${type}:${task._id}`, 'worker-loop-iter')
-    debug('Try to acquire the lock to', type, task._id)
+    debug('Try to acquire the lock to', type, task._id, ack)
     if (!ack) continue
     debug('Lock acquired to', type, task._id)
     return task

@@ -87,14 +87,21 @@
         variant="elevated"
         :loading="deleteCatalog.loading.value ? 'warning' : undefined"
       >
-        <v-card-text>
+        <v-card-text class="pb-0">
           {{ t('confirmDeleteCatalog', { title: catalog?.title }) }}
+          <v-checkbox
+            v-model="deletePublication"
+            base-color="warning"
+            color="warning"
+            hide-details
+            :label="t('deletePublication')"
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
             :disabled="deleteCatalog.loading.value"
-            @click="showDeleteMenu = false"
+            @click="showDeleteMenu = false; deletePublication = false"
           >
             {{ t('no') }}
           </v-btn>
@@ -192,6 +199,7 @@ const { t } = useI18n()
 const showDuplicateMenu = ref(false)
 const showDeleteMenu = ref(false)
 const showChangeOwnerMenu = ref(false)
+const deletePublication = ref(false)
 const ownersReady = ref(false)
 const newOwner = ref<Record<string, string> | null>(null)
 const duplicateTitle = ref(catalog?.title + t('copy'))
@@ -214,11 +222,14 @@ const changeOwner = useAsyncAction(
 
 const deleteCatalog = useAsyncAction(
   async () => {
-    await $fetch(`/catalogs/${catalog?._id}`, {
-      method: 'DELETE'
-    })
+    const url = deletePublication.value
+      ? `/catalogs/${catalog?._id}?deletePublications=true`
+      : `/catalogs/${catalog?._id}`
+
+    await $fetch(url, { method: 'DELETE' })
     await router.replace('/catalogs')
     showDeleteMenu.value = false
+    deletePublication.value = false
   },
   {
     success: t('catalogDeleted'),
@@ -261,6 +272,7 @@ const duplicateCatalog = useAsyncAction(
     copy: " (copy)"
     delete: Delete
     deleteCatalog: Delete catalog
+    deletePublication: Delete also all publications of this catalog
     duplicate: Duplicate
     duplicateCatalog: Duplicate catalog
     descriptionDuplicateCatalog: You are about to create a copy of the catalog "{title}".
@@ -284,6 +296,7 @@ const duplicateCatalog = useAsyncAction(
     copy: " (copie)"
     delete: Supprimer
     deleteCatalog: Suppression du catalogue
+    deletePublication: Supprimer aussi toutes les publications de ce catalogue
     duplicate: Dupliquer
     duplicateCatalog: Duplication du catalogue
     descriptionDuplicateCatalog: Vous êtes sur le point de créer une copie du catalogue "{title}".

@@ -19,14 +19,14 @@ const validatePublication = async (pub: Partial<Publication>) => {
 // Get the list of publications
 router.get('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  assertAccountRole(sessionState, sessionState.account, ['contrib', 'admin'])
+  assertAccountRole(sessionState, sessionState.account, 'admin')
 
   const params = (await import('../../doc/publications/get-req/index.ts')).returnValid(req.query)
   const sort = findUtils.sort(params.sort || 'lastPublicationDate:-1,created.date:-1')
   const { skip, size } = findUtils.pagination(params)
   const project = findUtils.project(params.select)
   const query = findUtils.filterPermissions(params, sessionState)
-  const queryWithFilters = Object.assign(findUtils.query(params, { plugin: 'plugin', owner: 'owner' }), query)
+  const queryWithFilters = Object.assign(findUtils.query(params, { catalogId: 'catalog.id', dataFairDatasetId: 'dataFairDataset.id' }), query)
 
   const [results, count] = await Promise.all([
     size > 0 ? mongo.publications.find(queryWithFilters).limit(size).skip(skip).sort(sort).project(project).toArray() : Promise.resolve([]),

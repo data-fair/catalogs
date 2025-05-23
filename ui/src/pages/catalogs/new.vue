@@ -17,16 +17,26 @@
           :complete="!!newCatalog.plugin"
           editable
         />
+        <template v-if="hasDepartments">
+          <v-divider />
+          <v-stepper-item
+            :title="t('selectOwner')"
+            value="2"
+            :color="step === '2' ? 'primary' : ''"
+            :editable="!!newCatalog.plugin"
+          />
+        </template>
         <v-divider />
         <v-stepper-item
           :title="t('information')"
-          value="2"
-          :color="step === '2' ? 'primary' : ''"
+          value="3"
+          :color="step === '3' ? 'primary' : ''"
           :editable="!!newCatalog.plugin"
         />
       </v-stepper-header>
 
       <v-stepper-window>
+        <!-- Step 1: Select catalog type -->
         <v-stepper-window-item value="1">
           <v-row class="d-flex align-stretch">
             <v-col
@@ -40,7 +50,7 @@
               <v-card
                 class="h-100"
                 :color="newCatalog.plugin === plugin.id ? 'primary' : ''"
-                @click="newCatalog.plugin = plugin.id; step = '2'"
+                @click="newCatalog.plugin = plugin.id; step = hasDepartments ? '2' : '3'"
               >
                 <template #title>
                   <span :class="newCatalog.plugin !== plugin.id ? 'text-primary' : ''">
@@ -52,7 +62,17 @@
             </v-col>
           </v-row>
         </v-stepper-window-item>
+
+        <!-- Step 2: Select owner (optional) -->
         <v-stepper-window-item value="2">
+          <owner-pick
+            v-model="newCatalog.owner"
+            v-model:ready="ownersReady"
+          />
+        </v-stepper-window-item>
+
+        <!-- Step 3: Catalog configuration -->
+        <v-stepper-window-item value="3">
           <v-form v-model="valid">
             <v-defaults-provider
               :defaults="{
@@ -67,30 +87,28 @@
                 :schema="catalogSchema"
                 :options="vjsfOptions"
               />
-              <owner-pick
-                v-model="newCatalog.owner"
-                v-model:ready="ownersReady"
-              />
             </v-defaults-provider>
           </v-form>
+        </v-stepper-window-item>
+      </v-stepper-window>
+
+      <v-stepper-actions
+        v-if="step !== '1'"
+        :prev-text="t('previous')"
+        @click:prev="step = step === '3' ? (hasDepartments ? '2' : '1') : '1'"
+      >
+        <template #next>
           <v-btn
             color="primary"
             variant="flat"
-            :disabled="!ownersReady || !valid || !newCatalog.plugin"
+            :disabled="step === '3' && (!valid || !newCatalog.plugin)"
             :loading="createCatalog.loading.value"
-            @click="createCatalog.execute()"
+            @click="step === '2' ? step = '3' : createCatalog.execute()"
           >
-            {{ t('create') }}
+            {{ step === '2' ? t('next') : t('create') }}
           </v-btn>
-          <v-btn
-            variant="text"
-            :disabled="createCatalog.loading.value"
-            @click="step = '1'"
-          >
-            {{ t('back') }}
-          </v-btn>
-        </v-stepper-window-item>
-      </v-stepper-window>
+        </template>
+      </v-stepper-actions>
     </v-stepper>
   </v-container>
 </template>
@@ -98,6 +116,7 @@
 <script setup lang="ts">
 import type { Plugin } from '#api/types'
 
+import { computedAsync } from '@vueuse/core'
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import OwnerPick from '@data-fair/lib-vuetify/owner-pick.vue'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
@@ -107,33 +126,7 @@ const session = useSessionAuthenticated()
 const router = useRouter()
 const { t } = useI18n()
 
-/*
-  Permissions
-*/
-const owners = useStringsArraySearchParam('owner')
-const owner = computed(() => {
-  if (owners.value && owners.value.length) {
-    const parts = owners.value[0].split(':')
-    return { type: parts[0], id: parts[1] } as { type: 'user' | 'organization', id: string, department?: string }
-  } else {
-    return session.state.account
-  }
-})
-const ownerRole = computed(() => {
-  const user = session.state.user
-  if (owner.value.type === 'user') {
-    if (owner.value.id === user.id) return 'admin'
-    else return 'anonymous'
-  }
-  const userOrg = user.organizations.find(o => {
-    if (o.id !== owner.value.id) return false
-    if (!o.department) return true
-    if (o.department === owner.value.department) return true
-    return false
-  })
-  return userOrg ? userOrg.role : 'anonymous'
-})
-const canAdmin = computed(() => ownerRole.value === 'admin' || !!session.state.user?.adminMode)
+const canAdmin = computed(() => session.state.accountRole === 'admin' || !!session.state.user.adminMode)
 if (!canAdmin.value) throw new Error(t('noRightsToCreateCatalog'))
 
 const installedPluginsFetch = useFetch<{ results: Plugin[], count: number }>(`${$apiPath}/plugins`)
@@ -143,6 +136,13 @@ const showCreateMenu = ref(false)
 const newCatalog: Ref<Record<string, string>> = ref({})
 const ownersReady = ref(false)
 const valid = ref(false)
+
+/** `True` if the active account isn't in a department and his organization has departments */
+const hasDepartments = computedAsync(async (): Promise<boolean> => {
+  if (session.state.account.department || session.state.account.type === 'user') return false
+  const org = await $fetch(`/simple-directory/api/organizations/${session.state.account.id}`, { baseURL: $sitePath }) // Fetch the organization departments
+  return !!org.departments?.length // Check if the organization has departments
+}, false)
 
 const catalogSchema = computed(() => {
   const configSchema = installedPluginsFetch.data.value?.results.find(p => p.id === newCatalog.value.plugin)?.configSchema
@@ -197,7 +197,7 @@ const vjsfOptions: VjsfOptions = {
 
 <i18n lang="yaml">
   en:
-    back: Back
+    previous: Previous
     catalogs: Catalogs
     catalogCreated: Catalog created!
     configuration: Configuration
@@ -205,11 +205,13 @@ const vjsfOptions: VjsfOptions = {
     createCatalog: Create a catalog
     errorCreatingCatalog: Error while creating the catalog
     information: Information
+    next: Next
     noRightsToCreateCatalog: You don't have the rights to create a catalog
     selectCatalogType: Select catalog type
+    selectOwner: Select owner
 
   fr:
-    back: Retour
+    previous: Précédent
     catalogs: Catalogues
     catalogCreated: Catalogue créé !
     configuration: Configuration
@@ -217,8 +219,10 @@ const vjsfOptions: VjsfOptions = {
     createCatalog: Créer un catalogue
     errorCreatingCatalog: Erreur lors de la création du catalogue
     information: Informations
+    next: Suivant
     noRightsToCreateCatalog: Vous n'avez pas les droits pour créer un catalogue
     selectCatalogType: Sélection du type de catalogue
+    selectOwner: Sélection du propriétaire
 
 </i18n>
 

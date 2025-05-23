@@ -167,7 +167,9 @@ const fetchQuery = computed(() => ({
 const catalogDatasets = useFetch<{
   count: number
   results: CatalogDataset[]
-}>(`${$apiPath}/catalogs/${catalog.value._id}/datasets`, { query: fetchQuery })
+}>(`${$apiPath}/catalogs/${catalog.value._id}/datasets`, {
+  query: fetchQuery
+})
 
 const importDataset = useAsyncAction(
   async (dataset: CatalogDataset, resource?: CatalogResourceDataset) => {
