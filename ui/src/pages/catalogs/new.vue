@@ -1,5 +1,10 @@
 <template>
+  <layout-error
+    v-if="session.state.accountRole !== 'admin' && !session.state.user.adminMode"
+    :text="t('noRightsToCreateCatalog')"
+  />
   <v-container
+    v-else
     data-iframe-height
     class="pa-0"
     fluid
@@ -126,10 +131,7 @@ const session = useSessionAuthenticated()
 const router = useRouter()
 const { t } = useI18n()
 
-const canAdmin = computed(() => session.state.accountRole === 'admin' || !!session.state.user.adminMode)
-if (!canAdmin.value) throw new Error(t('noRightsToCreateCatalog'))
-
-const installedPluginsFetch = useFetch<{ results: Plugin[], count: number }>(`${$apiPath}/plugins`)
+const installedPluginsFetch = useFetch<{ results: Plugin[], count: number }>(`${$apiPath}/plugins`, { notifError: false })
 
 const step = ref('1')
 const showCreateMenu = ref(false)

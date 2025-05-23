@@ -1,6 +1,15 @@
 <template>
+  <layout-error
+    v-if="catalogFetch.error.value"
+    :title="t('errorFetchingCatalogTitle')"
+    :text="t('errorFetchingCatalogText')"
+  />
+  <layout-error
+    v-else-if="pluginFetch.error.value"
+    :text="t('errorFetchingPlugin')"
+  />
   <v-container
-    v-if="catalog"
+    v-else-if="catalogFetch.data.value"
     data-iframe-height
   >
     <layout-section-tabs
@@ -10,44 +19,42 @@
     />
 
     <catalog-config
-      v-if="catalog && plugin"
-      :catalog="catalog"
-      :plugin="plugin"
+      v-if="catalogFetch.data.value && pluginFetch.data.value"
+      :catalog="catalogFetch.data.value"
+      :plugin="pluginFetch.data.value"
       :catalog-id="route.params.id"
       :can-admin="canAdmin"
     />
 
     <layout-section-tabs
+      v-if="tabs.length"
       v-model="activeTab"
       class="mt-4"
       title="Jeux de données"
       :src="assetsUrls.progress"
-      :tabs="[
-        { id: 'import', title: t('import'), icon: mdiDownload },
-        { id: 'publication', title: t('publication'), icon: mdiUpload },
-      ]"
+      :tabs="tabs"
     />
 
     <v-tabs-window v-model="activeTab">
       <v-tabs-window-item value="import">
         <imports
-          v-if="plugin?.metadata.capabilities.includes('listDatasets')"
-          :catalog="catalog"
-          :plugin="plugin"
+          v-if="pluginFetch.data.value?.metadata.capabilities.includes('listDatasets')"
+          :catalog="catalogFetch.data.value"
+          :plugin="pluginFetch.data.value"
         />
       </v-tabs-window-item>
 
       <v-tabs-window-item value="publication">
         <publications-list
-          v-if="plugin?.metadata.capabilities.includes('publishDataset')"
-          :catalog="{ id: catalog._id, title: catalog.title }"
+          v-if="pluginFetch.data.value?.metadata.capabilities.includes('publishDataset')"
+          :catalog="{ id: catalogFetch.data.value._id, title: catalogFetch.data.value.title }"
         />
       </v-tabs-window-item>
     </v-tabs-window>
 
     <layout-actions v-if="canAdmin">
       <catalog-actions
-        :catalog="catalog"
+        :catalog="catalogFetch.data.value"
         :can-admin="canAdmin"
         :is-small="true"
       />
@@ -64,25 +71,46 @@ const route = useRoute<'/catalogs/[id]'>()
 const session = useSessionAuthenticated()
 const { t } = useI18n()
 
-const catalog = ref<Catalog | null>(null)
-const plugin = ref<Plugin | null>(null)
 const activeTab = ref('import')
 
-onMounted(async () => {
-  catalog.value = await $fetch(`/catalogs/${route.params.id}`)
-  if (catalog.value) plugin.value = await $fetch(`/plugins/${catalog.value.plugin}`)
-  setBreadcrumbs([{
-    text: t('catalogs'),
-    to: '/catalogs'
-  }, {
-    text: catalog.value?.title || ''
-  }])
+const catalogFetch = useFetch<Catalog>(`${$apiPath}/catalogs/${route.params.id}`, { notifError: false })
+const pluginFetch = useFetch<Plugin>(() => `${$apiPath}/plugins/${catalogFetch.data.value?.plugin}`, {
+  immediate: false,
+  watch: false
 })
 
+// Useless for now, they are only admins that can see and edit catalogs
 const canAdmin = computed(() => {
-  if (!catalog.value) return false
-  return getAccountRole(session.state, catalog.value.owner) === 'admin'
+  if (!catalogFetch.data.value) return false
+  return getAccountRole(session.state, catalogFetch.data.value.owner) === 'admin'
 })
+
+const tabs = computed(() => {
+  const capabilities = pluginFetch.data.value?.metadata.capabilities ?? []
+  const tabs = []
+  if (capabilities.includes('listDatasets')) {
+    tabs.push({ id: 'import', title: t('import'), icon: mdiDownload })
+  }
+  if (capabilities.includes('publishDataset')) {
+    tabs.push({ id: 'publication', title: t('publication'), icon: mdiUpload })
+  }
+  return tabs
+})
+
+// Wait for catalogFetch to be initialized before fetching the plugin
+watch(() => catalogFetch.data.value?.plugin, (plugin) => {
+  if (plugin) pluginFetch.refresh()
+})
+
+watch(
+  () => catalogFetch.data.value?.title,
+  (title) => {
+    setBreadcrumbs([
+      { text: t('catalogs'), to: '/catalogs' },
+      { text: title ?? '' }
+    ])
+  }
+)
 
 /** Urls of assets */
 const assetsUrls = {
@@ -96,6 +124,9 @@ const assetsUrls = {
     catalogs: Catalogs
     datasets: Datasets
     description: Check the general information of the catalog or modify its configuration.
+    errorFetchingCatalogTitle: Error fetching the catalog.
+    errorFetchingCatalogText: The catalog may not exist or you may not have access rights to it (Did you select the wrong active account?).
+    errorFetchingPlugin: Error fetching the plugin. Please contact us if the problem persists.
     metadata: Metadata
     import: Import
     publication: Publications
@@ -103,6 +134,9 @@ const assetsUrls = {
     catalogs: Catalogues
     datasets: Jeux de données
     description: Consulter les informations générales du catalogue ou modifier sa configuration.
+    errorFetchingCatalogTitle: Erreur lors du chargement du catalogue.
+    errorFetchingCatalogText: Il est possible que le catalogue n'existe pas ou que vous n'ayez pas les droits d'accès sur ce dernier (Vous avez peut-être sélectionné le mauvais compte actif ?).
+    errorFetchingPlugin: Erreur lors du chargement du plugin. Merci de nous contacter si le problème persiste.
     metadata: Métadonnées
     import: Import
     publication: Publications

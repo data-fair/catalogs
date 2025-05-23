@@ -61,17 +61,12 @@ router.get('/', async (req, res) => {
   assertAccountRole(sessionState, sessionState.account, 'admin')
 
   const params = (await import('../../doc/catalogs/get-req/index.ts')).returnValid(req.query)
-  const sort = findUtils.sort(params.sort)
+  const sort = findUtils.sort(params.sort || 'updated.date:-1')
   const { skip, size } = findUtils.pagination(params)
   const project = findUtils.project(params.select)
   const query = findUtils.filterPermissions(params, sessionState)
-  const queryWithFilters = Object.assign(findUtils.query(params, { plugins: 'plugin', owners: 'owner' }), query)
-
-  // Filter by plugins
-  const plugins = params.plugins ? params.plugins.split(',') : []
-  if (plugins.length > 0) {
-    queryWithFilters.plugin = { $in: plugins }
-  }
+  const filters = findUtils.query(params, { plugins: 'plugin' })
+  const queryWithFilters = Object.assign(filters, query)
 
   // Filter by owner (if showAll)
   const showAll = params.showAll === 'true'

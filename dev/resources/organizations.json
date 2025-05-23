@@ -145,7 +145,7 @@
       },
       {
         "id": "superadmin",
-        "role": "admin"
+        "role": "contrib"
       }
     ]
   },

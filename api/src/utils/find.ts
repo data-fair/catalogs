@@ -9,7 +9,7 @@ import path from 'path'
 /**
  * Show all if super admin, otherwise filter by owner
  */
-export const filterPermissions = async (reqQuery: Record<string, string>, sessionState: SessionStateAuthenticated) => {
+export const filterPermissions = (reqQuery: Record<string, string>, sessionState: SessionStateAuthenticated) => {
   const query: Record<string, any> = {}
 
   const showAll = reqQuery.showAll === 'true'

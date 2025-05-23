@@ -1,5 +1,10 @@
 <template>
+  <layout-error
+    v-if="session.state.accountRole !== 'admin' && !session.state.user.adminMode"
+    :text="t('noPermissions')"
+  />
   <v-container
+    v-else
     data-iframe-height
     style="min-height:500px"
   >
@@ -21,6 +26,18 @@
         />
       </v-col>
     </v-row>
+    <span
+      v-if="!catalogsFetch.data.value?.results.length"
+      class="d-flex justify-center text-h6 mt-4"
+    >
+      {{ t('noCatalogsCreated') }}
+    </span>
+    <span
+      v-if="!displayCatalogs.length"
+      class="d-flex justify-center text-h6 mt-4"
+    >
+      {{ t('noCatalogsDisplayed') }}
+    </span>
     <template v-else>
       <v-row class="d-flex align-stretch">
         <v-col
@@ -64,9 +81,7 @@ const { t } = useI18n()
 
 const catalogsParams = computed(() => {
   const params: Record<string, any> = {
-    size: '1000',
     showAll: showAll.value,
-    sort: 'updated.date:-1',
     select: '_id,title,plugin',
   }
   if (plugins.value.length) params.plugins = plugins.value.join(',')
@@ -74,9 +89,8 @@ const catalogsParams = computed(() => {
   return params
 })
 
-const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, { query: catalogsParams })
-
-const pluginsFetch = useFetch<PluginsGetRes>(`${$apiPath}/plugins`)
+const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, { query: catalogsParams, notifError: false })
+const pluginsFetch = useFetch<PluginsGetRes>(`${$apiPath}/plugins`, { notifError: false })
 
 const displayCatalogs = computed(() => {
   const catalogs = (catalogsFetch.data.value?.results ?? [])
@@ -98,10 +112,16 @@ watch(
   en:
     catalogs: Catalogs
     catalogDisplayed: No catalogs | {displayed}/{count} catalog displayed | {displayed}/{count} catalogs displayed
+    noCatalogsCreated: You haven't created any catalogs yet.
+    noCatalogsDisplayed: No results match the search criteria.
+    noPermissions: You don't have permission to access this page.
 
   fr:
     catalogs: Catalogues
     catalogDisplayed: Aucun catalogue | {displayed}/{count} catalogue affiché | {displayed}/{count} catalogues affichés
+    noCatalogsCreated: Vous n'avez pas encore créé de catalogue.
+    noCatalogsDisplayed: Aucun résultat ne correspond aux critères de recherche.
+    noPermissions: Vous n'avez pas la permission d'accéder à cette page.
 
 </i18n>
 

@@ -296,7 +296,7 @@ const duplicateCatalog = useAsyncAction(
     copy: " (copie)"
     delete: Supprimer
     deleteCatalog: Suppression du catalogue
-    deletePublication: Supprimer aussi toutes les publications de ce catalogue
+    deletePublication: Supprimer également toutes les publications de ce catalogue
     duplicate: Dupliquer
     duplicateCatalog: Duplication du catalogue
     descriptionDuplicateCatalog: Vous êtes sur le point de créer une copie du catalogue "{title}".
