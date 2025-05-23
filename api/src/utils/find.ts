@@ -41,26 +41,18 @@ export const query = (reqQuery: Record<string, string>, fieldsMap: Record<string
   return query
 }
 
-// Cache loaded plugins to avoid loading them each time
-const pluginsCache: Record<string, CatalogPlugin> = {}
-
-// Get the plugin from the plugins directory or from cache if already loaded
+// Get the plugin from the plugins directory
 const pluginsDir = path.resolve(config.dataDir, 'plugins')
 fs.ensureDirSync(pluginsDir)
 export const getPlugin = async (pluginId: string): Promise<CatalogPlugin> => {
-  if (pluginsCache[pluginId]) return pluginsCache[pluginId] // Return cached plugin if available
-
   try {
-    const plugin = (await import(path.resolve(pluginsDir, pluginId, 'index.ts'))).default
-    pluginsCache[pluginId] = plugin // Store in cache for future use
-    return plugin
+    // Invalidate the cache by adding a timestamp to the import
+    return (await import(path.resolve(pluginsDir, pluginId, 'index.ts') + `?update=${Date.now()}`)).default
   } catch (e: any) {
     if (e.message.includes('Cannot find module')) throw httpError(404, `Plugin ${pluginId} not found (or error in plugin : ${e.message})`)
     throw e // Rethrow other errors
   }
 }
-
-export const removePluginFromCache = (pluginId: string) => delete pluginsCache[pluginId]
 
 export default {
   query,

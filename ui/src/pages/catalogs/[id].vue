@@ -40,7 +40,7 @@
       <v-tabs-window-item value="publication">
         <publications-list
           v-if="plugin?.metadata.capabilities.includes('publishDataset')"
-          :catalog-id="catalog._id"
+          :catalog="{ id: catalog._id, title: catalog.title }"
         />
       </v-tabs-window-item>
     </v-tabs-window>

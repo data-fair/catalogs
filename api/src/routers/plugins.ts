@@ -7,7 +7,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import tmp from 'tmp-promise'
 import { assertAccountRole, httpError, session } from '@data-fair/lib-express'
-import { getPlugin, removePluginFromCache } from '../utils/find.ts'
+import { getPlugin } from '../utils/find.ts'
 import mongo from '#mongo'
 import config from '#config'
 
@@ -56,7 +56,6 @@ router.post('/', async (req, res) => {
     }, null, 2))
 
     await fs.move(dir.path, path.join(pluginsDir, id), { overwrite: true })
-    removePluginFromCache(id) // Remove the plugin from cache to reload it
   } catch (err) {
     await dir.cleanup()
   }

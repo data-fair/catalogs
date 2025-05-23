@@ -5,7 +5,7 @@
     </p>
     <publications-list
       v-else
-      :data-fair-dataset-id="datasetId"
+      :data-fair-dataset="{ id: datasetId }"
     />
   </v-container>
 </template>
