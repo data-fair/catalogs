@@ -8,8 +8,9 @@ module.exports = {
   privateDirectoryUrl: 'http://localhost:8080',
   privateEventsUrl: 'http://localhost:8088',
   secretKeys: {
-    events: 'secret-events',
-    catalogs: 'secret-catalogs'
+    catalogs: 'secret-catalogs',
+    identities: 'secret-identities',
+    events: 'secret-events'
   },
   serveUi: false
 }

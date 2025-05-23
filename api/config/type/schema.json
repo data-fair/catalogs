@@ -58,13 +58,17 @@
     "secretKeys": {
       "type": "object",
       "required": [
-        "catalogs"
+        "catalogs",
+        "identities"
       ],
       "properties": {
+        "catalogs": {
+          "type": "string"
+        },
         "events": {
           "type": "string"
         },
-        "catalogs": {
+        "identities": {
           "type": "string"
         }
       }

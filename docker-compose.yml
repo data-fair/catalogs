@@ -30,6 +30,7 @@ services:
       - MONGO_URL=mongodb://localhost:27017/simple-directory
       - OBSERVER_ACTIVE=false
       - PUBLIC_URL=http://localhost:5600/simple-directory
+      - IDENTITIES_WEBHOOKS=[{"base":"http://data-fair-events:8080/api/v1/identities","key":"secret-identities"},{"base":"http://localhost:5600/catalogs/api/identities","key":"secret-identities"}]
       - STORAGE_TYPE=file
     volumes:
       - ./dev/resources/users.json:/webapp/data/users.json

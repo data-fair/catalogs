@@ -6,5 +6,10 @@ module.exports = {
   },
   port: 8082,
   privateDirectoryUrl: 'http://localhost:8080',
+  secretKeys: {
+    catalogs: 'secret-catalogs',
+    identities: 'secret-identities',
+    events: 'secret-events'
+  },
   serveUi: false
 }

@@ -12,8 +12,9 @@ module.exports = {
   privateDirectoryUrl: 'http://simple-directory:8080',
   privateEventsUrl: undefined,
   secretKeys: {
-    events: undefined,
-    catalogs: undefined
+    catalogs: undefined,
+    identities: undefined,
+    events: undefined
   },
   serveUi: true,
   tmpDir: undefined,
