@@ -120,6 +120,7 @@
 
 <script setup lang="ts">
 import type { Plugin } from '#api/types'
+import type { CatalogPostReq } from '#api/doc'
 
 import { computedAsync } from '@vueuse/core'
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
@@ -135,7 +136,7 @@ const installedPluginsFetch = useFetch<{ results: Plugin[], count: number }>(`${
 
 const step = ref('1')
 const showCreateMenu = ref(false)
-const newCatalog: Ref<Record<string, string>> = ref({})
+const newCatalog: Ref<CatalogPostReq['body']> = ref({ owner: session.state.account, plugin: '', title: '', config: {} })
 const ownersReady = ref(false)
 const valid = ref(false)
 

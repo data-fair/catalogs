@@ -37,7 +37,7 @@
 
     <v-tabs-window v-model="activeTab">
       <v-tabs-window-item value="import">
-        <imports
+        <import-list
           v-if="pluginFetch.data.value?.metadata.capabilities.includes('listDatasets')"
           :catalog="catalogFetch.data.value"
           :plugin="pluginFetch.data.value"

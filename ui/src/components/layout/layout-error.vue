@@ -1,7 +1,6 @@
 <template>
   <v-container data-iframe-height>
     <v-alert
-      data-iframe-height
       density="compact"
       type="error"
       variant="outlined"

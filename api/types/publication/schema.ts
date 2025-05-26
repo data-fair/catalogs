@@ -192,6 +192,10 @@ export default {
         },
         title: {
           type: 'string'
+        },
+        url: {
+          type: 'string',
+          description: 'URL to view the dataset in the remote catalog'
         }
       },
       layout: {
@@ -225,6 +229,10 @@ export default {
         },
         title: {
           type: 'string'
+        },
+        url: {
+          type: 'string',
+          description: 'URL to view the resource in the remote catalog'
         }
       }
     },

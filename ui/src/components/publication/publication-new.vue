@@ -107,21 +107,11 @@ const vjsfOptions: VjsfOptions = {
 
 <i18n lang="yaml">
   en:
-    cancel: Cancel
-    noCatalogs: You have not yet configured any catalog.
-    noPublications: This dataset is not yet published on any catalog
-    publicationsList: List of publications
     publish: Publish
-    publishToCatalog: Publish to another catalog
     tutorialMessage: You can publish your datasets to one or more catalogs. This publication will make your data easier to find and allow the Open Data community to engage with you.
 
   fr:
-    cancel: Annuler
-    noCatalogs: Vous n'avez pas encore configuré de calalogue.
-    noPublications: Ce jeu de données n'est encore publié sur aucun catalogue
-    publicationsList: Liste des publications
     publish: Publier
-    publishToCatalog: Publier sur un catalogue
     tutorialMessage: Vous pouvez publier vos jeux de données sur un ou plusieurs catalogues. Cette publication rendra vos données plus faciles à trouver et permettra à la communauté Open Data d'échanger avec vous.
 
 </i18n>

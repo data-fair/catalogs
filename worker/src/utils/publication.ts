@@ -46,11 +46,13 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
   const publicationRes = await plugin.publishDataset(catalog.config, dataFairDataset, {
     remoteDataset: pub.remoteDataset,
     remoteResource: pub.remoteResource,
+    isResource: pub.action === 'addAsResource'
   })
 
   // 4. Update the export status
   Object.assign(pub, publicationRes)
   pub.status = 'done'
+  pub.error = undefined
   pub.lastPublicationDate = new Date().toISOString()
   const validPublication = (await import('../../../api/types/publication/index.ts')).returnValid(pub)
 

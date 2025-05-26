@@ -66,8 +66,8 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
   addProps(remoteDataset, datasetPost) // Add common properties
 
   const axiosOptions = getAxiosOptions(catalog)
-  if (imp.dataFairDataset) await updateDataFairDataset(resourceId, datasetPost, imp.dataFairDataset.id, axiosOptions)
-  else await createDataFairDataset(resourceId, datasetPost, axiosOptions)
+  if (imp.dataFairDataset) await updateDataFairDataset(imp._id, datasetPost, imp.dataFairDataset.id, axiosOptions)
+  else await createDataFairDataset(imp._id, datasetPost, axiosOptions)
 }
 
 /**
@@ -86,13 +86,13 @@ const addProps = (dataset: any, resourcePost: any) => {
 
 /**
  * Create a dataset in Data-Fair
- * @param resourceId - The ID of the catalog resource or catalog dataset
+ * @param importId - The ID of the import document
  * @param datasetPost - The dataset data to be created
  */
-const createDataFairDataset = async (resourceId: string, datasetPost: any, axiosOptions: AxiosRequestConfig) => {
+const createDataFairDataset = async (importId: string, datasetPost: any, axiosOptions: AxiosRequestConfig) => {
   const createdDataset = await axios.post('/api/v1/datasets', datasetPost, axiosOptions) // Create the dataset in Data-Fair
 
-  await mongo.imports.updateOne({ _id: resourceId }, {
+  await mongo.imports.updateOne({ _id: importId }, {
     $set: {
       dataFairDataset: {
         id: createdDataset.data.id,
@@ -105,23 +105,21 @@ const createDataFairDataset = async (resourceId: string, datasetPost: any, axios
 
 /**
  * Update a dataset in Data-Fair or create it if it doesn't exist
- * @param resourceId - The ID of the catalog resource or catalog dataset
+ * @param importId - The ID of the import document
  * @param datasetPost - The dataset data to be updated
  */
-const updateDataFairDataset = async (resourceId: string, datasetPost: any, dataFairDatasetId: string, axiosOptions: AxiosRequestConfig) => {
+const updateDataFairDataset = async (importId: string, datasetPost: any, dataFairDatasetId: string, axiosOptions: AxiosRequestConfig) => {
   try {
     delete datasetPost.isMetaOnly
     await axios.patch(`/api/v1/datasets/${dataFairDatasetId}`, datasetPost, axiosOptions)
-    await mongo.imports.updateOne({
-      _id: resourceId
-    }, {
+    await mongo.imports.updateOne({ _id: importId }, {
       $set: {
         status: 'done',
         lastImportDate: new Date().toISOString()
       }
     })
   } catch (error: any) {
-    if (error.status === 404) await createDataFairDataset(resourceId, datasetPost, axiosOptions)
+    if (error.status === 404) await createDataFairDataset(importId, datasetPost, axiosOptions)
     else throw error
   }
 }

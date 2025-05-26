@@ -33,16 +33,24 @@ export class CatalogsMongo {
     await this.mongo.connect(config.mongoUrl)
     await this.mongo.configure({
       catalogs: {
-        main: { 'owner.type': 1, 'owner.id': 1 } // Frequently get catalogs by owner
-      },
-      publications: {
-        main: { catalogId: 1, 'owner.type': 1, 'owner.id': 1 }, // Frequently get publications by catalogId and owner
-        dataset: { dataFairDatasetId: 1, 'owner.type': 1, 'owner.id': 1 }, // Frequently get publications of a dataset
-        status: { status: 1 }, // For each worker loop, we get random publications with status waiting or running
+        // Always get catalogs by owner
+        main: { 'owner.type': 1, 'owner.id': 1 }
       },
       imports: {
-        main: { catalogId: 1, 'owner.type': 1, 'owner.id': 1 }, // Frequently get imports by catalogId and owner
-        status: { status: 1 }, // For each worker loop, we get random imports with status waiting or running
+        // Get imports by catalog and owner
+        main: { 'catalog.id': 1, 'owner.type': 1, 'owner.id': 1 },
+        // An import is unique by catalog, remoteDataset and remoteResource
+        primaryKey: [{ 'catalog.id': 1, 'remoteDataset.id': 1, 'remoteResource.id': 1 }, { unique: true }],
+        // For each worker loop, we get random imports with status waiting or running
+        status: { status: 1 }
+      },
+      publications: {
+        // Get publications by catalog
+        main: { 'catalog.id': 1, 'owner.type': 1, 'owner.id': 1 },
+        // Get publications by dataset
+        dataset: { 'dataFairDataset.id': 1, 'owner.type': 1, 'owner.id': 1 },
+        // For each worker loop, we get random publications with status waiting or running
+        status: { status: 1 }
       }
     })
   }

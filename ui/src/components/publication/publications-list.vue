@@ -14,37 +14,28 @@
     <h3 class="text-h5 mt-4">
       {{ t('publicationsList') }}
     </h3>
-    <v-row
-      v-if="publicationsFetch.loading.value"
-      class="d-flex align-stretch"
-    >
-      <v-col
-        v-for="i in 9"
-        :key="i"
-        md="4"
-        sm="6"
-        cols="12"
-        class="d-flex"
+
+    <v-list style="background-color: transparent;">
+      <v-list-item
+        v-for="publication in publicationsFetch.data.value.results"
+        :key="publication._id"
+        class="d-flex align-center"
+        :title="catalog ?
+          t('publicationTitle.catalog', { title: publication.catalog?.title || publication.catalog?.id }) :
+          t('publicationTitle.dataset', { title: publication.dataFairDataset?.title || publication.dataFairDataset?.id })"
+        :subtitle="t(`publicationStatus.${publication.status}`, { error: publication.error })"
       >
-        <v-skeleton-loader
-          :class="$vuetify.theme.current.dark ? 'w-100' : 'w-100 skeleton'"
-          type="heading"
-        />
-      </v-col>
-    </v-row>
-    <template v-else>
-      <v-row class="d-flex align-stretch">
-        <v-col
-          v-for="publication in publicationsFetch.data.value.results"
-          :key="publication._id"
-          md="4"
-          sm="6"
-          cols="12"
-        >
-          <publication-card :publication="publication" />
-        </v-col>
-      </v-row>
-    </template>
+        <template #append>
+          <v-btn
+            color="warning"
+            density="comfortable"
+            variant="text"
+            :icon="mdiDelete"
+            :title="t('deletePublication')"
+          />
+        </template>
+      </v-list-item>
+    </v-list>
   </template>
 </template>
 
@@ -78,10 +69,28 @@ const publicationsFetch = useFetch<PublicationsGetRes>(`${$apiPath}/publications
   en:
     noPublications: This dataset is not yet published on any catalog
     publicationsList: List of publications
+    publicationStatus:
+      waiting: Waiting for publication
+      running: Publication in progress
+      done: Dataset published
+      error: 'Error : {error}'
+    publicationTitle:
+      catalog: 'Publication of dataset "{title}"'
+      dataset: 'Dataset published on catalog "{title}"'
+    deletePublication: Delete publication
 
   fr:
     noPublications: Ce jeu de données n'est publié sur un aucun catalogue
     publicationsList: Liste des publications
+    publicationStatus:
+      waiting: En attente de publication
+      running: En cours de publication
+      done: Jeu de données publié
+      error: 'Erreur : {error}'
+    publicationTitle:
+      catalog: 'Publication du jeu de données "{title}"'
+      dataset: 'Jeu de données publié sur le catalogue "{title}"'
+    deletePublication: Supprimer la publication
 
 </i18n>
 

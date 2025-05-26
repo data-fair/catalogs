@@ -102,6 +102,7 @@
         <template #activator="{ props }">
           <v-btn
             v-bind="props"
+            class="ml-4"
             size="x-small"
             variant="tonal"
             :disabled="!!pluginLocked"
@@ -117,7 +118,7 @@
             <v-text-field
               v-model="forceInstallPlugin.name"
               class="mb-2"
-              placeholder="@data-fair/catalog-catalogName"
+              placeholder="@data-fair/catalog-my-catalog"
               :label="t('pluginName')"
               :loading="availablePluginsFetch.loading.value"
               :disabled="!!pluginLocked"

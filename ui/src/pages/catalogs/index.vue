@@ -27,13 +27,13 @@
       </v-col>
     </v-row>
     <span
-      v-if="!catalogsFetch.data.value?.results.length"
+      v-else-if="!catalogsFetch.data.value?.results.length"
       class="d-flex justify-center text-h6 mt-4"
     >
       {{ t('noCatalogsCreated') }}
     </span>
     <span
-      v-if="!displayCatalogs.length"
+      v-else-if="!displayCatalogs.length"
       class="d-flex justify-center text-h6 mt-4"
     >
       {{ t('noCatalogsDisplayed') }}
