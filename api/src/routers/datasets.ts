@@ -1,17 +1,18 @@
+import Debug from 'debug'
 import { Router } from 'express'
-
 import { assertReqInternalSecret } from '@data-fair/lib-express'
 import { internalError } from '@data-fair/lib-node/observer.js'
-
 import mongo from '#mongo'
 import config from '#config'
 
+const debug = Debug('webhooks')
 const router = Router()
 export default router
 
 // Update/Delete publications when a dataset is updated/deleted in Data Fair
 router.post('/', async (req, res) => {
   assertReqInternalSecret(req, config.secretKeys.catalogs)
+  debug('Incoming data fair webhook for datasets update/delete', req.body)
 
   if (!req.body.update || !req.body.delete) {
     // Non blocking error

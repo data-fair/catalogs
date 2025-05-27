@@ -24,7 +24,6 @@ declare module 'vue' {
     PublicationCard: typeof import('./../src/components/publication/publication-card.vue')['default']
     PublicationList: typeof import('./../src/components/publication/publication-list.vue')['default']
     PublicationNew: typeof import('./../src/components/publication/publication-new.vue')['default']
-    PublicationsList: typeof import('./../src/components/publication/publications-list.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
