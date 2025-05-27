@@ -200,8 +200,6 @@ const vjsfOptions: VjsfOptions = {
 
 <i18n lang="yaml">
   en:
-    previous: Previous
-    catalogs: Catalogs
     catalogCreated: Catalog created!
     configuration: Configuration
     create: Create
@@ -210,12 +208,11 @@ const vjsfOptions: VjsfOptions = {
     information: Information
     next: Next
     noRightsToCreateCatalog: You don't have the rights to create a catalog
+    previous: Previous
     selectCatalogType: Select catalog type
     selectOwner: Select owner
 
   fr:
-    previous: Précédent
-    catalogs: Catalogues
     catalogCreated: Catalogue créé !
     configuration: Configuration
     create: Créer
@@ -224,6 +221,7 @@ const vjsfOptions: VjsfOptions = {
     information: Informations
     next: Suivant
     noRightsToCreateCatalog: Vous n'avez pas les droits pour créer un catalogue
+    previous: Précédent
     selectCatalogType: Sélection du type de catalogue
     selectOwner: Sélection du propriétaire
 

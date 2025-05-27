@@ -70,3 +70,35 @@ router.post('/', async (req, res) => {
 
   res.status(201).json(validPublication)
 })
+
+// Update a publication
+router.post('/:id', async (req, res) => {
+  const sessionState = await session.reqAuthenticated(req)
+  assertAccountRole(sessionState, sessionState.account, 'admin')
+
+  await mongo.publications.updateOne(
+    { _id: req.params.id },
+    { $set: { status: 'waiting' } }
+  )
+
+  res.status(204).send()
+})
+
+// Delete a publication
+router.delete('/:id', async (req, res) => {
+  const sessionState = await session.reqAuthenticated(req)
+  assertAccountRole(sessionState, sessionState.account, 'admin')
+
+  if (req.query.onlyLink === 'true') {
+    const res = await mongo.publications.deleteOne({ _id: req.params.id })
+    if (res.deletedCount === 0) throw httpError(404, 'Publication not found')
+  } else {
+    const res = await mongo.publications.updateOne(
+      { _id: req.params.id },
+      { $set: { action: 'delete', status: 'waiting' } }
+    )
+    if (res.matchedCount === 0) throw httpError(404, 'Publication not found')
+  }
+
+  res.status(204).send()
+})

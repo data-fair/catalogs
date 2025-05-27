@@ -22,7 +22,7 @@
           density="comfortable"
           variant="text"
           :loading="importLoading"
-          :icon="mdiFolderDownload"
+          :icon="remoteResource ? mdiDownload : mdiFolderDownload"
           :title="remoteResource ? t('createRemoteFileDataset') : t('createMetadataOnlyDataset')"
         />
       </template>

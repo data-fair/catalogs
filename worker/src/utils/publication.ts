@@ -38,11 +38,18 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
     return internalError('worker-missing-permissions', errorMsg)
   }
 
-  // 3. Publish the dataset
+  // Check if the plugin has the capability to publish (and delete) datasets
   if (!plugin.metadata.capabilities.includes('publishDataset')) {
     await mongo.publications.deleteOne({ _id: pub._id })
     return internalError('worker-missing-capabilities', 'found a publication without the capability to publish datasets, weird')
   }
+
+  if (pub.action === 'delete') await deletePublication(catalog, plugin, pub)
+  else await publish(catalog, plugin, pub, dataFairDataset)
+}
+
+const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication, dataFairDataset: object) => {
+  // 3. Publish the dataset
   const publicationRes = await plugin.publishDataset(catalog.config, dataFairDataset, {
     remoteDataset: pub.remoteDataset,
     remoteResource: pub.remoteResource,
@@ -50,13 +57,25 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
   })
 
   // 4. Update the export status
-  Object.assign(pub, publicationRes)
+  Object.assign(pub, {
+    remoteResource: publicationRes.remoteResource,
+    remoteDataset: publicationRes.remoteDataset
+  })
   pub.status = 'done'
   pub.error = undefined
   pub.lastPublicationDate = new Date().toISOString()
   const validPublication = (await import('../../../api/types/publication/index.ts')).returnValid(pub)
 
   await mongo.publications.updateOne({ _id: pub._id }, { $set: validPublication })
+}
+
+const deletePublication = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication) => {
+  if (!pub.remoteDataset || !pub.remoteResource) {
+    return internalError('worker-missing-remote-data', 'try do delete a publication without remote dataset or resource, weird')
+  }
+
+  await plugin.deleteDataset(catalog.config, pub.remoteDataset.id, pub.remoteResource?.id)
+  await mongo.publications.deleteOne({ _id: pub._id })
 }
 
 export default { process }

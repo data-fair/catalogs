@@ -3,7 +3,7 @@
     <p v-if="!catalogsFetch.data.value?.results.length">
       {{ t('noCatalogs') }}
     </p>
-    <publications-list
+    <publication-list
       v-else
       :data-fair-dataset="{ id: datasetId }"
     />

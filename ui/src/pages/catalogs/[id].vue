@@ -45,7 +45,7 @@
       </v-tabs-window-item>
 
       <v-tabs-window-item value="publication">
-        <publications-list
+        <publication-list
           v-if="pluginFetch.data.value?.metadata.capabilities.includes('publishDataset')"
           :catalog="{ id: catalogFetch.data.value._id, title: catalogFetch.data.value.title }"
         />
@@ -122,23 +122,21 @@ const assetsUrls = {
 <i18n lang="yaml">
   en:
     catalogs: Catalogs
-    datasets: Datasets
     description: Check the general information of the catalog or modify its configuration.
-    errorFetchingCatalogTitle: Error fetching the catalog.
     errorFetchingCatalogText: The catalog may not exist or you may not have access rights to it (Did you select the wrong active account?).
+    errorFetchingCatalogTitle: Error fetching the catalog.
     errorFetchingPlugin: Error fetching the plugin. Please contact us if the problem persists.
-    metadata: Metadata
     import: Import
+    metadata: Metadata
     publication: Publications
   fr:
     catalogs: Catalogues
-    datasets: Jeux de données
     description: Consulter les informations générales du catalogue ou modifier sa configuration.
-    errorFetchingCatalogTitle: Erreur lors du chargement du catalogue.
     errorFetchingCatalogText: Il est possible que le catalogue n'existe pas ou que vous n'ayez pas les droits d'accès sur ce dernier (Vous avez peut-être sélectionné le mauvais compte actif ?).
+    errorFetchingCatalogTitle: Erreur lors du chargement du catalogue.
     errorFetchingPlugin: Erreur lors du chargement du plugin. Merci de nous contacter si le problème persiste.
-    metadata: Métadonnées
     import: Import
+    metadata: Métadonnées
     publication: Publications
 
 </i18n>

@@ -54,6 +54,7 @@ export default defineConfig({
             'mdiLock',
             'mdiLockOpen',
             'mdiMagnify',
+            'mdiOpenInNew',
             'mdiPencil',
             'mdiPlusCircle',
             'mdiPlusCircleOutline',

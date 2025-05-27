@@ -273,9 +273,9 @@ const duplicateCatalog = useAsyncAction(
     delete: Delete
     deleteCatalog: Delete catalog
     deletePublication: Delete also all publications of this catalog
+    descriptionDuplicateCatalog: You are about to create a copy of the catalog "{title}".
     duplicate: Duplicate
     duplicateCatalog: Duplicate catalog
-    descriptionDuplicateCatalog: You are about to create a copy of the catalog "{title}".
     errorChangingOwner: Error while changing the owner
     errorDeletingCatalog: Error while deleting the catalog
     errorDuplicatingCatalog: Error while duplicating the catalog
@@ -297,9 +297,9 @@ const duplicateCatalog = useAsyncAction(
     delete: Supprimer
     deleteCatalog: Suppression du catalogue
     deletePublication: Supprimer également toutes les publications de ce catalogue
+    descriptionDuplicateCatalog: Vous êtes sur le point de créer une copie du catalogue "{title}".
     duplicate: Dupliquer
     duplicateCatalog: Duplication du catalogue
-    descriptionDuplicateCatalog: Vous êtes sur le point de créer une copie du catalogue "{title}".
     errorChangingOwner: Erreur lors de le changement de propriétaire
     errorDeletingCatalog: Erreur lors de la suppression du catalogue
     errorDuplicatingCatalog: Erreur lors de la duplication du catalogue

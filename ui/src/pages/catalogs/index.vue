@@ -110,14 +110,12 @@ watch(
 
 <i18n lang="yaml">
   en:
-    catalogs: Catalogs
     catalogDisplayed: No catalogs | {displayed}/{count} catalog displayed | {displayed}/{count} catalogs displayed
     noCatalogsCreated: You haven't created any catalogs yet.
     noCatalogsDisplayed: No results match the search criteria.
     noPermissions: You don't have permission to access this page.
 
   fr:
-    catalogs: Catalogues
     catalogDisplayed: Aucun catalogue | {displayed}/{count} catalogue affiché | {displayed}/{count} catalogues affichés
     noCatalogsCreated: Vous n'avez pas encore créé de catalogue.
     noCatalogsDisplayed: Aucun résultat ne correspond aux critères de recherche.

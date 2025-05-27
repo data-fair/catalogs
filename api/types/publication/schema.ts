@@ -1,3 +1,4 @@
+/* eslint-disable no-template-curly-in-string */
 export default {
   $id: 'https://github.com/data-fair/catalogs/publication',
   'x-exports': [
@@ -74,6 +75,7 @@ export default {
         'delete'
       ],
       layout: {
+        cols: 6,
         items: [
           {
             title: 'Create a new dataset',
@@ -119,6 +121,7 @@ export default {
         }
       },
       layout: {
+        cols: 6,
         if: {
           expr: '!context.catalog.id',
           pure: false
@@ -131,7 +134,6 @@ export default {
         },
         getItems: {
           // TODO: Filter by catalogs that have the capability to publish
-          // eslint-disable-next-line no-template-curly-in-string
           url: '${context.origin}/catalogs/api/catalogs?sort=updated.date:-1&select=_id,title',
           itemsResults: 'data.results',
           itemTitle: 'item.title',
@@ -158,6 +160,7 @@ export default {
         }
       },
       layout: {
+        cols: 6,
         if: {
           expr: '!context.dataFairDataset.id',
           pure: false
@@ -169,10 +172,9 @@ export default {
           }
         },
         getItems: {
-          // eslint-disable-next-line no-template-curly-in-string
           url: '${context.origin}/data-fair/api/v1/datasets?raw=true&select=id,title',
           itemsResults: 'data.results',
-          itemTitle: 'item.title',
+          itemTitle: '`${item.title} (${item.id})`',
           itemKey: 'item.id',
           qSearchParam: 'q'
         }
@@ -210,7 +212,6 @@ export default {
           }
         },
         getItems: {
-          // eslint-disable-next-line no-template-curly-in-string
           url: '${context.origin}/catalogs/api/catalogs/${rootData.catalog.id}/datasets',
           itemsResults: 'data.results',
           itemTitle: 'item.title',
@@ -253,7 +254,6 @@ export default {
       'dataFairDataset',
       'action',
       'remoteDataset'
-    ],
-    cols: 6
+    ]
   }
 }

@@ -42,6 +42,7 @@ declare global {
   const mdiLock: typeof import('@mdi/js')['mdiLock']
   const mdiLockOpen: typeof import('@mdi/js')['mdiLockOpen']
   const mdiMagnify: typeof import('@mdi/js')['mdiMagnify']
+  const mdiOpenInNew: typeof import('@mdi/js')['mdiOpenInNew']
   const mdiPencil: typeof import('@mdi/js')['mdiPencil']
   const mdiPlusCircle: typeof import('@mdi/js')['mdiPlusCircle']
   const mdiPlusCircleOutline: typeof import('@mdi/js')['mdiPlusCircleOutline']
@@ -158,6 +159,7 @@ declare module 'vue' {
     readonly mdiLock: UnwrapRef<typeof import('@mdi/js')['mdiLock']>
     readonly mdiLockOpen: UnwrapRef<typeof import('@mdi/js')['mdiLockOpen']>
     readonly mdiMagnify: UnwrapRef<typeof import('@mdi/js')['mdiMagnify']>
+    readonly mdiOpenInNew: UnwrapRef<typeof import('@mdi/js')['mdiOpenInNew']>
     readonly mdiPencil: UnwrapRef<typeof import('@mdi/js')['mdiPencil']>
     readonly mdiPlusCircle: UnwrapRef<typeof import('@mdi/js')['mdiPlusCircle']>
     readonly mdiPlusCircleOutline: UnwrapRef<typeof import('@mdi/js')['mdiPlusCircleOutline']>
@@ -208,7 +210,6 @@ declare module 'vue' {
     readonly useLocaleDayjs: UnwrapRef<typeof import('@data-fair/lib-vue/locale-dayjs.js')['useLocaleDayjs']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
     readonly useNumberSearchParam: UnwrapRef<typeof import('@data-fair/lib-vue/reactive-search-params.js')['useNumberSearchParam']>
-    readonly usePluginFetch: UnwrapRef<typeof import('../src/composables/use-plugin-fetch')['default']>
     readonly useReactiveSearchParams: UnwrapRef<typeof import('@data-fair/lib-vue/reactive-search-params.js')['useReactiveSearchParams']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
