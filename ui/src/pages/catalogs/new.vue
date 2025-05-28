@@ -11,8 +11,8 @@
   >
     <v-stepper
       v-model="step"
-      elevation="0"
-      hide-actions
+      style="background-color: transparent"
+      flat
     >
       <v-stepper-header>
         <v-stepper-item
@@ -42,7 +42,9 @@
 
       <v-stepper-window>
         <!-- Step 1: Select catalog type -->
-        <v-stepper-window-item value="1">
+        <v-stepper-window-item
+          value="1"
+        >
           <v-row class="d-flex align-stretch">
             <v-col
               v-for="plugin in installedPluginsFetch.data.value?.results"
@@ -200,6 +202,7 @@ const vjsfOptions: VjsfOptions = {
 
 <i18n lang="yaml">
   en:
+    catalogs: Catalogs
     catalogCreated: Catalog created!
     configuration: Configuration
     create: Create
@@ -213,6 +216,7 @@ const vjsfOptions: VjsfOptions = {
     selectOwner: Select owner
 
   fr:
+    catalogs: Catalogues
     catalogCreated: Catalogue créé !
     configuration: Configuration
     create: Créer

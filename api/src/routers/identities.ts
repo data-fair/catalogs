@@ -3,7 +3,7 @@ import { createIdentitiesRouter } from '@data-fair/lib-express/identities/index.
 import config from '#config'
 import mongo from '#mongo'
 
-const debug = Debug('webhooks')
+const debug = Debug('webhooks-simple-directory')
 
 export default createIdentitiesRouter(
   config.secretKeys.identities,

@@ -3,8 +3,8 @@
     <v-expansion-panel
       class="mb-4"
       color="primary"
-      title="Créer une nouvelle publication"
       static
+      :title="t('createNewPublication')"
     >
       <v-expansion-panel-text>
         <publication-new
@@ -93,11 +93,13 @@ const publicationsFetch = useFetch<PublicationsGetRes>(`${$apiPath}/publications
 
 <i18n lang="yaml">
   en:
+    createNewPublication: Create a new publication
     nbPublications: 'No publications | 1 publication | {count} publications'
     noPublicationsFromDataset: This dataset is not yet published on any catalog
     noPublicationsFromCatalog: This catalog does not contain any publications
 
   fr:
+    createNewPublication: Créer une nouvelle publication
     nbPublications: 'Aucune publication | 1 publication | {count} publications'
     noPublicationsFromDataset: Ce jeu de données n'est publié sur un aucun catalogue
     noPublicationsFromCatalog: Ce catalogue ne contient aucune publication

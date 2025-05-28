@@ -32,13 +32,20 @@ declare global {
   const markRaw: typeof import('vue')['markRaw']
   const mdiAccount: typeof import('@mdi/js')['mdiAccount']
   const mdiAlert: typeof import('@mdi/js')['mdiAlert']
+  const mdiCodeJson: typeof import('@mdi/js')['mdiCodeJson']
   const mdiContentDuplicate: typeof import('@mdi/js')['mdiContentDuplicate']
   const mdiDelete: typeof import('@mdi/js')['mdiDelete']
   const mdiDotsVertical: typeof import('@mdi/js')['mdiDotsVertical']
   const mdiDownload: typeof import('@mdi/js')['mdiDownload']
+  const mdiFileDocumentOutline: typeof import('@mdi/js')['mdiFileDocumentOutline']
   const mdiFileDownload: typeof import('@mdi/js')['mdiFileDownload']
+  const mdiFileOutline: typeof import('@mdi/js')['mdiFileOutline']
+  const mdiFilePdfBox: typeof import('@mdi/js')['mdiFilePdfBox']
+  const mdiFileTableOutline: typeof import('@mdi/js')['mdiFileTableOutline']
   const mdiFilterMenu: typeof import('@mdi/js')['mdiFilterMenu']
+  const mdiFolder: typeof import('@mdi/js')['mdiFolder']
   const mdiFolderDownload: typeof import('@mdi/js')['mdiFolderDownload']
+  const mdiHome: typeof import('@mdi/js')['mdiHome']
   const mdiLock: typeof import('@mdi/js')['mdiLock']
   const mdiLockOpen: typeof import('@mdi/js')['mdiLockOpen']
   const mdiMagnify: typeof import('@mdi/js')['mdiMagnify']
@@ -48,6 +55,7 @@ declare global {
   const mdiPlusCircleOutline: typeof import('@mdi/js')['mdiPlusCircleOutline']
   const mdiUpdate: typeof import('@mdi/js')['mdiUpdate']
   const mdiUpload: typeof import('@mdi/js')['mdiUpload']
+  const mdiZipBox: typeof import('@mdi/js')['mdiZipBox']
   const nextTick: typeof import('vue')['nextTick']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
@@ -93,7 +101,6 @@ declare global {
   const useLocaleDayjs: typeof import('@data-fair/lib-vue/locale-dayjs.js')['useLocaleDayjs']
   const useModel: typeof import('vue')['useModel']
   const useNumberSearchParam: typeof import('@data-fair/lib-vue/reactive-search-params.js')['useNumberSearchParam']
-  const usePluginFetch: typeof import('../src/composables/use-plugin-fetch')['default']
   const useReactiveSearchParams: typeof import('@data-fair/lib-vue/reactive-search-params.js')['useReactiveSearchParams']
   const useRoute: typeof import('vue-router')['useRoute']
   const useRouter: typeof import('vue-router')['useRouter']
@@ -149,13 +156,20 @@ declare module 'vue' {
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly mdiAccount: UnwrapRef<typeof import('@mdi/js')['mdiAccount']>
     readonly mdiAlert: UnwrapRef<typeof import('@mdi/js')['mdiAlert']>
+    readonly mdiCodeJson: UnwrapRef<typeof import('@mdi/js')['mdiCodeJson']>
     readonly mdiContentDuplicate: UnwrapRef<typeof import('@mdi/js')['mdiContentDuplicate']>
     readonly mdiDelete: UnwrapRef<typeof import('@mdi/js')['mdiDelete']>
     readonly mdiDotsVertical: UnwrapRef<typeof import('@mdi/js')['mdiDotsVertical']>
     readonly mdiDownload: UnwrapRef<typeof import('@mdi/js')['mdiDownload']>
+    readonly mdiFileDocumentOutline: UnwrapRef<typeof import('@mdi/js')['mdiFileDocumentOutline']>
     readonly mdiFileDownload: UnwrapRef<typeof import('@mdi/js')['mdiFileDownload']>
+    readonly mdiFileOutline: UnwrapRef<typeof import('@mdi/js')['mdiFileOutline']>
+    readonly mdiFilePdfBox: UnwrapRef<typeof import('@mdi/js')['mdiFilePdfBox']>
+    readonly mdiFileTableOutline: UnwrapRef<typeof import('@mdi/js')['mdiFileTableOutline']>
     readonly mdiFilterMenu: UnwrapRef<typeof import('@mdi/js')['mdiFilterMenu']>
+    readonly mdiFolder: UnwrapRef<typeof import('@mdi/js')['mdiFolder']>
     readonly mdiFolderDownload: UnwrapRef<typeof import('@mdi/js')['mdiFolderDownload']>
+    readonly mdiHome: UnwrapRef<typeof import('@mdi/js')['mdiHome']>
     readonly mdiLock: UnwrapRef<typeof import('@mdi/js')['mdiLock']>
     readonly mdiLockOpen: UnwrapRef<typeof import('@mdi/js')['mdiLockOpen']>
     readonly mdiMagnify: UnwrapRef<typeof import('@mdi/js')['mdiMagnify']>
@@ -165,6 +179,7 @@ declare module 'vue' {
     readonly mdiPlusCircleOutline: UnwrapRef<typeof import('@mdi/js')['mdiPlusCircleOutline']>
     readonly mdiUpdate: UnwrapRef<typeof import('@mdi/js')['mdiUpdate']>
     readonly mdiUpload: UnwrapRef<typeof import('@mdi/js')['mdiUpload']>
+    readonly mdiZipBox: UnwrapRef<typeof import('@mdi/js')['mdiZipBox']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>

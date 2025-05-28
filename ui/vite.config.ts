@@ -44,13 +44,20 @@ export default defineConfig({
           '@mdi/js': [
             'mdiAccount',
             'mdiAlert',
+            'mdiCodeJson',
             'mdiContentDuplicate',
             'mdiDelete',
-            'mdiDownload',
             'mdiDotsVertical',
+            'mdiDownload',
+            'mdiFileDocumentOutline',
             'mdiFileDownload',
+            'mdiFileOutline',
+            'mdiFilePdfBox',
+            'mdiFileTableOutline',
             'mdiFilterMenu',
+            'mdiFolder',
             'mdiFolderDownload',
+            'mdiHome',
             'mdiLock',
             'mdiLockOpen',
             'mdiMagnify',
@@ -59,7 +66,8 @@ export default defineConfig({
             'mdiPlusCircle',
             'mdiPlusCircleOutline',
             'mdiUpdate',
-            'mdiUpload'
+            'mdiUpload',
+            'mdiZipBox'
           ]
         }
       ],

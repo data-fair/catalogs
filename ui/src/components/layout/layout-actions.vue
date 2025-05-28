@@ -1,5 +1,5 @@
 <template>
-  <layout-actions-right v-if="$vuetify.display.mdAndUp">
+  <layout-actions-right v-if="$vuetify.display.lgAndUp">
     <slot />
   </layout-actions-right>
   <layout-actions-button v-else>

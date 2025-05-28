@@ -5,7 +5,7 @@ import { internalError } from '@data-fair/lib-node/observer.js'
 import mongo from '#mongo'
 import config from '#config'
 
-const debug = Debug('webhooks')
+const debug = Debug('webhooks-data-fair')
 const router = Router()
 export default router
 

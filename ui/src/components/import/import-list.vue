@@ -1,138 +1,101 @@
 <template>
-  <div class="d-flex align-center mb-4">
-    <v-text-field
-      v-if="hasCapability('search')"
-      v-model="search"
-      class="mr-4"
+  <v-expansion-panels class="px-1">
+    <v-expansion-panel
       color="primary"
-      density="compact"
-      max-width="200"
-      variant="outlined"
-      :append-inner-icon="mdiMagnify"
-      :placeholder="t('search')"
-      autofocus
-      clearable
-      hide-details
-    />
-    <h4 class="text-h5 mb-0">
-      {{ t('datasetsInCatalog', (availableDatasets.data.value?.count || 0)) }}
-    </h4>
+      static
+      :title="t('createNewImport')"
+      :expand-icon="mdiPlusCircle"
+    >
+      <v-expansion-panel-text>
+        <import-new
+          :catalog="catalog"
+          @on-publish="importsFetch.refresh()"
+        />
+      </v-expansion-panel-text>
+    </v-expansion-panel>
+  </v-expansion-panels>
 
-    <v-spacer />
-    <v-pagination
-      v-if="hasCapability('pagination') && (availableDatasets.data.value?.count || 0) > size"
-      v-model="page"
-      density="comfortable"
-      total-visible="3"
-      :length="Math.ceil((availableDatasets.data.value?.count || 0) / size)"
-    />
-  </div>
-  <v-form>
-    <vjsf
-      v-if="hasCapability('additionalFilters')"
-      v-model="additionalFilters"
-      :schema="plugin.filtersSchema"
-      :options="vjsfOptions"
-    />
-  </v-form>
-  <v-progress-linear
-    v-if="availableDatasets.loading.value"
-    color="primary"
-    height="2"
-    indeterminate
-  />
-  <import-list-item
-    v-for="dataset in availableDatasets.data.value?.results"
-    v-else
-    :key="dataset.id"
-    class="mb-4"
-    :imports="importedDatasets.data.value?.results"
-    :catalog="catalog"
-    :dataset="dataset"
-  />
-  <v-pagination
-    v-if="hasCapability('pagination') && (availableDatasets.data.value?.count || 0) > size"
-    v-model="page"
-    :length="Math.ceil((availableDatasets.data.value?.count || 0) / size)"
-  />
+  <v-row
+    v-if="importsFetch.loading.value"
+    class="d-flex align-stretch"
+  >
+    <v-col
+      v-for="i in 4"
+      :key="i"
+      md="4"
+      sm="6"
+      cols="12"
+      class="d-flex"
+    >
+      <v-skeleton-loader
+        :class="$vuetify.theme.current.dark ? 'w-100' : 'w-100 skeleton'"
+        type="heading"
+      />
+    </v-col>
+  </v-row>
+  <span
+    v-else-if="!importsFetch.data.value?.results.length"
+    class="d-flex justify-center text-h6 mt-4"
+  >
+    {{ t('noImports') }}
+  </span>
+  <template v-else>
+    <h3 class="text-h5 mb-4">
+      {{ t('nbImports', importsFetch.data.value?.results.length || 0) }}
+    </h3>
+    <v-row class="d-flex align-stretch">
+      <v-col
+        v-for="imp in importsFetch.data.value?.results"
+        :key="imp._id"
+        md="4"
+        sm="6"
+        cols="12"
+      >
+        <import-card
+          :imp="imp"
+          @on-delete="importsFetch.refresh()"
+        />
+      </v-col>
+    </v-row>
+  </template>
 </template>
 
 <script setup lang="ts">
-import type { CatalogDataset, Capability } from '@data-fair/lib-common-types/catalog/index.ts'
-import type { Catalog, Plugin, Import } from '#api/types'
-
-import Vjsf from '@koumoul/vjsf'
-
-const props = defineProps <{
-  catalog: Catalog,
-  plugin: Plugin
-}>()
+import type { Import } from '#api/types'
 
 const { t } = useI18n()
-const { catalog } = toRefs(props)
-const additionalFilters = ref({})
-const search = ref<string>('')
-const page = ref<number>(1)
-const size = 10
 
-/**
- * Check if the plugin has a specific capability
- * @param {Capability} capability - The capability to check
- * @returns {boolean} - True if the plugin has the capability, false otherwise
- */
-const hasCapability = (capability: Capability): boolean => {
-  return props.plugin.metadata.capabilities.includes(capability)
-}
+// Used to filter the imports
+const { catalog } = defineProps<{
+  catalog: {
+    id: string
+    title?: string
+  }
+}>()
 
-const fetchQuery = computed(() => ({
-  q: hasCapability('search') ? search.value : undefined,
-  ...(hasCapability('pagination')
-    ? { page: page.value, size }
-    : {}
-  ),
-  ...(hasCapability('additionalFilters')
-    ? additionalFilters.value
-    : {}
-  ),
-}))
-
-const availableDatasets = useFetch<{
-  count: number
-  results: CatalogDataset[]
-}>(`${$apiPath}/catalogs/${catalog.value._id}/datasets`, {
-  query: fetchQuery
-})
-
-const importedDatasets = useFetch<{
-  count: number
-  results: Import[]
-}>(`${$apiPath}/imports`, {
+const importsFetch = useFetch<{ results: Import[] }>(`${$apiPath}/imports`, {
   query: {
-    catalogId: catalog.value._id
+    catalogId: catalog.id
   }
 })
-
-const vjsfOptions = {
-  density: 'comfortable',
-  initialValidation: 'always',
-  removeAdditional: true,
-  titleDepth: 4,
-  updateOn: 'blur',
-  validateOn: 'blur',
-  xI18n: true
-}
 
 </script>
 
 <i18n lang="yaml">
   en:
-    datasetsInCatalog: No datasets on the catalog | {n} remote dataset | {n} remote datasets
-    search: Search...
+    createNewImport: Create a new import
+    nbImports: '{count} import | {count} imports'
+    noImports: This catalog does not contain any imports
 
   fr:
-    datasetsInCatalog: Aucun jeu de données sur le catalogue | {n} jeu de données distant | {n} jeux de données distants
-    search: Rechercher...
+    createNewImport: Importer un nouveau jeu de données
+    nbImports: '{count} import | {count} imports'
+    noImports: Ce catalogue ne contient pas encore d'import
+
 </i18n>
 
 <style scoped>
+:deep(.v-expansion-panel-text__wrapper) {
+  padding: 0;
+}
 </style>

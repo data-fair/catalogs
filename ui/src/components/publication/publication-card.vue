@@ -171,7 +171,7 @@ const rePublish = useAsyncAction(
     showRePublishMenu.value = false
   },
   {
-    error: t('deletePublicationError')
+    error: t('createPublicationError')
   }
 )
 
@@ -179,6 +179,7 @@ const rePublish = useAsyncAction(
 
 <i18n lang="yaml">
   en:
+    createPublicationError: 'Error recreating publication'
     deleteOnlyLink: 'Delete only the link'
     deletePublication: 'Delete Publication'
     deletePublicationConfirm: 'Are you sure you want to delete this publication?'
@@ -206,6 +207,7 @@ const rePublish = useAsyncAction(
     yes: 'Yes'
 
   fr:
+    createPublicationError: 'Erreur lors de la republication'
     deleteOnlyLink: 'Supprimer uniquement le lien'
     deletePublication: 'Supprimer la publication'
     deletePublicationConfirm: 'Êtes-vous sûr de vouloir supprimer la publication ? Cette action supprimera le jeu de données distant. Vous pouvez cependant choisir de supprimer seulement le lien entre le jeu de données local et le jeu de données distant.'
