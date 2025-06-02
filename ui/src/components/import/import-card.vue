@@ -45,7 +45,7 @@
           :loading="reImport.loading.value ? 'warning' : undefined"
         >
           <v-card-text class="pb-0">
-            {{ t('rePublishComfirm') }}
+            {{ t('reImportComfirm') }}
           </v-card-text>
           <v-card-actions>
             <v-spacer />
@@ -158,8 +158,12 @@ const deleteImport = useAsyncAction(
 
 const reImport = useAsyncAction(
   async () => {
-    await $fetch(`/import/${imp?._id}`, {
-      method: 'POST'
+    await $fetch('/imports', {
+      method: 'POST',
+      body: {
+        catalog: imp.catalog,
+        remoteResource: imp.remoteResource
+      }
     })
 
     // TODO: subscribe ws
@@ -177,7 +181,7 @@ const reImport = useAsyncAction(
     createImportError: 'Error creating import'
     deleteOnlyLink: 'Delete only the link'
     deleteDataset: 'Delete Dataset'
-    deleteDatasetConfirm: 'Are you sure you want to delete this dataset?'
+    deleteDatasetConfirm: 'Are you sure you want to delete this import? This action will also delete the imported dataset. However, you can choose to delete only the import: the link between the remote resource and the imported dataset will be removed.'
     deleteImportError: 'Error deleting import'
     error: 'Error'
     importTitle: '{title}'
@@ -188,8 +192,8 @@ const reImport = useAsyncAction(
       running: 'Import in progress'
       done: 'Dataset imported'
       error: 'Import error'
-    reImport: 'Re-Import'
-    rePublishComfirm: 'Are you sure you want to re-import this dataset? The local dataset will be overwritten.'
+    reImport: 'Re-import'
+    reImportComfirm: 'Are you sure you want to re-import this resource? The already imported data will be overwritten.'
     viewDataset: 'View Dataset'
     yes: 'Yes'
 
@@ -197,19 +201,19 @@ const reImport = useAsyncAction(
     createImportError: "Erreur lors de la création de l'import"
     deleteOnlyLink: 'Supprimer uniquement le lien'
     deleteDataset: 'Supprimer le jeu de données'
-    deleteDatasetConfirm: 'Êtes-vous sûr de vouloir supprimer ce jeu de données ? Cette action supprimera le jeu de données local. Vous pouvez cependant choisir de supprimer seulement le lien entre le jeu de données local et la ressource distante.'
+    deleteDatasetConfirm: "Êtes-vous sûr de vouloir supprimer cet import ? Cette action supprimera également le jeu de données importé. Vous pouvez cependant choisir de supprimer uniquement l'import : le lien entre la ressource distante et jeu de données importé."
     deleteImportError: 'Erreur lors de la demande de suppression'
     error: 'Erreur'
     importTitle: '{title}'
-    lastImportDate: 'Date de dernier import'
+    lastImportDate: 'Date du dernier import'
     no: 'Non'
     importStatus:
       waiting: "En attente d'import"
       running: 'Import en cours'
       done: 'Jeu de données importé'
       error: 'Import en erreur'
-    reImport: 'Re-importer'
-    rePublishComfirm: 'Êtes-vous sûr de vouloir re-importer cette resource ? Le jeu de données local sera écrasé.'
+    reImport: 'Importer à nouveau'
+    reImportComfirm: 'Êtes-vous sûr de vouloir réimporter cette resource ? Les données déjà importées seront écrasées.'
     viewDataset: 'Voir le jeu de données'
     yes: 'Oui'
 

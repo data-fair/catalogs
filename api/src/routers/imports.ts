@@ -46,6 +46,40 @@ router.post('/', async (req, res) => {
   const catalogExists = await mongo.catalogs.countDocuments({ _id: body.catalog.id }) === 1
   if (!catalogExists) throw httpError(404, 'Catalog not found')
 
+  // Check if an import with the same catalog.id and remoteResource.id already exists
+  const existingImport = await mongo.imports.findOne({
+    'catalog.id': body.catalog.id,
+    'remoteResource.id': body.remoteResource.id
+  })
+
+  if (existingImport) {
+    // Update existing import: reset status to waiting and clear errors
+    const updatedImport = await mongo.imports.findOneAndUpdate(
+      { _id: existingImport._id },
+      {
+        $set: {
+          status: 'waiting',
+          updated: {
+            id: sessionState.user.id,
+            name: sessionState.user.name,
+            date: new Date().toISOString()
+          }
+        },
+        $unset: {
+          error: ''
+        }
+      },
+      { returnDocument: 'after' }
+    )
+
+    if (!updatedImport) {
+      throw httpError(500, 'Failed to update existing import')
+    }
+
+    return res.status(200).json(updatedImport)
+  }
+
+  // Create new import if none exists
   const imp: Partial<Import> = { ...body }
   imp._id = nanoid()
   imp.owner = sessionState.account

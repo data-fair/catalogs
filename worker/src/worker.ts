@@ -105,7 +105,7 @@ const mainLoop = async () => {
  * Execute a task
  */
 async function iter (task: Task, type: typeof types[number]) {
-  debug('Processing', type, task._id)
+  debug('Process', type, task._id)
   const collection = type === 'import' ? mongo.imports : mongo.publications
 
   const catalog = await mongo.catalogs.findOne({ _id: task.catalog.id })
@@ -132,7 +132,7 @@ async function iter (task: Task, type: typeof types[number]) {
     debug('Error while process', type, task._id, e)
     await collection.updateOne({ _id: task._id }, { $set: { status: 'error', error: e.message } })
   } finally {
-    await locks.release(task._id)
+    await locks.release(`${type}:${task._id}`)
   }
 }
 
@@ -148,9 +148,7 @@ async function acquireNext (type: typeof types[number]): Promise<Task | undefine
   while (await cursor.hasNext()) {
     const task = (await cursor.next())!
     const ack = await locks.acquire(`${type}:${task._id}`, 'worker-loop-iter')
-    debug('Try to acquire the lock to', type, task._id, ack)
     if (!ack) continue
-    debug('Lock acquired to', type, task._id)
     return task
   }
 }

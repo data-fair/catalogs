@@ -8,15 +8,13 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    Activity: typeof import('./../src/components/activity.vue')['default']
     CatalogActions: typeof import('./../src/components/catalog/catalog-actions.vue')['default']
+    CatalogActivity: typeof import('./../src/components/catalog/catalog-activity.vue')['default']
     CatalogCard: typeof import('./../src/components/catalog/catalog-card.vue')['default']
     CatalogConfig: typeof import('./../src/components/catalog/catalog-config.vue')['default']
     CatalogsActions: typeof import('./../src/components/catalogs-actions.vue')['default']
-    ImportAction: typeof import('./../src/components/import/import-action.vue')['default']
     ImportCard: typeof import('./../src/components/import/import-card.vue')['default']
     ImportList: typeof import('./../src/components/import/import-list.vue')['default']
-    ImportListItem: typeof import('./../src/components/import/import-list-item.vue')['default']
     ImportNew: typeof import('./../src/components/import/import-new.vue')['default']
     ImportSelectResource: typeof import('./../src/components/import/import-select-resource.vue')['default']
     LayoutActions: typeof import('./../src/components/layout/layout-actions.vue')['default']

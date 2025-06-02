@@ -1,5 +1,6 @@
 <template>
   <v-defaults-provider
+    v-if="catalogSchema"
     :defaults="{
       global: {
         hideDetails: 'auto'
@@ -8,14 +9,16 @@
   >
     <v-form v-model="valid">
       <vjsf
-        v-if="catalogSchema"
         v-model="editCatalog"
         :schema="catalogSchema"
         :options="vjsfOptions"
         @update:model-value="patch.execute()"
       >
         <template #activity>
-          <activity :resource="Object.assign(catalog, editCatalog)" />
+          <catalog-activity
+            :resource="Object.assign(catalog, editCatalog)"
+            :plugin-title="plugin.metadata.title"
+          />
         </template>
       </vjsf>
     </v-form>

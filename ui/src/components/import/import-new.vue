@@ -1,16 +1,11 @@
 <template>
-  <tutorial-alert
-    id="tutorial-imports"
-    :text="t('tutorialMessage')"
-  />
-
   <v-stepper
     v-model="step"
     flat
   >
     <v-stepper-header>
       <v-stepper-item
-        :title="t('selectResource')"
+        :title="t('step1.title')"
         value="1"
         :color="step === '1' ? 'primary' : ''"
         :complete="!!selectedResource"
@@ -19,7 +14,7 @@
 
       <v-divider />
       <v-stepper-item
-        :title="t('importConfiguration')"
+        :title="t('step2.title')"
         value="2"
         :color="step === '2' ? 'primary' : ''"
         :editable="!!selectedResource"
@@ -35,14 +30,22 @@
       </v-stepper-window-item>
 
       <v-stepper-window-item value="2">
-        TODO
+        <v-form v-model="validImportConfig">
+          <vjsf
+            v-model="importConfig"
+            :schema="{
+              type: 'string',
+              title: 'TODO'
+            }"
+            :options="vjsfOptions"
+            @update:model-value="'todo'"
+          />
+        </v-form>
       </v-stepper-window-item>
     </v-stepper-window>
 
     <template #actions="{ prev, next }">
       <v-stepper-actions
-        :prev-text="t('previous')"
-        :next-text="step === '2' ? t('createImport') : t('next')"
         @click:prev="prev"
         @click:next="handleNext(next)"
       >
@@ -61,10 +64,10 @@
             v-bind="props"
             color="primary"
             variant="flat"
-            :disabled="step === '1' ? !selectedResource : (!validConfig || !selectedResource)"
+            :disabled="step === '1' ? !selectedResource : (!validImportConfig || !selectedResource)"
             :loading="step === '2' ? createImport.loading.value : false"
           >
-            {{ step === '2' ? t('createImport') : t('next') }}
+            {{ t(`step${step}.next`) }}
           </v-btn>
         </template>
       </v-stepper-actions>
@@ -73,9 +76,11 @@
 </template>
 
 <script setup lang="ts">
-import tutorialAlert from '@data-fair/lib-vuetify/tutorial-alert.vue'
+import type { Resource } from '@data-fair/lib-common-types/catalog'
+import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 
 const { t } = useI18n()
+const session = useSessionAuthenticated()
 
 const { catalog } = defineProps<{
   catalog: {
@@ -87,18 +92,36 @@ const { catalog } = defineProps<{
 const emit = defineEmits(['onPublish'])
 
 const step = ref('1')
-const selectedResource = ref(null)
-const validConfig = ref(false)
+const selectedResource = ref<Resource | null>(null)
+const validImportConfig = ref(false)
+const importConfig = ref({})
 
 const createImport = useAsyncAction(async () => {
-  if (!selectedResource.value || !validConfig.value) return
+  if (!selectedResource.value || !validImportConfig.value) return
 
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  // Construct the body for the API request
+  const body = {
+    catalog: {
+      id: catalog.id,
+      title: catalog.title
+    },
+    remoteResource: {
+      id: selectedResource.value.id,
+      title: selectedResource.value.title
+    }
+  }
+
+  // Create the import via API
+  await $fetch(`${$apiPath}/imports`, {
+    method: 'POST',
+    body
+  })
 
   emit('onPublish', selectedResource.value)
 
   selectedResource.value = null
-  validConfig.value = false
+  validImportConfig.value = false
+  step.value = '1'
 })
 
 const handleNext = (next: () => void) => {
@@ -109,62 +132,36 @@ const handleNext = (next: () => void) => {
   }
 }
 
+const vjsfOptions: VjsfOptions = {
+  density: 'comfortable',
+  initialValidation: 'always',
+  locale: session.lang.value,
+  readOnlyPropertiesMode: 'hide',
+  titleDepth: 4,
+  validateOn: 'blur',
+  xI18n: true
+}
+
 </script>
 
 <i18n lang="yaml">
   en:
-    import: Import
-    next: Next
     previous: Previous
-    selectResource: Select Resource
-    importConfiguration: Import Configuration
-    tutorialMessage: You can publish your datasets to one or more catalogs. This publication will make your data easier to find and allow the Open Data community to engage with you.
-    createImport: Create Import
-    searchInTree: Search in tree
-    searchPlaceholder: Search by title or description...
-    selectedResource: Selected Resource
-    fullPath: Full path
-    continue: Continue
-    back: Back
-    finalizeImport: Finalize Import
-    importSuccess: Resource imported successfully
-    importError: Error importing resource
     step1:
-      title: Resource Selection
-      subtitle: Browse and select a resource to import
+      title: Select Resource
+      next: Next
     step2:
       title: Import Configuration
-      subtitle: Configure import settings
-      placeholder: This step will allow you to configure import settings.
-      comingSoon: Coming Soon
-      description: Import configuration options will be available here in a future version.
+      next: Import
 
   fr:
-    import: Importer
-    next: Suivant
     previous: Précédent
-    selectResource: Sélectionner une ressource
-    importConfiguration: Configuration de l'import
-    tutorialMessage: Vous pouvez publier vos jeux de données sur un ou plusieurs catalogues. Cette publication rendra vos données plus faciles à trouver et permettra à la communauté Open Data d'échanger avec vous.
-    createImport: Créer un Import
-    searchInTree: Rechercher dans l'arborescence
-    searchPlaceholder: Rechercher par titre ou description...
-    selectedResource: Ressource Sélectionnée
-    fullPath: Chemin complet
-    continue: Continuer
-    back: Retour
-    finalizeImport: Finaliser l'Import
-    importSuccess: Ressource importée avec succès
-    importError: Erreur lors de l'import de la ressource
     step1:
-      title: Sélection de Ressource
-      subtitle: Parcourez et sélectionnez une ressource à importer
+      title: Sélection d'une ressource
+      next: Suivant
     step2:
-      title: Configuration de l'Import
-      subtitle: Configurez les paramètres d'import
-      placeholder: Cette étape permettra de configurer les paramètres d'import.
-      comingSoon: Bientôt Disponible
-      description: Les options de configuration d'import seront disponibles ici dans une future version.
+      title: Configuration de l'import
+      next: Importer
 
 </i18n>
 

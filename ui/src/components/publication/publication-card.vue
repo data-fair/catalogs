@@ -213,7 +213,7 @@ const rePublish = useAsyncAction(
     deletePublicationConfirm: 'Êtes-vous sûr de vouloir supprimer la publication ? Cette action supprimera le jeu de données distant. Vous pouvez cependant choisir de supprimer seulement le lien entre le jeu de données local et le jeu de données distant.'
     deletePublicationError: 'Erreur lors de la demande de suppression'
     error: 'Erreur'
-    lastPublicationDate: 'Date de dernière publication'
+    lastPublicationDate: 'Date de la dernière publication'
     no: 'Non'
     publicationStatus:
       waiting: 'En attente de publication'

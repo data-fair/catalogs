@@ -53,6 +53,7 @@ declare global {
   const mdiPencil: typeof import('@mdi/js')['mdiPencil']
   const mdiPlusCircle: typeof import('@mdi/js')['mdiPlusCircle']
   const mdiPlusCircleOutline: typeof import('@mdi/js')['mdiPlusCircleOutline']
+  const mdiPuzzle: typeof import('@mdi/js')['mdiPuzzle']
   const mdiUpdate: typeof import('@mdi/js')['mdiUpdate']
   const mdiUpload: typeof import('@mdi/js')['mdiUpload']
   const mdiZipBox: typeof import('@mdi/js')['mdiZipBox']
@@ -177,6 +178,7 @@ declare module 'vue' {
     readonly mdiPencil: UnwrapRef<typeof import('@mdi/js')['mdiPencil']>
     readonly mdiPlusCircle: UnwrapRef<typeof import('@mdi/js')['mdiPlusCircle']>
     readonly mdiPlusCircleOutline: UnwrapRef<typeof import('@mdi/js')['mdiPlusCircleOutline']>
+    readonly mdiPuzzle: UnwrapRef<typeof import('@mdi/js')['mdiPuzzle']>
     readonly mdiUpdate: UnwrapRef<typeof import('@mdi/js')['mdiUpdate']>
     readonly mdiUpload: UnwrapRef<typeof import('@mdi/js')['mdiUpload']>
     readonly mdiZipBox: UnwrapRef<typeof import('@mdi/js')['mdiZipBox']>

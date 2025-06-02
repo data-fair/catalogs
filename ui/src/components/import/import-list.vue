@@ -1,5 +1,5 @@
 <template>
-  <v-expansion-panels class="px-1">
+  <v-expansion-panels class="px-1 mb-4">
     <v-expansion-panel
       color="primary"
       static
@@ -35,12 +35,12 @@
   </v-row>
   <span
     v-else-if="!importsFetch.data.value?.results.length"
-    class="d-flex justify-center text-h6 mt-4"
+    class="d-flex justify-center text-h6"
   >
     {{ t('noImports') }}
   </span>
   <template v-else>
-    <h3 class="text-h5 mb-4">
+    <h3 class="text-h5">
       {{ t('nbImports', importsFetch.data.value?.results.length || 0) }}
     </h3>
     <v-row class="d-flex align-stretch">

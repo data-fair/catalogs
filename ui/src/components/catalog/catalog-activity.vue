@@ -5,13 +5,17 @@
   />
   <v-list-item
     :prepend-icon="mdiPencil"
-    :title="`${resource.updated.name}`"
-    :subtitle="`${dayjs(resource.updated.date).format(t('dateFormat'))}`"
+    :title="resource.updated.name"
+    :subtitle="dayjs(resource.updated.date).format(t('dateFormat'))"
   />
   <v-list-item
     :prepend-icon="mdiPlusCircleOutline"
-    :title="`${resource.created.name}`"
-    :subtitle="`${dayjs(resource.created.date).format(t('dateFormat'))}`"
+    :title="resource.created.name"
+    :subtitle="dayjs(resource.created.date).format(t('dateFormat'))"
+  />
+  <v-list-item
+    :prepend-icon="mdiPuzzle"
+    :title="pluginTitle"
   />
 </template>
 
@@ -21,8 +25,9 @@ import type { Catalog } from '#api/types'
 const { dayjs } = useLocaleDayjs()
 const { t } = useI18n()
 
-const { resource } = defineProps<{
-  resource: Pick<Catalog, 'created' | 'updated' | 'owner'>
+const { resource, pluginTitle } = defineProps<{
+  resource: Pick<Catalog, 'created' | 'updated' | 'owner' | 'plugin'>
+  pluginTitle: string
 }>()
 
 const avatarUrl = computed(() => {

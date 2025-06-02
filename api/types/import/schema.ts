@@ -14,7 +14,7 @@ export default {
     'created',
     'status',
     'catalog',
-    'remoteDataset'
+    'remoteResource'
   ],
   properties: {
     _id: {
@@ -78,20 +78,6 @@ export default {
       type: 'object',
       additionalProperties: false,
       required: ['id'],
-      properties: {
-        id: {
-          type: 'string'
-        },
-        title: {
-          type: 'string'
-        }
-      }
-    },
-    remoteDataset: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['id'],
-      description: 'The remote dataset this import belongs to',
       properties: {
         id: {
           type: 'string'

@@ -10,7 +10,7 @@ export default {
   properties: {
     body:
       jsonSchema(ImportSchema)
-        .pickProperties(['catalog', 'remoteDataset', 'remoteResource'])
+        .pickProperties(['catalog', 'remoteResource'])
         .removeId()
         .appendTitle(' post')
         .schema

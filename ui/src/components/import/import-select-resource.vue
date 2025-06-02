@@ -2,16 +2,18 @@
   <v-data-table
     v-model="selected"
     :headers="headers"
-    :hide-default-footer="data.length < 11"
-    :items="data"
+    :hide-default-footer="levelData.length < 11"
+    :items="levelData"
     :items-per-page-options="[5, 10, 20]"
-    :item-value="(item) => item.type === 'resource' ? item.id : null"
-    :show-select="data.some(item => item.type === 'resource')"
     :item-selectable="(item) => item.type === 'resource'"
+    :item-value="(item) => item.type === 'resource' ? item.id : null"
+    :loading="fetchFolders.loading.value"
+    :loading-text="t('loading')"
     :row-props="(data) => ({
       onClick: () => handleRowClick(data.item),
       style: data.item.type === 'resource' ? 'cursor: pointer' : 'cursor: default'
     })"
+    :show-select="levelData.some(item => item.type === 'resource')"
     select-strategy="single"
   >
     <template #top>
@@ -83,10 +85,7 @@ import formatBytes from '@data-fair/lib-vue/format/bytes.js'
 const { t } = useI18n()
 const { catalogId } = defineProps<{ catalogId: string }>()
 
-const fetchFolders = useFetch<{ rootFolder: Folder }>(`${$apiPath}/catalogs/${catalogId}/resources`, {
-  immediate: true,
-  notifError: false
-})
+const fetchFolders = useFetch<{ rootFolder: Folder }>(`${$apiPath}/catalogs/${catalogId}/resources`)
 
 // Navigation state
 const currentPath = ref<string[]>([])
@@ -141,7 +140,7 @@ const getResourceIcon = (mimeType?: string | null): string => {
 }
 
 /** Computed property to get current level data */
-const data = computed(() => {
+const levelData = computed(() => {
   let currentLevel = fetchFolders.data.value?.rootFolder
   if (!currentLevel) return []
 
@@ -239,6 +238,7 @@ en:
   name: Name
   size: Size
   format: Format
+  loading: Loading resources...
 
 fr:
   import: Importer
@@ -246,6 +246,7 @@ fr:
   name: Nom
   size: Taille
   format: Format
+  loading: Chargement des ressources...
 </i18n>
 
 <style scoped>
