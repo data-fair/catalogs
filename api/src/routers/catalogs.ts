@@ -190,8 +190,8 @@ router.delete('/:id', async (req, res) => {
   res.status(204).send()
 })
 
-// Get the list of remote datasets from a catalog
-router.get('/:id/datasets', async (req, res) => {
+// Get the list of remote resources from a catalog
+router.get('/:id/resources', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
@@ -199,8 +199,8 @@ router.get('/:id/datasets', async (req, res) => {
 
   // Execute the plugin function
   const plugin = await findUtils.getPlugin(catalog.plugin)
-  if (!plugin.metadata.capabilities.includes('listDatasets')) throw httpError(501, 'Plugin does not support listing datasets')
-  const datasets = await plugin.listDatasets(catalog.config, req.query as any)
+  if (!plugin.metadata.capabilities.includes('listResources')) throw httpError(501, 'Plugin does not support listing resources')
+  const datasets = await plugin.listResources(catalog.config, req.query as any)
 
   res.status(200).json(datasets)
 })

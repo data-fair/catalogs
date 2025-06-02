@@ -28,7 +28,10 @@
 
     <v-stepper-window>
       <v-stepper-window-item value="1">
-        <import-select-resource v-model="selectedResource" />
+        <import-select-resource
+          v-model="selectedResource"
+          :catalog-id="catalog.id"
+        />
       </v-stepper-window-item>
 
       <v-stepper-window-item value="2">
@@ -74,9 +77,8 @@ import tutorialAlert from '@data-fair/lib-vuetify/tutorial-alert.vue'
 
 const { t } = useI18n()
 
-// Optional default values
-defineProps<{
-  catalog?: {
+const { catalog } = defineProps<{
+  catalog: {
     id: string
     title?: string
   }

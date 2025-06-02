@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Import } from '#api/types'
+import type { Import, Plugin } from '#api/types'
 
 const { t } = useI18n()
 
@@ -70,7 +70,8 @@ const { catalog } = defineProps<{
   catalog: {
     id: string
     title?: string
-  }
+  },
+  plugin?: Plugin
 }>()
 
 const importsFetch = useFetch<{ results: Import[] }>(`${$apiPath}/imports`, {

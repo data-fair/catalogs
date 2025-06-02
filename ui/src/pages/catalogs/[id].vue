@@ -38,7 +38,7 @@
     <v-tabs-window v-model="activeTab">
       <v-tabs-window-item value="import">
         <import-list
-          v-if="pluginFetch.data.value?.metadata.capabilities.includes('listDatasets')"
+          v-if="pluginFetch.data.value?.metadata.capabilities.includes('listResources')"
           :catalog="{ id: catalogFetch.data.value._id, title: catalogFetch.data.value.title }"
           :plugin="pluginFetch.data.value"
         />
@@ -88,7 +88,7 @@ const canAdmin = computed(() => {
 const tabs = computed(() => {
   const capabilities = pluginFetch.data.value?.metadata.capabilities ?? []
   const tabs = []
-  if (capabilities.includes('listDatasets')) {
+  if (capabilities.includes('listResources')) {
     tabs.push({ id: 'import', title: t('import'), icon: mdiDownload })
   }
   if (capabilities.includes('publishDataset')) {
