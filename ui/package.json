@@ -16,6 +16,7 @@
     "#api/types/*": "../api/types/*"
   },
   "dependencies": {
+    "@data-fair/catalogs-shared": "*",
     "@data-fair/frame": "^0.12.0",
     "@data-fair/lib-common-types": "^1.9.2",
     "@data-fair/lib-utils": "^1.6.0",
@@ -28,8 +29,10 @@
     "@types/config": "^3.3.5",
     "@vitejs/plugin-vue": "^5.2.3",
     "@vueuse/core": "^13.0.0",
+    "cronstrue": "^2.61.0",
     "dayjs": "^1.11.13",
     "iframe-resizer": "^4.4.5",
+    "timezones.json": "^1.7.2",
     "unplugin-auto-import": "^19.1.2",
     "unplugin-vue-components": "^28.4.1",
     "unplugin-vue-router": "^0.12.0",

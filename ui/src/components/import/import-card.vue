@@ -2,27 +2,24 @@
   <v-card
     :title="t('importTitle', { title: imp.remoteResource?.title ?? imp.remoteResource?.id })"
     :subtitle="t(`importStatus.${imp.status}`)"
+    class="h-100 d-flex flex-column"
   >
     <v-card-text class="pb-0">
-      <!-- <div
+      <div
         v-if="imp.error"
         class="text-error"
       >
         {{ t('error') }}: {{ imp.error }}
-      </div> -->
+      </div>
       <div v-if="imp.lastImportDate">
-        {{ t('lastImportDate') }}: {{ dayjs(imp.lastImportDate).format('LLL') }}
+        {{ t('lastImportDate') }} {{ dayjs(imp.lastImportDate).format('LLL') }}
+      </div>
+      <div v-if="imp.nextImportDate">
+        {{ t('nextImportDate') }} {{ dayjs(imp.nextImportDate).format('LLL') }}
       </div>
     </v-card-text>
-    <v-card-actions>
+    <v-card-actions class="mt-auto">
       <v-spacer />
-      <v-btn
-        color="primary"
-        density="comfortable"
-        variant="text"
-        :icon="mdiOpenInNew"
-        :title="t('viewDataset')"
-      />
       <v-menu
         v-model="showReImportMenu"
         :close-on-content-click="false"
@@ -141,14 +138,17 @@ const deleteOnlyLink = ref(false)
 
 const deleteImport = useAsyncAction(
   async () => {
-    await $fetch(`/imports/${imp?._id}?onlyLink=${deleteOnlyLink.value}`, {
+    await $fetch(`/imports/${imp._id}?onlyLink=${deleteOnlyLink.value}`, {
       method: 'DELETE'
     })
 
-    if (deleteOnlyLink) emit('onDelete')
-    else {
-      // TODO: delete the datafair dataset
+    if (!deleteOnlyLink.value) {
+      await $fetch(`/data-fair/api/v1/datasets/${imp.dataFairDataset?.id}`, {
+        method: 'DELETE',
+        baseURL: $sitePath
+      })
     }
+    emit('onDelete')
     showDeleteMenu.value = false
   },
   {
@@ -162,7 +162,9 @@ const reImport = useAsyncAction(
       method: 'POST',
       body: {
         catalog: imp.catalog,
-        remoteResource: imp.remoteResource
+        remoteResource: imp.remoteResource,
+        scheduling: imp.scheduling,
+        config: imp.config
       }
     })
 
@@ -185,7 +187,8 @@ const reImport = useAsyncAction(
     deleteImportError: 'Error deleting import'
     error: 'Error'
     importTitle: '{title}'
-    lastImportDate: 'Last Import Date'
+    lastImportDate: 'Last Import Date:'
+    nextImportDate: 'Next Import Date:'
     no: 'No'
     importStatus:
       waiting: 'Waiting for import'
@@ -205,7 +208,8 @@ const reImport = useAsyncAction(
     deleteImportError: 'Erreur lors de la demande de suppression'
     error: 'Erreur'
     importTitle: '{title}'
-    lastImportDate: 'Date du dernier import'
+    lastImportDate: 'Date du dernier import :'
+    nextImportDate: 'Date du prochain import :'
     no: 'Non'
     importStatus:
       waiting: "En attente d'import"

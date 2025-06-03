@@ -3,6 +3,7 @@ import type { Import } from '#types'
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { assertAccountRole, session, httpError } from '@data-fair/lib-express'
+import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import mongo from '#mongo'
 import findUtils from '../utils/find.ts'
 
@@ -84,11 +85,14 @@ router.post('/', async (req, res) => {
   imp._id = nanoid()
   imp.owner = sessionState.account
   imp.status = 'waiting'
-  imp.created = {
+  imp.created = imp.updated = {
     id: sessionState.user.id,
     name: sessionState.user.name,
     date: new Date().toISOString()
   }
+
+  // Set the next import date based on scheduling
+  if (imp.scheduling) imp.nextImportDate = getNextImportDate(imp.scheduling)
 
   const validImport = await validateImport(imp)
   await mongo.imports.insertOne(validImport)

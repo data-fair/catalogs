@@ -126,6 +126,7 @@ router.get('/:id', async (req, res) => {
     version: pluginInfo.version,
     configSchema: plugin.configSchema,
     filtersSchema: plugin.filtersSchema,
+    importConfigSchema: plugin.importConfigSchema,
     metadata: plugin.metadata
   } as Plugin)
 })

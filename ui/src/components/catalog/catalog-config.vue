@@ -16,7 +16,7 @@
       >
         <template #activity>
           <catalog-activity
-            :resource="Object.assign(catalog, editCatalog)"
+            :catalog="Object.assign(catalog, editCatalog)"
             :plugin-title="plugin.metadata.title"
           />
         </template>
@@ -43,7 +43,11 @@ const session = useSessionAuthenticated()
 const { t } = useI18n()
 
 const valid = ref(false)
-const editCatalog: Ref<Catalog> = ref({ ...catalog })
+const editCatalog: Ref<Partial<Catalog>> = ref({
+  title: catalog.title,
+  description: catalog.description,
+  config: catalog.config
+})
 
 const catalogSchema = computed(() => {
   const schema = jsonSchema(catalogSchemaBase)

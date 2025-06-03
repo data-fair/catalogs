@@ -38,6 +38,9 @@ export default {
     filtersSchema: {
       type: 'object'
     },
+    importConfigSchema: {
+      type: 'object'
+    },
     metadata: {
       $ref: 'https://github.com/data-fair/lib/catalog#/$defs/metadata',
     }

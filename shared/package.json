@@ -1,0 +1,7 @@
+{
+  "name": "@data-fair/catalogs-shared",
+  "type": "module",
+  "dependencies": {
+    "cron": "^4.3.1"
+  }
+}

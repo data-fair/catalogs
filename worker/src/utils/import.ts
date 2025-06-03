@@ -68,7 +68,12 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
 
   let filePath: string | undefined
   try {
-    filePath = await plugin.downloadResource(catalog.config, resource.id, tmpDir.path)
+    filePath = await plugin.downloadResource({
+      catalogConfig: catalog.config,
+      importConfig: imp.config || {},
+      resourceId: resource.id,
+      tmpDir: tmpDir.path,
+    })
   } catch (err) {
     await mongo.imports.updateOne({ _id: imp._id }, {
       $set: { status: 'error', error: 'Failed to download resource file' }

@@ -8,6 +8,7 @@ import path from 'path'
 import * as wsEmitter from '@data-fair/lib-node/ws-emitter.js'
 import { startObserver, stopObserver, internalError } from '@data-fair/lib-node/observer.js'
 import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
+import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import importTask from './utils/import.ts'
 import publicationTask from './utils/publication.ts'
 import config from '#config'
@@ -141,6 +142,24 @@ async function iter (task: Task, type: typeof types[number]) {
  */
 async function acquireNext (type: typeof types[number]): Promise<Task | undefined> {
   const collection = type === 'import' ? mongo.imports : mongo.publications
+  // Check if there is a scheduled task to process
+  if (type === 'import') {
+    const tasksToUpdate = await mongo.imports.find(
+      { status: { $ne: 'waiting' }, nextImportDate: { $lte: new Date().toISOString() } }
+    ).toArray()
+
+    for (const task of tasksToUpdate) {
+      await mongo.imports.updateOne(
+        { _id: task._id },
+        {
+          $set: {
+            status: 'waiting',
+            nextImportDate: getNextImportDate(task.scheduling)
+          }
+        }
+      )
+    }
+  }
   const cursor = collection.aggregate<Task>([
     { $match: { status: 'waiting' } }, { $sample: { size: 10 } }
   ])

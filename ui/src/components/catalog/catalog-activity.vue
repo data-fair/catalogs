@@ -1,17 +1,17 @@
 <template>
   <v-list-item
     :prepend-avatar="avatarUrl"
-    :title="resource.owner.name"
+    :title="catalog.owner.name"
   />
   <v-list-item
     :prepend-icon="mdiPencil"
-    :title="resource.updated.name"
-    :subtitle="dayjs(resource.updated.date).format(t('dateFormat'))"
+    :title="catalog.updated.name"
+    :subtitle="dayjs(catalog.updated.date).format(t('dateFormat'))"
   />
   <v-list-item
     :prepend-icon="mdiPlusCircleOutline"
-    :title="resource.created.name"
-    :subtitle="dayjs(resource.created.date).format(t('dateFormat'))"
+    :title="catalog.created.name"
+    :subtitle="dayjs(catalog.created.date).format(t('dateFormat'))"
   />
   <v-list-item
     :prepend-icon="mdiPuzzle"
@@ -25,14 +25,14 @@ import type { Catalog } from '#api/types'
 const { dayjs } = useLocaleDayjs()
 const { t } = useI18n()
 
-const { resource, pluginTitle } = defineProps<{
-  resource: Pick<Catalog, 'created' | 'updated' | 'owner' | 'plugin'>
+const { catalog, pluginTitle } = defineProps<{
+  catalog: Pick<Catalog, 'created' | 'updated' | 'owner' | 'plugin'>
   pluginTitle: string
 }>()
 
 const avatarUrl = computed(() => {
-  if (resource.owner.department) return `/simple-directory/api/avatars/${resource.owner.type}/${resource.owner.id}/${resource.owner.department}/avatar.png`
-  else return `/simple-directory/api/avatars/${resource.owner.type}/${resource.owner.id}/avatar.png`
+  if (catalog.owner.department) return `/simple-directory/api/avatars/${catalog.owner.type}/${catalog.owner.id}/${catalog.owner.department}/avatar.png`
+  else return `/simple-directory/api/avatars/${catalog.owner.type}/${catalog.owner.id}/avatar.png`
 })
 
 </script>

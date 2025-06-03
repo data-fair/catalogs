@@ -29,6 +29,7 @@ COPY --from=package-strip /app/package-lock.json package-lock.json
 COPY ui/package.json ui/package.json
 COPY api/package.json api/package.json
 COPY worker/package.json worker/package.json
+COPY shared/package.json shared/package.json
 # full deps install used for types and ui building
 # also used to fill the npm cache for faster install api and worker deps
 RUN npm ci --omit=dev --omit=optional --omit=peer --no-audit --no-fund
@@ -65,6 +66,7 @@ FROM installer AS worker-installer
 RUN npm ci -w worker --prefer-offline --omit=dev --omit=optional --omit=peer --no-audit --no-fund && \
     npx clean-modules --yes
 RUN mkdir -p /app/worker/node_modules
+RUN mkdir -p /app/shared/node_modules
 
 # =============================
 # Final Worker Image
@@ -73,9 +75,11 @@ FROM base AS worker
 
 COPY --from=worker-installer /app/node_modules node_modules
 COPY worker worker
+COPY shared shared
 COPY upgrade upgrade
 COPY --from=types /app/worker/config worker/config
 COPY --from=types /app/api/types api/types
+COPY --from=worker-installer /app/shared/node_modules shared/node_modules
 COPY --from=worker-installer /app/worker/node_modules worker/node_modules
 COPY package.json README.md LICENSE BUILD.json* ./
 
@@ -92,6 +96,7 @@ FROM installer AS api-installer
 # remove other workspaces and reinstall, otherwise we can get rig have some peer dependencies from other workspaces
 RUN npm ci -w api --prefer-offline --omit=dev --omit=optional --omit=peer --no-audit --no-fund && \
     npx clean-modules --yes
+RUN mkdir -p /app/shared/node_modules
 RUN mkdir -p /app/api/node_modules
 
 # =============================
@@ -100,10 +105,12 @@ RUN mkdir -p /app/api/node_modules
 FROM base AS main
 
 COPY --from=api-installer /app/node_modules node_modules
+COPY shared shared
 COPY api api
 COPY --from=types /app/api/config api/config
 COPY --from=types /app/api/types api/types
 COPY --from=types /app/api/doc api/doc
+COPY --from=api-installer /app/shared/node_modules shared/node_modules
 COPY --from=api-installer /app/api/node_modules api/node_modules
 COPY --from=ui /app/ui/dist ui/dist
 COPY package.json README.md LICENSE BUILD.json* ./

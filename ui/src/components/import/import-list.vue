@@ -1,19 +1,10 @@
 <template>
-  <v-expansion-panels class="px-1 mb-4">
-    <v-expansion-panel
-      color="primary"
-      static
-      :title="t('createNewImport')"
-      :expand-icon="mdiPlusCircle"
-    >
-      <v-expansion-panel-text>
-        <import-new
-          :catalog="catalog"
-          @on-publish="importsFetch.refresh()"
-        />
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-  </v-expansion-panels>
+  <import-new
+    class="mb-4"
+    :catalog="catalog"
+    :plugin="plugin"
+    @on-publish="importsFetch.refresh()"
+  />
 
   <v-row
     v-if="importsFetch.loading.value"
@@ -71,7 +62,7 @@ const { catalog } = defineProps<{
     id: string
     title?: string
   },
-  plugin?: Plugin
+  plugin: Plugin
 }>()
 
 const importsFetch = useFetch<{ results: Import[] }>(`${$apiPath}/imports`, {
@@ -84,12 +75,10 @@ const importsFetch = useFetch<{ results: Import[] }>(`${$apiPath}/imports`, {
 
 <i18n lang="yaml">
   en:
-    createNewImport: Create a new import
     nbImports: '{count} import | {count} imports'
     noImports: This catalog does not contain any imports
 
   fr:
-    createNewImport: Importer un nouveau jeu de données
     nbImports: '{count} import | {count} imports'
     noImports: Ce catalogue ne contient pas encore d'import
 
