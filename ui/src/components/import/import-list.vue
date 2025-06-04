@@ -3,6 +3,7 @@
     class="mb-4"
     :catalog="catalog"
     :plugin="plugin"
+    :existing-imports="importsFetch.data.value?.results"
     @on-publish="importsFetch.refresh()"
   />
 

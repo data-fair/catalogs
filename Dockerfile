@@ -29,7 +29,6 @@ COPY --from=package-strip /app/package-lock.json package-lock.json
 COPY ui/package.json ui/package.json
 COPY api/package.json api/package.json
 COPY worker/package.json worker/package.json
-COPY shared/package.json shared/package.json
 # full deps install used for types and ui building
 # also used to fill the npm cache for faster install api and worker deps
 RUN npm ci --omit=dev --omit=optional --omit=peer --no-audit --no-fund
@@ -55,6 +54,7 @@ COPY --from=types /app/api/config api/config
 COPY --from=types /app/api/types api/types
 COPY --from=types /app/api/doc api/doc
 ADD /api/src/config.ts api/src/config.ts
+COPY shared shared
 ADD /ui ui
 RUN npm -w ui run build
 

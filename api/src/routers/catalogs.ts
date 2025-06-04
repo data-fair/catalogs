@@ -199,8 +199,8 @@ router.get('/:id/resources', async (req, res) => {
 
   // Execute the plugin function
   const plugin = await findUtils.getPlugin(catalog.plugin)
-  if (!plugin.metadata.capabilities.includes('listResources')) throw httpError(501, 'Plugin does not support listing resources')
-  const datasets = await plugin.listResources(catalog.config, req.query as any)
+  if (!plugin.metadata.capabilities.includes('import')) throw httpError(501, 'Plugin does not support listing resources')
+  const datasets = await plugin.list({ catalogConfig: catalog.config, params: req.query as Record<string, any> })
 
   res.status(200).json(datasets)
 })

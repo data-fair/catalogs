@@ -38,6 +38,7 @@
               <import-select-resource
                 v-model="selectedResource"
                 :catalog-id="catalog.id"
+                :existing-imports="existingImports"
               />
             </v-stepper-window-item>
 
@@ -104,7 +105,6 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource } from '@data-fair/lib-common-types/catalog'
 import type { Plugin, Import } from '#api/types'
 
 import cronstrue from 'cronstrue'
@@ -119,18 +119,19 @@ import { toCRON } from '@data-fair/catalogs-shared/cron.ts'
 const { t } = useI18n()
 const session = useSessionAuthenticated()
 
-const { catalog, plugin } = defineProps<{
+const { catalog, plugin, existingImports } = defineProps<{
   catalog: {
     id: string
     title?: string
   },
-  plugin: Plugin
+  plugin: Plugin,
+  existingImports?: Import[]
 }>()
 
 const emit = defineEmits(['onPublish'])
 
 const step = ref('1')
-const selectedResource = ref<Resource | null>(null)
+const selectedResource = ref<{ id: string, title: string } | null>(null)
 const validImportConfig = ref(false)
 const importConfig = ref<Partial<Import>>({})
 const expandedPanel = ref([])

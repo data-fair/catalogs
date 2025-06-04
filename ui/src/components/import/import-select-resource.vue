@@ -2,12 +2,12 @@
   <v-data-table
     v-model="selected"
     :headers="headers"
-    :hide-default-footer="levelData.length < 11"
+    :hide-default-footer="levelData.length <= 5"
     :items="levelData"
     :items-per-page-options="[5, 10, 20]"
-    :item-selectable="(item) => item.type === 'resource'"
+    :item-selectable="(item) => item.type === 'resource' && !isResourceImported(item.id)"
     :item-value="(item) => item.type === 'resource' ? item.id : null"
-    :loading="fetchFolders.loading.value"
+    :loading="fetchFolders.loading.value ? 'primary' : false"
     :loading-text="t('loading')"
     :row-props="(data) => ({
       onClick: () => handleRowClick(data.item),
@@ -26,7 +26,7 @@
           <v-icon
             :icon="mdiHome"
             class="mb-1 mr-2"
-            @click="navigateToPath([])"
+            @click="navigateToPath(null)"
           />
         </template>
         <template #item="{ item, index }">
@@ -59,12 +59,22 @@
       <div
         v-else
         class="d-flex align-center"
+        :class="{ 'text-disabled': isResourceImported(item.id) }"
       >
         <v-icon
           :icon="getResourceIcon(item.mimeType)"
           class="mr-2"
         />
         {{ item.title }}
+        <v-chip
+          v-if="isResourceImported(item.id)"
+          class="ml-2"
+          color="grey"
+          size="x-small"
+          variant="outlined"
+        >
+          {{ t('alreadyImported') }}
+        </v-chip>
       </div>
     </template>
 
@@ -80,39 +90,53 @@
 
 <script setup lang="ts">
 import type { Folder, Resource } from '@data-fair/lib-common-types/catalog/index.js'
+import type { Import } from '#api/types'
 import formatBytes from '@data-fair/lib-vue/format/bytes.js'
 
 const { t } = useI18n()
-const { catalogId } = defineProps<{ catalogId: string }>()
-
-const fetchFolders = useFetch<{ rootFolder: Folder }>(`${$apiPath}/catalogs/${catalogId}/resources`)
+const { catalogId, existingImports } = defineProps<{
+  catalogId: string,
+  existingImports?: Import[]
+}>()
 
 // Navigation state
-const currentPath = ref<string[]>([])
+const currentFolderId = ref<string | null>(null)
 const selected = ref<string[]>([])
-const resourceSelected = defineModel<Resource | null>()
+const resourceSelected = defineModel<{ id: string, title: string } | null>()
+
+// Fetch folder data based on current folder ID
+const fetchFolders = useFetch<{
+  count: number
+  results: (Folder | Resource)[]
+  path: Folder[]
+}>(
+  `${$apiPath}/catalogs/${catalogId}/resources`, {
+      query: computed(() => ({
+        ...(currentFolderId.value && { currentFolderId: currentFolderId.value })
+      }))
+    })
+
+// Function to check if a resource is already imported
+const isResourceImported = (resourceId: string): boolean => {
+  if (!existingImports) return false
+  return existingImports.some(imp => imp.remoteResource.id === resourceId)
+}
 
 // Check if the selected resource changes
 watch(selected, (newSelected) => {
   // Find the selected resource
   if (newSelected.length > 0) {
     const selectedId = newSelected[0]
-    let currentFolder = fetchFolders.data.value?.rootFolder
-    if (!currentFolder) {
+    const results = fetchFolders.data.value?.results
+    if (!results) {
       resourceSelected.value = null
       return
     }
 
-    // Navigate through the current path to find the folder
-    for (const pathSegment of currentPath.value) {
-      if (currentFolder.folders && currentFolder.folders[pathSegment]) {
-        currentFolder = currentFolder.folders[pathSegment]
-      }
-    }
-
-    // Find the resource in the current folder
-    if (currentFolder.resources && currentFolder.resources[selectedId]) {
-      resourceSelected.value = currentFolder.resources[selectedId]
+    // Find the resource in the current results
+    const selectedResource = results.find((item: any) => item.type === 'resource' && item.id === selectedId)
+    if (selectedResource) {
+      resourceSelected.value = selectedResource as Resource
     }
   } else {
     resourceSelected.value = null
@@ -122,6 +146,7 @@ watch(selected, (newSelected) => {
 /** Function to handle row click for resource selection */
 const handleRowClick = (item: any) => {
   if (item.type !== 'resource') return
+  if (isResourceImported(item.id)) return // Don't allow selection of already imported resources
   if (selected.value.includes(item.id)) selected.value = []
   else selected.value = [item.id]
 }
@@ -141,87 +166,36 @@ const getResourceIcon = (mimeType?: string | null): string => {
 
 /** Computed property to get current level data */
 const levelData = computed(() => {
-  let currentLevel = fetchFolders.data.value?.rootFolder
-  if (!currentLevel) return []
+  const results = fetchFolders.data.value?.results
+  if (!results) return []
 
-  // Navigate to current path
-  for (const pathSegment of currentPath.value) {
-    if (currentLevel.folders && currentLevel.folders[pathSegment]) {
-      currentLevel = currentLevel.folders[pathSegment]
-    } else return [] // If path segment not found, return empty array
-  }
-
-  const result = []
-
-  // Add folders first
-  if (currentLevel.folders) {
-    for (const [key, folder] of Object.entries(currentLevel.folders)) {
-      result.push({
-        id: key,
-        title: folder.title,
-        type: 'folder'
-      })
-    }
-  }
-
-  // Add resources from current folder
-  if (currentLevel.resources) {
-    for (const [key, resource] of Object.entries(currentLevel.resources)) {
-      result.push({
-        id: key,
-        title: resource.title,
-        type: 'resource',
-        size: resource.size,
-        format: resource.format,
-        mimeType: resource.mimeType
-      })
-    }
-  }
-
-  return result
+  return results
 })
 
 // Computed property for breadcrumb items
 const breadcrumbItems = computed(() => {
-  if (!fetchFolders.data.value) return []
-  const items: Array<{ title: string; path: string[]; disabled: boolean }> = [
-    {
-      title: fetchFolders.data.value?.rootFolder.title,
-      path: [],
-      disabled: currentPath.value.length === 0
-    }
-  ]
-
-  let path: string[] = []
-  for (let i = 0; i < currentPath.value.length; i++) {
-    path = [...path, currentPath.value[i]]
-    let folder = fetchFolders.data.value?.rootFolder
-
-    // Navigate to the folder at this path
-    for (const segment of path) {
-      if (folder.folders && folder.folders[segment]) {
-        folder = folder.folders[segment]
-      }
-    }
-
-    items.push({
-      title: folder.title,
-      path: [...path],
-      disabled: i === currentPath.value.length - 1
-    })
-  }
-
-  return items
+  if (!fetchFolders.data.value?.path) return []
+  return fetchFolders.data.value?.path.map((item, index) => ({
+    title: item.title,
+    path: item.id,
+    disabled: index === fetchFolders.data.value!.path.length - 1
+  }))
 })
 
 // Navigation methods
 const navigateToFolder = (folderId: string) => {
-  currentPath.value.push(folderId)
+  const results = fetchFolders.data.value?.results
+  if (!results) return
+
+  const folder = results.find((item: any) => item.type === 'folder' && item.id === folderId)
+  if (!folder) return
+
+  currentFolderId.value = folderId
 }
 
-// New navigation method for breadcrumb clicks
-const navigateToPath = (path: string[]) => {
-  currentPath.value = [...path]
+// Navigation method for breadcrumb clicks
+const navigateToPath = (folderId: string | null) => {
+  currentFolderId.value = folderId
 }
 
 const headers = computed(() => [
@@ -239,6 +213,7 @@ en:
   size: Size
   format: Format
   loading: Loading resources...
+  alreadyImported: Already imported
 
 fr:
   import: Importer
@@ -247,6 +222,7 @@ fr:
   size: Taille
   format: Format
   loading: Chargement des ressources...
+  alreadyImported: Déjà importé
 </i18n>
 
 <style scoped>
