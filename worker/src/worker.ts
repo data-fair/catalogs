@@ -131,7 +131,7 @@ async function iter (task: Task, type: typeof types[number]) {
     }
   } catch (e: any) {
     debug('Error while process', type, task._id, e)
-    await collection.updateOne({ _id: task._id }, { $set: { status: 'error', error: e.message } })
+    await collection.updateOne({ _id: task._id }, { $set: { status: 'error', error: e?.message || e } })
   } finally {
     await locks.release(`${type}:${task._id}`)
   }

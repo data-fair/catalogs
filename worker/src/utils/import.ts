@@ -61,7 +61,8 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
   const resource = await plugin.getResource(catalog.config, imp.remoteResource.id)
   if (!resource) {
     await mongo.imports.deleteOne({ _id: imp._id })
-    return internalError('worker-missing-resource', 'found an import without associated resource, weird')
+    internalError('worker-missing-resource', 'found an import without associated resource, weird')
+    return
   }
 
   const tmpDir = await tmp.dir({ unsafeCleanup: true, tmpdir: baseTmpDir, prefix: `catalog-import-${catalog._id}-${imp._id}` })
@@ -78,14 +79,16 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
     await mongo.imports.updateOne({ _id: imp._id }, {
       $set: { status: 'error', error: 'Failed to download resource file' }
     })
-    return internalError('worker-download-failed', 'Failed to download resource file', {
-      catalog,
+    internalError('worker-download-failed', 'Failed to download resource file', {
+      catalogId: catalog._id,
       resource,
       error: err instanceof Error ? err.message : String(err)
     })
+    throw err
   }
   if (!filePath) {
-    return internalError('worker-download-failed', 'Failed to download resource file without error')
+    internalError('worker-download-failed', 'Failed to download resource file without error')
+    throw new Error('Failed to download resource file without error')
   }
 
   // Create datafair dataset and upload the file

@@ -39,6 +39,7 @@
                 v-model="selectedResource"
                 :catalog-id="catalog.id"
                 :existing-imports="existingImports"
+                :plugin="plugin"
               />
             </v-stepper-window-item>
 

@@ -1,19 +1,22 @@
 <template>
-  <v-data-table
+  <tableComponent
     v-model="selected"
+    v-model:items-per-page="itemsPerPage"
+    v-model:page="currentPage"
     :headers="headers"
-    :hide-default-footer="levelData.length <= 5"
+    :hide-default-footer="(fetchFolders.data.value?.count || 0) <= 5"
     :items="levelData"
+    :items-length="fetchFolders.data.value?.count || 0"
     :items-per-page-options="[5, 10, 20]"
-    :item-selectable="(item) => item.type === 'resource' && !isResourceImported(item.id)"
-    :item-value="(item) => item.type === 'resource' ? item.id : null"
+    :item-selectable="(item: any) => item.type === 'resource' && !isResourceImported(item.id)"
     :loading="fetchFolders.loading.value ? 'primary' : false"
     :loading-text="t('loading')"
-    :row-props="(data) => ({
+    :row-props="(data: any) => ({
       onClick: () => handleRowClick(data.item),
       style: data.item.type === 'resource' ? 'cursor: pointer' : 'cursor: default'
     })"
     :show-select="levelData.some(item => item.type === 'resource')"
+    item-value="id"
     select-strategy="single"
   >
     <template #top>
@@ -26,14 +29,14 @@
           <v-icon
             :icon="mdiHome"
             class="mb-1 mr-2"
-            @click="navigateToPath(null)"
+            @click="navigate(null)"
           />
         </template>
         <template #item="{ item, index }">
           <v-breadcrumbs-item
             :title="item.title"
             :color="item.disabled ? 'primary' : undefined"
-            @click="navigateToPath(breadcrumbItems[index].path)"
+            @click="navigate(breadcrumbItems[index].path)"
           />
         </template>
       </v-breadcrumbs>
@@ -54,7 +57,7 @@
         :text="item.title"
         :prepend-icon="mdiFolder"
         label
-        @click="navigateToFolder(item.id)"
+        @click="navigate(item.id)"
       />
       <div
         v-else
@@ -85,24 +88,33 @@
     <template #item.format="{ item }">
       {{ item.type === 'resource' ? item.format : '-' }}
     </template>
-  </v-data-table>
+  </tableComponent>
 </template>
 
 <script setup lang="ts">
 import type { Folder, Resource } from '@data-fair/lib-common-types/catalog/index.js'
-import type { Import } from '#api/types'
+import type { Import, Plugin } from '#api/types'
+import { VDataTable, VDataTableServer } from 'vuetify/components'
 import formatBytes from '@data-fair/lib-vue/format/bytes.js'
 
 const { t } = useI18n()
-const { catalogId, existingImports } = defineProps<{
+const { catalogId, existingImports, plugin } = defineProps<{
   catalogId: string,
-  existingImports?: Import[]
+  existingImports?: Import[],
+  plugin: Plugin
 }>()
 
 // Navigation state
 const currentFolderId = ref<string | null>(null)
 const selected = ref<string[]>([])
 const resourceSelected = defineModel<{ id: string, title: string } | null>()
+
+// Pagination state
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+
+// Check if plugin supports pagination
+const supportsPagination = computed(() => plugin.metadata.capabilities.includes('pagination'))
 
 // Fetch folder data based on current folder ID
 const fetchFolders = useFetch<{
@@ -112,7 +124,11 @@ const fetchFolders = useFetch<{
 }>(
   `${$apiPath}/catalogs/${catalogId}/resources`, {
       query: computed(() => ({
-        ...(currentFolderId.value && { currentFolderId: currentFolderId.value })
+        ...(currentFolderId.value && { currentFolderId: currentFolderId.value }),
+        ...(supportsPagination.value && {
+          page: currentPage.value,
+          size: itemsPerPage.value
+        })
       }))
     })
 
@@ -164,6 +180,14 @@ const getResourceIcon = (mimeType?: string | null): string => {
   return iconMap[mimeType || ''] || mdiFileOutline
 }
 
+// Navigation methods
+const navigate = (folderId: string | null) => {
+  currentFolderId.value = folderId
+  currentPage.value = 1
+}
+
+const tableComponent = computed(() => supportsPagination.value ? VDataTableServer : VDataTable)
+
 /** Computed property to get current level data */
 const levelData = computed(() => {
   const results = fetchFolders.data.value?.results
@@ -181,22 +205,6 @@ const breadcrumbItems = computed(() => {
     disabled: index === fetchFolders.data.value!.path.length - 1
   }))
 })
-
-// Navigation methods
-const navigateToFolder = (folderId: string) => {
-  const results = fetchFolders.data.value?.results
-  if (!results) return
-
-  const folder = results.find((item: any) => item.type === 'folder' && item.id === folderId)
-  if (!folder) return
-
-  currentFolderId.value = folderId
-}
-
-// Navigation method for breadcrumb clicks
-const navigateToPath = (folderId: string | null) => {
-  currentFolderId.value = folderId
-}
 
 const headers = computed(() => [
   { title: t('name'), key: 'title', align: 'start' as const },

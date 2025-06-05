@@ -142,8 +142,8 @@ const deleteImport = useAsyncAction(
       method: 'DELETE'
     })
 
-    if (!deleteOnlyLink.value) {
-      await $fetch(`/data-fair/api/v1/datasets/${imp.dataFairDataset?.id}`, {
+    if (!deleteOnlyLink.value && imp.dataFairDataset) {
+      await $fetch(`/data-fair/api/v1/datasets/${imp.dataFairDataset.id}`, {
         method: 'DELETE',
         baseURL: $sitePath
       })
