@@ -70,8 +70,10 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
 }
 
 const deletePublication = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication) => {
-  if (!pub.remoteDataset || !pub.remoteResource) {
-    return internalError('worker-missing-remote-data', 'try do delete a publication without remote dataset or resource, weird')
+  if (!pub.remoteDataset) {
+    internalError('worker-missing-remote-data', 'try do delete a publication without remote dataset or resource, weird')
+    await mongo.publications.deleteOne({ _id: pub._id })
+    return
   }
 
   await plugin.deleteDataset(catalog.config, pub.remoteDataset.id, pub.remoteResource?.id)

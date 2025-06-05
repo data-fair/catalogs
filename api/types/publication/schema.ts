@@ -147,9 +147,9 @@ export default {
       type: 'object',
       additionalProperties: false,
       required: ['id'],
-      title: 'Local dataset',
+      title: 'Data Fair dataset',
       'x-i18n-title': {
-        fr: 'Jeu de données local'
+        fr: 'Jeu de données Data Fair'
       },
       properties: {
         id: {
@@ -172,7 +172,7 @@ export default {
           }
         },
         getItems: {
-          url: '${context.origin}/data-fair/api/v1/datasets?raw=true&select=id,title',
+          url: '${context.origin}/data-fair/api/v1/datasets?raw=true&select=id,title&mine=true',
           itemsResults: 'data.results',
           itemTitle: '`${item.title} (${item.id})`',
           itemKey: 'item.id',

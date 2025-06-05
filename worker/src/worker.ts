@@ -116,8 +116,8 @@ async function iter (task: Task, type: typeof types[number]) {
   }
   debug(`Catalog ${catalog.title}`)
 
-  // TODO: Maybe be use the getPlugin function ?
-  const plugin: CatalogPlugin = (await import(path.resolve(config.dataDir, 'plugins', catalog.plugin, 'index.ts'))).default
+  // Invalidate the cache by adding a timestamp to the import
+  const plugin: CatalogPlugin = (await import(path.resolve(config.dataDir, 'plugins', catalog.plugin, 'index.ts') + `?update=${Date.now()}`)).default
   if (!plugin) {
     await collection.deleteOne({ _id: task._id })
     return internalError('worker-missing-plugin', 'found a task without associated plugin, weird')

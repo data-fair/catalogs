@@ -14,8 +14,7 @@ router.post('/', async (req, res) => {
   assertReqInternalSecret(req, config.secretKeys.catalogs)
   debug('Incoming data fair webhook for datasets update/delete', req.body)
 
-  if (!req.body.update || !req.body.delete) {
-    // Non blocking error
+  if (!req.body.update || !req.body.delete) { // Non blocking error
     internalError('catalogs-data-fair-webhook', 'Missing datasets in request body')
   }
 
@@ -34,6 +33,13 @@ router.post('/', async (req, res) => {
       }
     }
   )
+
+  // Delete import link if the dataset is deleted
+  if (req.body.delete && req.body.delete.length > 0) {
+    await mongo.imports.deleteMany(
+      { 'dataFairDataset.id': { $in: req.body.delete } }
+    )
+  }
 
   res.status(204).send()
 })

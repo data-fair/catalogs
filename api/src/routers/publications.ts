@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
 
   const [results, count] = await Promise.all([
     size > 0 ? mongo.publications.find(queryWithFilters).limit(size).skip(skip).sort(sort).project(project).toArray() : Promise.resolve([]),
-    mongo.publications.countDocuments(query),
+    mongo.publications.countDocuments(queryWithFilters),
   ])
 
   res.json({ results, count })
