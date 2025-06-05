@@ -20,6 +20,13 @@
     select-strategy="single"
   >
     <template #top>
+      <vjsf
+        v-if="plugin.metadata.capabilities.includes('additionalFilters')"
+        v-model="additionalFilters"
+        class="ma-2"
+        :schema="plugin.filtersSchema"
+        :options="vjsfOptions"
+      />
       <v-breadcrumbs
         :items="breadcrumbItems"
         class="pa-0"
@@ -30,7 +37,7 @@
             :icon="mdiHome"
             class="mb-1 mr-2"
             @click="navigate(null)"
-          />
+          />/
         </template>
         <template #item="{ item, index }">
           <v-breadcrumbs-item
@@ -94,10 +101,13 @@
 <script setup lang="ts">
 import type { Folder, Resource } from '@data-fair/lib-common-types/catalog/index.js'
 import type { Import, Plugin } from '#api/types'
+
+import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import { VDataTable, VDataTableServer } from 'vuetify/components'
 import formatBytes from '@data-fair/lib-vue/format/bytes.js'
 
 const { t } = useI18n()
+const session = useSessionAuthenticated()
 const { catalogId, existingImports, plugin } = defineProps<{
   catalogId: string,
   existingImports?: Import[],
@@ -110,11 +120,12 @@ const selected = ref<string[]>([])
 const resourceSelected = defineModel<{ id: string, title: string } | null>()
 
 // Pagination state
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
+const currentPage = ref<number>(1)
+const itemsPerPage = ref<number>(10)
 
-// Check if plugin supports pagination
+const additionalFilters = ref<Record<string, any>>({})
 const supportsPagination = computed(() => plugin.metadata.capabilities.includes('pagination'))
+const tableComponent = computed(() => supportsPagination.value ? VDataTableServer : VDataTable)
 
 // Fetch folder data based on current folder ID
 const fetchFolders = useFetch<{
@@ -128,15 +139,10 @@ const fetchFolders = useFetch<{
         ...(supportsPagination.value && {
           page: currentPage.value,
           size: itemsPerPage.value
-        })
+        }),
+        ...additionalFilters.value
       }))
     })
-
-// Function to check if a resource is already imported
-const isResourceImported = (resourceId: string): boolean => {
-  if (!existingImports) return false
-  return existingImports.some(imp => imp.remoteResource.id === resourceId)
-}
 
 // Check if the selected resource changes
 watch(selected, (newSelected) => {
@@ -158,6 +164,12 @@ watch(selected, (newSelected) => {
     resourceSelected.value = null
   }
 })
+
+// Function to check if a resource is already imported
+const isResourceImported = (resourceId: string): boolean => {
+  if (!existingImports) return false
+  return existingImports.some(imp => imp.remoteResource.id === resourceId)
+}
 
 /** Function to handle row click for resource selection */
 const handleRowClick = (item: any) => {
@@ -186,8 +198,6 @@ const navigate = (folderId: string | null) => {
   currentPage.value = 1
 }
 
-const tableComponent = computed(() => supportsPagination.value ? VDataTableServer : VDataTable)
-
 /** Computed property to get current level data */
 const levelData = computed(() => {
   const results = fetchFolders.data.value?.results
@@ -211,6 +221,17 @@ const headers = computed(() => [
   { title: t('size'), key: 'size' },
   { title: t('format'), key: 'format' }
 ])
+
+const vjsfOptions: VjsfOptions = {
+  density: 'comfortable',
+  initialValidation: 'always',
+  locale: session.lang.value,
+  readOnlyPropertiesMode: 'hide',
+  titleDepth: 3,
+  updateOn: 'blur',
+  validateOn: 'blur',
+  xI18n: true
+}
 </script>
 
 <i18n lang="yaml">
