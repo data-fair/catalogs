@@ -20,7 +20,18 @@
     </v-card-text>
     <v-card-actions class="mt-auto">
       <v-spacer />
+      <v-btn
+        v-if="imp.dataFairDataset"
+        color="primary"
+        density="comfortable"
+        variant="text"
+        :icon="mdiOpenInNew"
+        :href="`${$sitePath}/data-fair/dataset/${imp.dataFairDataset.id}`"
+        target="_blank"
+        :title="t('viewDataset')"
+      />
       <v-menu
+        v-if="imp.status !== 'waiting'"
         v-model="showReImportMenu"
         :close-on-content-click="false"
         max-width="500"
@@ -197,7 +208,7 @@ const reImport = useAsyncAction(
       error: 'Import error'
     reImport: 'Re-import'
     reImportComfirm: 'Are you sure you want to re-import this resource? The already imported data will be overwritten.'
-    viewDataset: 'View Dataset'
+    viewDataset: 'View imported dataset'
     yes: 'Yes'
 
   fr:
@@ -218,7 +229,7 @@ const reImport = useAsyncAction(
       error: 'Import en erreur'
     reImport: 'Importer à nouveau'
     reImportComfirm: 'Êtes-vous sûr de vouloir réimporter cette resource ? Les données déjà importées seront écrasées.'
-    viewDataset: 'Voir le jeu de données'
+    viewDataset: 'Voir le jeu de données importé'
     yes: 'Oui'
 
 </i18n>
