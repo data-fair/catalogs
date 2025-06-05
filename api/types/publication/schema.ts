@@ -138,7 +138,7 @@ export default {
           itemsResults: 'data.results',
           itemTitle: 'item.title',
           itemValue: '{ id: item._id, title: item.title }',
-          itemKey: 'item._id',
+          itemKey: 'item.id',
           qSearchParam: 'q',
         }
       }
@@ -212,10 +212,10 @@ export default {
           }
         },
         getItems: {
-          url: '${context.origin}/catalogs/api/catalogs/${rootData.catalog.id}/datasets',
+          url: '${context.origin}/catalogs/api/catalogs/${rootData.catalog.id}/resources',
           itemsResults: 'data.results',
           itemTitle: 'item.title',
-          itemValue: 'item.id',
+          itemValue: '{ id: item.id, title: item.title }',
           qSearchParam: 'q'
         }
       }

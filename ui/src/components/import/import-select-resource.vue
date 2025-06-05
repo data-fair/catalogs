@@ -3,6 +3,7 @@
     v-model="selected"
     v-model:items-per-page="itemsPerPage"
     v-model:page="currentPage"
+    :disable-sort="supportsPagination"
     :headers="headers"
     :hide-default-footer="(fetchFolders.data.value?.count || 0) <= 5"
     :items="levelData"
