@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid'
 import { assertAccountRole, session, httpError } from '@data-fair/lib-express'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import mongo from '#mongo'
-import findUtils from '../utils/find.ts'
+import findUtils from '#utils/find.ts'
 
 const router = Router()
 export default router

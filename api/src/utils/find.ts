@@ -46,6 +46,7 @@ const pluginsDir = path.resolve(config.dataDir, 'plugins')
 fs.ensureDirSync(pluginsDir)
 export const getPlugin = async (pluginId: string): Promise<CatalogPlugin> => {
   try {
+    if (!pluginId) throw httpError(400, 'Plugin ID is required')
     // Invalidate the cache by adding a timestamp to the import
     return (await import(path.resolve(pluginsDir, pluginId, 'index.ts') + `?update=${Date.now()}`)).default
   } catch (e: any) {

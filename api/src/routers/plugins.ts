@@ -8,7 +8,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import tmp from 'tmp-promise'
 import { assertAccountRole, httpError, session } from '@data-fair/lib-express'
-import { getPlugin } from '../utils/find.ts'
+import { getPlugin } from '#utils/find.ts'
 import mongo from '#mongo'
 import config from '#config'
 

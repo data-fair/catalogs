@@ -12,6 +12,7 @@ export default {
     '_id',
     'title',
     'plugin',
+    'capabilities',
     'owner',
     'config',
     'created',
@@ -49,9 +50,17 @@ export default {
       type: 'string',
       readOnly: true
     },
+    capabilities: {
+      type: 'array',
+      description: 'Capabilities of this catalog, deduplicated from the plugin',
+      items: {
+        $ref: 'https://github.com/data-fair/lib/catalog#/$defs/capability',
+      },
+      readOnly: true
+    },
     owner: {
       $ref: 'https://github.com/data-fair/lib/account',
-      readOnly: true,
+      readOnly: true
     },
     config: {
       type: 'object',

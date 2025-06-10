@@ -70,6 +70,19 @@ const publicationSchema = computed(() => {
   return schema
 })
 
+const publicationSites = useFetch<object[]>(`${window.location.origin}/data-fair/api/v1/settings/${session.state.account.type}/${session.state.account.id}/publication-sites`)
+const formatedPublicationSites = computed(() => {
+  if (!publicationSites.data.value) return {}
+
+  return publicationSites.data.value.reduce((acc: Record<string, any>, site: any) => {
+    acc[`${site.type}:${site.id}`] = {
+      title: site.title,
+      url: site.url
+    }
+    return acc
+  }, {})
+})
+
 const publishCatalog = useAsyncAction(
   async () => {
     if (!validPublication.value) return
@@ -82,7 +95,7 @@ const publishCatalog = useAsyncAction(
   }
 )
 
-const vjsfOptions: VjsfOptions = {
+const vjsfOptions = computed<VjsfOptions>(() => ({
   context: {
     catalog: {
       id: catalog?.id,
@@ -92,7 +105,8 @@ const vjsfOptions: VjsfOptions = {
       id: dataFairDataset?.id,
       title: dataFairDataset?.title
     },
-    origin: window.location.origin
+    origin: window.location.origin,
+    publicationSites: formatedPublicationSites.value
   },
   density: 'comfortable',
   initialValidation: 'always',
@@ -101,7 +115,7 @@ const vjsfOptions: VjsfOptions = {
   titleDepth: 4,
   validateOn: 'blur',
   xI18n: true
-}
+}))
 
 </script>
 

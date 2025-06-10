@@ -15,6 +15,7 @@ export default {
     'created',
     'status',
     'action',
+    'publicationUrl',
     'catalog',
     'dataFairDataset'
   ],
@@ -102,6 +103,31 @@ export default {
         ]
       }
     },
+    publicationUrl: {
+      type: 'string',
+      title: 'Publication Site URL',
+      'x-i18n-title': {
+        fr: 'Site de publication'
+      },
+      description: 'The site where the user will be redirected from the remote dataset.',
+      'x-i18n-description': {
+        fr: 'Le site sur lequel sera redirigé l\'utilisateur depuis le jeu de données distant.'
+      },
+      layout: {
+        getItems: {
+          url: '${context.origin}/data-fair/api/v1/datasets/${rootData.dataFairDataset.id}',
+          itemsResults: 'data.publicationSites ?? []',
+          itemValue: 'context.publicationSites[item].url',
+          itemTitle: '`${context.publicationSites[item].title} (${context.publicationSites[item].url})`',
+        },
+        props: {
+          noDataText: 'This dataset is not published on any site, you cannot publish it to a catalog.',
+          'x-i18n-no-data-text': {
+            fr: 'Ce jeu de données n\'est publié sur aucun site, vous ne pouvez donc pas le publier sur un catalogue.'
+          }
+        }
+      }
+    },
     catalog: {
       type: 'object',
       additionalProperties: false,
@@ -134,7 +160,7 @@ export default {
         },
         getItems: {
           // TODO: Filter by catalogs that have the capability to publish
-          url: '${context.origin}/catalogs/api/catalogs?sort=updated.date:-1&select=_id,title',
+          url: '${context.origin}/catalogs/api/catalogs?sort=updated.date:-1&select=_id,title&capabilities=publishDataset',
           itemsResults: 'data.results',
           itemTitle: 'item.title',
           itemValue: '{ id: item._id, title: item.title }',
@@ -214,7 +240,7 @@ export default {
         getItems: {
           url: '${context.origin}/catalogs/api/catalogs/${rootData.catalog.id}/resources',
           itemsResults: 'data.results',
-          itemTitle: 'item.title',
+          itemTitle: '`${item.title} (${item.id})`',
           itemValue: '{ id: item.id, title: item.title }',
           qSearchParam: 'q'
         }
@@ -253,7 +279,8 @@ export default {
       'catalog',
       'dataFairDataset',
       'action',
-      'remoteDataset'
+      'remoteDataset',
+      'publicationUrl'
     ]
   }
 }

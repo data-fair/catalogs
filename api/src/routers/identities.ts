@@ -1,3 +1,5 @@
+// Webhooks for Simple Directory
+
 import Debug from 'debug'
 import { createIdentitiesRouter } from '@data-fair/lib-express/identities/index.js'
 import config from '#config'

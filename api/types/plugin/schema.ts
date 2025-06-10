@@ -1,3 +1,6 @@
+// This schema isn't used in database, because plugins are not stored in database.
+// Instead, it's the format send by the API when listing plugins.
+
 export default {
   $id: 'https://github.com/data-fair/catalogs/plugin',
   'x-exports': [

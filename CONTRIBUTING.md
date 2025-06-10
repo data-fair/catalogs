@@ -81,6 +81,7 @@ cargo install --locked zellij
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
 nvm install
 ```
+
 *Tips :*
 
 - Use <kbd>Ctrl</kbd> + <kbd>Q</kbd> to quit Zellij.
@@ -88,12 +89,46 @@ nvm install
 
 </details>
 
+## Setup the development environment
+
+> Pour travailler sur la partie publication de jeux de données, il faut d'abord ajouter un site de publication sur Data Fair. Vous pouvez configurer le site de publication pour chaque organisation sur lesquels vous voulez faire vos tests.
+
+Voici la commande à taper dans la console du navigateur, en étant connecté en mode super administrateur :
+
+```js
+fetch('http://localhost:5600/data-fair/api/v1/settings/user/superadmin/publication-sites', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+      "type": "back-office",
+      "id": "data-fair",
+      "title": "Back Office",
+      "url": "http://localhost:5600/data-fair"
+    })
+})
+```
+
+*Vous pouvez remplacer dans l'url le type (user/organization) et l'id du compte à configurer (ici superadmin)*
+
 ## Permissions rules
 
 - Only admin and superadmins can create, read, update and delete catalogs.
 - Only admin and superadmins can import or publish datasets.
 - We can import a dataset only if the owner of the dataset is the same as the owner of the catalog.
 - We can see a catalog, import, publication only if the owner is the same of the active account.
-- In the UI, if we have the right to see a catalob, but the active account is not the same as the owner,
+- In the UI, if we have the right to see a catalog, but the active account is not the same as the owner,
   an alert is shown to the user to inform him to change the active account.
 - Plugins are available for all users !
+
+### Permissions Matrix to publishing datasets
+
+| Dataset Level | Catalog Level | User Level | Permission | Comments |
+|------------|------------|--------------|------------|-|
+| Organization | Organization | Organization | ✅ Allowed | |
+| Organization | Organization | Department | ❌ Forbidden | |
+| Organization | Department | Organization | ❌ Forbidden | |
+| Organization | Department | Department | ❌ Forbidden | |
+| Department | Organization | Organization | ✅ Allowed | |
+| Department | Organization | Department | ❓ Ask admin | TODO: For the moment, this is just forbidden |
+| Department | Department | Organization | ✅ Allowed | |
+| Department | Department | Department | ✅ Allowed | |

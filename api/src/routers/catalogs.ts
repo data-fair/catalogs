@@ -1,17 +1,17 @@
 import type { SessionStateAuthenticated } from '@data-fair/lib-express'
 import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
 import type { Catalog } from '#types'
+import type { CatalogPostReq } from '#doc/catalogs/post-req/index.ts'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
-
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { assertAccountRole, session, httpError } from '@data-fair/lib-express'
 import { resolvedSchema as catalogSchema } from '#types/catalog/index.ts'
 import mongo from '#mongo'
 import config from '#config'
-import findUtils from '../utils/find.ts'
-import { catalogFacets } from '../utils/facets.ts'
+import findUtils from '#utils/find.ts'
+import { catalogFacets } from '#utils/facets.ts'
 
 const router = Router()
 export default router
@@ -68,6 +68,9 @@ router.get('/', async (req, res) => {
   const filters = findUtils.query(params, { plugins: 'plugin' })
   const queryWithFilters = Object.assign(filters, query)
 
+  // Filter capabilities
+  if (params.capabilities) queryWithFilters.capabilities = { $all: params.capabilities?.split(',') ?? [] }
+
   // Filter by owner (if showAll)
   const showAll = params.showAll === 'true'
   if (showAll && params.owners) {
@@ -95,9 +98,12 @@ router.post('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const { body } = (await import('../../doc/catalogs/post-req/index.ts')).returnValid(req)
 
-  const catalog: Partial<Catalog> = { ...body }
+  const catalog: CatalogPostReq['body'] & Partial<Catalog> = { ...body }
   catalog.owner = catalog.owner ?? sessionState.account
   assertAccountRole(sessionState, catalog.owner, 'admin')
+
+  const plugin: CatalogPlugin = await findUtils.getPlugin(catalog.plugin)
+  catalog.capabilities = plugin.metadata.capabilities
 
   catalog._id = nanoid()
   catalog.created = catalog.updated = {

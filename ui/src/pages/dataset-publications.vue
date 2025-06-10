@@ -16,11 +16,11 @@ import type { CatalogsGetRes } from '#api/doc'
 const { t } = useI18n()
 const datasetId = useStringSearchParam('dataset-id')
 
-// TODO: Filter by catalogs that have the capability to publish
 const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, {
   query: {
     sort: 'updated.date:-1',
-    select: '_id,title,plugin',
+    select: '_id,title,plugin,capabilities',
+    capabilities: 'publishDataset'
   }
 })
 
