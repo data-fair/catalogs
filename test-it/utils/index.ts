@@ -16,12 +16,36 @@ export const axiosAuth = (opts: string | Omit<AxiosAuthOptions, 'directoryUrl' |
   return _axiosAuth({ ...opts, password, adminMode, axiosOpts, directoryUrl })
 }
 
+/**
+ * Installs the mock plugin for testing purposes.
+ * Mock project : https://github.com/data-fair/catalog-mock
+ */
+export const installMockPlugin = async () => {
+  console.log('Installing mock plugin...')
+  const superadmin = await axiosAuth('superadmin@test.com')
+  await superadmin.post('/api/plugins', {
+    name: '@data-fair/catalog-mock',
+    version: '0.2.0'
+  })
+  console.log('Mock plugin installed successfully.')
+}
+
+/**
+ * Cleans only the database
+ */
 export const clean = async () => {
   const mongo = (await import('../../api/src/mongo.ts')).default
-  for (const name of ['catalogs', 'runs', 'limits']) {
+  for (const name of ['catalogs', 'imports', 'publications']) {
     await mongo.db.collection(name).deleteMany({})
   }
-  await fs.emptyDir('./data/test/plugins')
+}
+
+/**
+ * Cleans the database and the data directory
+ */
+export const cleanAll = async () => {
+  await clean()
+  await fs.emptyDir('./data/test/')
 }
 
 process.env.SUPPRESS_NO_CONFIG_WARNING = '1'

@@ -12,6 +12,7 @@
   >
     <v-form v-model="validPublication">
       <vjsf
+        v-if="!publicationSites.loading.value"
         v-model="newPublication"
         :schema="publicationSchema"
         :options="vjsfOptions"

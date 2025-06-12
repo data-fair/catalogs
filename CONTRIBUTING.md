@@ -4,7 +4,7 @@
 
 - A Javascript/Typescript IDE with [Vue.js](https://vuejs.org/) and [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) support.
 - A recent [Docker](https://docs.docker.com/engine/install/) installation.
-- [Node.js v20+](https://nodejs.org/)
+- [Node.js v24+](https://nodejs.org/)
 
 ## Install dependencies
 
@@ -53,8 +53,22 @@ docker build --progress=plain --target=worker -t data-fair/catalogs/worker:dev .
 
 ## Running the tests
 
+First, you need to start the development dependancies
+
+```sh
+npm run dev-deps
+```
+
+Then, you can run the tests.
+
 ```sh
 npm run test
+```
+
+To run a specific test, you can mark it with `it.only` or `describe.only` in the test file, then run the tests with :
+
+```sh
+npm run test-only test-it/file-name.ts
 ```
 
 ## Zellij installation
@@ -91,9 +105,9 @@ nvm install
 
 ## Setup the development environment
 
-> Pour travailler sur la partie publication de jeux de données, il faut d'abord ajouter un site de publication sur Data Fair. Vous pouvez configurer le site de publication pour chaque organisation sur lesquels vous voulez faire vos tests.
+> To work on the dataset publication feature, you first need to add a publication site on Data Fair. You can configure the publication site for each organization on which you want to run your tests.
 
-Voici la commande à taper dans la console du navigateur, en étant connecté en mode super administrateur :
+Here is the command to type in the browser console, while being connected as a super administrator:
 
 ```js
 fetch('http://localhost:5600/data-fair/api/v1/settings/user/superadmin/publication-sites', {
@@ -108,17 +122,32 @@ fetch('http://localhost:5600/data-fair/api/v1/settings/user/superadmin/publicati
 })
 ```
 
-*Vous pouvez remplacer dans l'url le type (user/organization) et l'id du compte à configurer (ici superadmin)*
+*You can replace in the URL the type (user/organization) and the account ID to configure (here superadmin)*
 
 ## Permissions rules
 
 - Only admin and superadmins can create, read, update and delete catalogs.
 - Only admin and superadmins can import or publish datasets.
-- We can import a dataset only if the owner of the dataset is the same as the owner of the catalog.
-- We can see a catalog, import, publication only if the owner is the same of the active account.
-- In the UI, if we have the right to see a catalog, but the active account is not the same as the owner,
-  an alert is shown to the user to inform him to change the active account.
-- Plugins are available for all users !
+
+- In the UI, if we have the right to see a catalog, but the active account is not the same as the owner, an alert is shown to the user to inform him to change the active account.
+- Plugins are available for all admins users !
+
+### Permissions Matrix to create/edit/delete catalogs
+
+*How to read : A user in (organization/department) (can/cannot) create/edit a catalog in (organization/department) level*
+
+| User Level | Permission | Catalog Level |
+|------------|--------------|------------|
+| Organization | ✅ Can | Organization |
+| Organization | ✅ Can | Department |
+| Department | ❌ Cannot | Organization |
+| Department | ✅ Can | Department |
+
+### Permissions to import datasets
+
+- For the moment, the owner of the imported dataset must be the same as the owner of the catalog.
+- An organization admin can import datasets from any catalog, including those owned by a department.
+- A department admin can only import datasets from catalogs owned by the same department.
 
 ### Permissions Matrix to publishing datasets
 

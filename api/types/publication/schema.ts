@@ -117,8 +117,8 @@ export default {
         getItems: {
           url: '${context.origin}/data-fair/api/v1/datasets/${rootData.dataFairDataset.id}',
           itemsResults: 'data.publicationSites ?? []',
-          itemValue: 'context.publicationSites[item].url',
-          itemTitle: '`${context.publicationSites[item].title} (${context.publicationSites[item].url})`',
+          itemValue: 'context.publicationSites[item]?.url',
+          itemTitle: '`${context.publicationSites[item]?.title} (${context.publicationSites[item]?.url})`',
         },
         props: {
           noDataText: 'This dataset is not published on any site, you cannot publish it to a catalog.',
@@ -159,7 +159,6 @@ export default {
           }
         },
         getItems: {
-          // TODO: Filter by catalogs that have the capability to publish
           url: '${context.origin}/catalogs/api/catalogs?sort=updated.date:-1&select=_id,title&capabilities=publishDataset',
           itemsResults: 'data.results',
           itemTitle: 'item.title',

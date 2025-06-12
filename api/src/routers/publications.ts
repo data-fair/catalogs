@@ -40,20 +40,14 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const { body } = (await import('#doc/publications/post-req/index.ts')).returnValid(req)
-  assertAccountRole(sessionState, sessionState.account, 'admin')
 
   // Check if the catalog exists
   const catalog = await mongo.catalogs.findOne({ _id: body.catalog.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
-
-  // Check if the user has same right on the catalog
-  if (
-    catalog.owner.type !== sessionState.account.type ||
-    catalog.owner.id !== sessionState.account.id ||
-    catalog.owner.department !== sessionState.account.department
-  ) {
-    throw httpError(403, 'You do not have the right to publish this catalog')
-  }
+  assertAccountRole(sessionState, catalog.owner, 'admin')
+  // Checked by the worker :
+  // - if the data-fair dataset exists
+  // - the user has the admin right on the dataset
 
   const pub: Partial<Publication> = { ...body }
   pub._id = nanoid()

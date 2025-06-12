@@ -41,11 +41,11 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const { body } = (await import('#doc/imports/post-req/index.ts')).returnValid(req)
-  assertAccountRole(sessionState, sessionState.account, 'admin')
 
   // Check if the catalog exists
-  const catalogExists = await mongo.catalogs.countDocuments({ _id: body.catalog.id }) === 1
-  if (!catalogExists) throw httpError(404, 'Catalog not found')
+  const catalog = await mongo.catalogs.findOne({ _id: body.catalog.id })
+  if (!catalog) throw httpError(404, 'Catalog not found')
+  assertAccountRole(sessionState, catalog.owner, 'admin')
 
   // Check if an import with the same catalog.id and remoteResource.id already exists
   const existingImport = await mongo.imports.findOne({

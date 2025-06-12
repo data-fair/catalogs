@@ -32,6 +32,9 @@ services:
       - PUBLIC_URL=http://localhost:5600/simple-directory
       - IDENTITIES_WEBHOOKS=[{"base":"http://data-fair-events:8080/api/v1/identities","key":"secret-identities"},{"base":"http://localhost:5600/catalogs/api/identities","key":"secret-identities"}]
       - STORAGE_TYPE=file
+      # When we test permissions, we need to authenticate many users from the same IP.
+      - AUTHRATELIMIT_ATTEMPTS=500
+      - AUTHRATELIMIT_DURATION=30 
     volumes:
       - ./dev/resources/users.json:/app/data/users.json
       - ./dev/resources/organizations.json:/app/data/organizations.json

@@ -133,6 +133,11 @@ router.get('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   await session.reqAdminMode(req)
-  await fs.remove(path.join(pluginsDir, req.params.id))
+  if (!req.params.id) throw httpError(400, 'Plugin ID is required')
+
+  const pluginPath = path.join(pluginsDir, req.params.id)
+  if (!fs.existsSync(pluginPath)) throw httpError(404, 'Plugin not found')
+
+  await fs.remove(pluginPath)
   res.status(204).send()
 })

@@ -28,12 +28,13 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
   }
 
   // 2. Check permissions
+  // If the catalog has a department, check if the dataset is owned by the same department
   if (
     catalog.owner.type !== dataFairDataset.owner.type ||
     catalog.owner.id !== dataFairDataset.owner.id ||
-    catalog.owner.department !== pub.owner.department
+    (catalog.owner.department && catalog.owner.department !== dataFairDataset.owner.department)
   ) {
-    const errorMsg = 'You do not have permission to publish this dataset in this catalog because the owner of the dataset is different from the owner of the catalog'
+    const errorMsg = 'You do not have permission to publish this dataset in this catalog'
     await mongo.publications.updateOne({ _id: pub._id }, { $set: { status: 'error', error: errorMsg } })
     return internalError('worker-missing-permissions', errorMsg)
   }

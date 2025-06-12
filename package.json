@@ -4,7 +4,7 @@
   "description": "Import/publish datasets between Data Fair and other services.",
   "type": "module",
   "scripts": {
-    "build-types": "export NODE_OPTIONS='--experimental-strip-types' && df-build-types ./",
+    "build-types": "df-build-types ./",
     "check-types": "tsc",
     "dev-api": "npm -w api run dev",
     "dev-deps": "docker compose --profile dev up -d --wait",
@@ -14,7 +14,8 @@
     "lint-fix": "eslint --fix . && npm -w ui run lint-fix",
     "prepare": "husky || true",
     "stop-dev-deps": "docker compose --profile dev stop",
-    "test-base": "NODE_ENV=test node --experimental-strip-types --test-force-exit --test-concurrency=1 --test --test-reporter=@reporters/bail --test-reporter-destination=stderr --test-reporter=spec --test-reporter-destination=stdout",
+    "test-base": "NODE_ENV=test node --test-force-exit --test-concurrency=1 --test --test-reporter=spec",
+    "test-only": "npm run test-base -- --test-only",
     "test": "npm run test-base test-it/*.ts",
     "quality": "npm run dev-deps && npm run lint && npm run build-types && npm run check-types && npm -w ui run build && npm run test && npm audit --omit=dev --audit-level=critical"
   },
@@ -41,7 +42,6 @@
     "@commitlint/config-conventional": "^19.8.0",
     "@data-fair/lib-node": "^2.4.0",
     "@data-fair/lib-utils": "^1.6.0",
-    "@reporters/bail": "^1.2.1",
     "@types/config": "^3.3.5",
     "@types/debug": "^4.1.12",
     "@types/fs-extra": "^11.0.4",
@@ -52,7 +52,7 @@
     "husky": "^9.1.7",
     "neostandard": "^0.12.0",
     "tough-cookie": "^5.0.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.3"
   },
   "relativeDependencies": {
     "@data-fair/lib-common-types": "../lib/packages/common-types"
