@@ -1,4 +1,5 @@
 import type { Plugin } from '#types'
+import type { Request } from 'express'
 
 import Debug from 'debug'
 import { exec } from 'child_process'
@@ -7,6 +8,7 @@ import { promisify } from 'util'
 import fs from 'fs-extra'
 import path from 'path'
 import tmp from 'tmp-promise'
+import multer from 'multer'
 import { assertAccountRole, httpError, session } from '@data-fair/lib-express'
 import { getPlugin } from '#utils/find.ts'
 import mongo from '#mongo'
@@ -25,48 +27,87 @@ fs.ensureDirSync(tmpDir)
 
 tmp.setGracefulCleanup()
 
+/**
+ * Multer configuration for handling file uploads.
+ * It stores files directly in the temporary directory and only allows .tgz files.
+ */
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, tmpDir)
+    },
+    filename: (req, file, cb) => {
+      cb(null, `plugin-${Date.now()}-${file.originalname}`)
+    }
+  }),
+  fileFilter: (req, file, cb) => {
+    if (path.extname(file.originalname) === '.tgz') cb(null, true)
+    else cb(httpError(400, 'Only .tgz files are allowed'))
+  },
+  limits: { fileSize: 1 * 1024 * 1024 } // 1MB max
+})
+
 // Install a new plugin or update an existing one
-router.post('/', async (req, res) => {
-  debug('Installing a new plugin', req.body)
+router.post('/', upload.single('file'), async (req: Request & { file?: Express.Multer.File }, res) => {
+  debug('Installing a new plugin', req.body, req.file)
   await session.reqAdminMode(req)
-  const { body } = (await import('../../doc/plugins/post-req/index.ts')).returnValid(req)
 
   const dir = await tmp.dir({ unsafeCleanup: true, tmpdir: tmpDir, prefix: 'plugin-install' })
-  const id = body.name.replace('/', '-')
+  let id: string
+  let tarballPath: string
+  let pluginJson: {
+    id: string,
+    name: string,
+    description: string,
+    version: string
+  }
 
   try {
-    // create a pseudo npm package with a dependency to the plugin referenced from the registry
-    await fs.writeFile(path.join(dir.path, 'package.json'), JSON.stringify({
-      name: id,
-      type: 'module',
-      dependencies: {
-        [body.name]: body.version
-      }
-    }, null, 2))
-    await execAsync('npm install', { cwd: dir.path })
+    if (req.file) { // File upload mode - use the uploaded .tgz file
+      tarballPath = req.file.path
+    } else { // NPM mode - validate body and download from npm
+      const { body } = (await import('../../doc/plugins/post-req/index.ts')).returnValid(req)
 
-    // move the plugin to the src directory (Stripping types is currently unsupported for files under node_modules)
-    await fs.move(path.join(dir.path, 'node_modules', body.name), path.join(dir.path, 'src'), { overwrite: true })
+      // download the plugin package using npm pack
+      const { stdout } = await execAsync(`npm pack ${body.name}@${body.version}`, { cwd: dir.path })
+      tarballPath = path.join(dir.path, stdout.trim())
+    }
 
-    // generate an index.js file to export the main file
-    const packageJson = await fs.readJson(path.join(dir.path, 'src', 'package.json'))
-    await fs.writeFile(path.join(dir.path, 'index.ts'), `export { default } from './${path.join('src', packageJson.main || 'index.ts')}'`)
-    await fs.writeFile(path.join(dir.path, 'plugin.json'), JSON.stringify({
+    // extract the tarball
+    await execAsync(`tar -xzf "${tarballPath}" -C "${dir.path}"`)
+    const extractedPath = path.join(dir.path, 'package')
+
+    // install dependencies of the plugin
+    await execAsync('npm install', { cwd: extractedPath })
+
+    // generate plugin.json from package.json
+    const packageJson = await fs.readJson(path.join(extractedPath, 'package.json'))
+    id = packageJson.name.replace('/', '-')
+    pluginJson = {
       id,
       name: packageJson.name,
       description: packageJson.description,
       version: packageJson.version
-    }, null, 2))
+    }
+    await fs.writeFile(
+      path.join(extractedPath, 'plugin.json'),
+      JSON.stringify(pluginJson, null, 2)
+    )
 
-    await fs.move(dir.path, path.join(pluginsDir, id), { overwrite: true })
-  } catch (err) {
+    // move the extracted plugin to the final destination
+    await fs.move(extractedPath, path.join(pluginsDir, id), { overwrite: true })
     await dir.cleanup()
+    if (req.file) await fs.remove(req.file.path)
+  } catch (error: any) {
+    await dir.cleanup()
+    if (req.file) await fs.remove(req.file.path)
+    throw httpError(400, `Failed to install plugin: ${error.message || error}`)
   }
 
   res.send({
     id,
-    name: body.name,
-    version: body.version
+    name: pluginJson.name,
+    version: pluginJson.version
   })
 })
 

@@ -19,14 +19,39 @@ describe('plugin', () => {
   after(cleanAll)
   after(stopApiServer)
 
-  it('should install a plugin', async () => {
+  it('should install a plugin from npm', async () => {
     const res = await superadmin.post('/api/plugins', {
       name: plugin.name,
-      version: '0.1.0' // Previous version to test update
+      version: '0.1.1' // Previous version to test update
     })
     assert.equal(res.data.name, '@data-fair/catalog-mock', 'Plugin name should match')
     assert.equal(pluginId, res.data.id, 'Plugin ID should match')
-    assert.equal(res.data.version, '0.1.0', 'Plugin version should match')
+    assert.equal(res.data.version, '0.1.1', 'Plugin version should match')
+
+    // Only superadmin can install plugins
+    await assert.rejects(
+      adminOrga.post('/api/plugins'),
+      (err: { status: number }) => err.status === 403,
+      'Only superadmin can install plugins'
+    )
+  })
+
+  it('should install a plugin from tarball', async () => {
+    const FormData = (await import('form-data')).default
+    const fs = await import('fs')
+    const path = await import('path')
+
+    const tarballPath = path.join(import.meta.dirname, 'utils', 'catalog-mock.tgz')
+    const formData = new FormData()
+    formData.append('file', fs.createReadStream(tarballPath))
+
+    const res = await superadmin.post('/api/plugins', formData, {
+      headers: formData.getHeaders()
+    })
+
+    assert.equal(res.data.name, '@data-fair/catalog-mock', 'Plugin name should match')
+    assert.equal(pluginId, res.data.id, 'Plugin ID should match')
+    assert.equal(res.data.version, '0.2.0', 'Plugin version should match tarball version')
 
     // Only superadmin can install plugins
     await assert.rejects(
