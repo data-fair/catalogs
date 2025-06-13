@@ -10,6 +10,7 @@
         <publication-new
           :catalog="catalog"
           :data-fair-dataset="dataFairDataset"
+          :publication-list="publicationsFetch.data.value?.results"
           @on-publish="publicationsFetch.refresh()"
         />
       </v-expansion-panel-text>

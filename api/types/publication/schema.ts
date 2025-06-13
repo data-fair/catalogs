@@ -114,12 +114,12 @@ export default {
         fr: 'Le site sur lequel sera redirigé l\'utilisateur depuis le jeu de données distant.'
       },
       layout: {
-        if: {
-          expr: 'rootData.dataFairDataset?.id',
-          pure: false
-        },
+        // if: {
+        //   expr: 'rootData.dataFairDataset?.id',
+        //   pure: false
+        // },
         getItems: {
-          url: '${context.origin}/data-fair/api/v1/datasets/${rootData.dataFairDataset.id}',
+          url: '${context.origin}/data-fair/api/v1/datasets/${rootData.dataFairDataset?.id}',
           itemsResults: 'data.publicationSites ?? []',
           itemValue: 'context.publicationSites[item]?.url',
           itemTitle: '`${context.publicationSites[item]?.title} (${context.publicationSites[item]?.url})`',
@@ -245,6 +245,7 @@ export default {
           itemsResults: 'data.results',
           itemTitle: '`${item.title} (${item.id})`',
           itemValue: '{ id: item.id, title: item.title }',
+          itemKey: 'item.id',
           qSearchParam: 'q'
         }
       }

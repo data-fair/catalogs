@@ -19,13 +19,71 @@
       />
     </v-form>
   </v-defaults-provider>
+  <v-menu
+    v-if="existingPublication"
+    v-model="showPublishConfirm"
+    :close-on-content-click="false"
+    max-width="500"
+  >
+    <template #activator="{ props }">
+      <v-btn
+        v-bind="props"
+        class="mt-2"
+        color="primary"
+        variant="flat"
+        :disabled="!validPublication"
+        :loading="publish.loading.value"
+      >
+        {{ t('publish') }}
+      </v-btn>
+    </template>
+    <v-card
+      rounded="lg"
+      :title="t('confirmOverwrite')"
+      variant="elevated"
+      :loading="publish.loading.value ? 'warning' : undefined"
+    >
+      <v-card-text class="pb-0">
+        <p>
+          {{ t('overwriteMessage', { datasetTitle: existingPublication?.dataFairDataset?.title || existingPublication?.dataFairDataset?.id }) }}
+        </p>
+        <p>
+          <a
+            :href="`${$sitePath}/data-fair/dataset/${existingPublication?.dataFairDataset?.id}`"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {{ t('viewSourceDataset') }}
+          </a>
+        </p>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          :disabled="publish.loading.value"
+          @click="showPublishConfirm = false;"
+        >
+          {{ t('no') }}
+        </v-btn>
+        <v-btn
+          color="warning"
+          variant="flat"
+          :loading="publish.loading.value"
+          @click="publish.execute()"
+        >
+          {{ t('yes') }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-menu>
   <v-btn
+    v-else
     class="mt-2"
     color="primary"
     variant="flat"
     :disabled="!validPublication"
-    :loading="publishCatalog.loading.value"
-    @click="publishCatalog.execute()"
+    :loading="publish.loading.value"
+    @click="publish.execute()"
   >
     {{ t('publish') }}
   </v-btn>
@@ -35,13 +93,13 @@
 import tutorialAlert from '@data-fair/lib-vuetify/tutorial-alert.vue'
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import clone from '@data-fair/lib-utils/clone.js'
-import { resolvedSchema as publicationSchemaBase } from '#api/types/publication/index.ts'
+import { resolvedSchema as publicationSchemaBase, type Publication } from '#api/types/publication/index.ts'
 
 const { t } = useI18n()
 const session = useSessionAuthenticated()
 
 // Optional default values
-const { catalog, dataFairDataset } = defineProps<{
+const { catalog, dataFairDataset, publicationList } = defineProps<{
   catalog?: {
     id: string
     title?: string
@@ -50,6 +108,7 @@ const { catalog, dataFairDataset } = defineProps<{
     id: string
     title?: string
   },
+  publicationList?: Publication[]
 }>()
 
 // Notify parent component when a new publication is created
@@ -61,17 +120,27 @@ const initPublication = () => {
   if (dataFairDataset) pub.dataFairDataset = { id: dataFairDataset.id }
   return pub
 }
+const showPublishConfirm = ref(false)
 const validPublication = ref(false)
 const newPublication = ref<Record<string, any>>(initPublication())
 
 const publicationSchema = computed(() => {
   const schema = clone(publicationSchemaBase)
-  schema.required = ['catalog', 'action', 'dataFairDataset']
-  // TODO: make required remoteDataset if action is not create
+  schema.required = ['catalog', 'action', 'dataFairDataset', 'publicationSite']
+  // TODO: make required remoteDataset if the action is not 'create'
   return schema
 })
 
-const publicationSites = useFetch<object[]>(`${window.location.origin}/data-fair/api/v1/settings/${session.state.account.type}/${session.state.account.id}/publication-sites`)
+// Check if this remote dataset is not already published
+const existingPublication = computed(() => {
+  if (!publicationList) return undefined
+  if (newPublication.value?.action !== 'overwrite' || !newPublication.value?.remoteDataset) return undefined
+  return publicationList.find(pub =>
+    pub.remoteDataset?.id === newPublication.value.remoteDataset.id
+  )
+})
+
+const publicationSites = useFetch<object[]>(`${$sitePath}/data-fair/api/v1/settings/${session.state.account.type}/${session.state.account.id}/publication-sites`)
 const formatedPublicationSites = computed(() => {
   if (!publicationSites.data.value) return {}
 
@@ -84,7 +153,7 @@ const formatedPublicationSites = computed(() => {
   }, {})
 })
 
-const publishCatalog = useAsyncAction(
+const publish = useAsyncAction(
   async () => {
     if (!validPublication.value) return
     await $fetch('/publications', {
@@ -124,11 +193,20 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   en:
     publish: Publish
     tutorialMessage: You can publish your datasets to one or more catalogs. This publication will make your data easier to find and allow the Open Data community to engage with you.
+    confirmOverwrite: Confirm overwrite
+    overwriteMessage: This remote dataset is already published by the dataset "{datasetTitle}". Do you really want to overwrite this publication?
+    viewSourceDataset: View source dataset
+    yes: Yes
+    no: No
 
   fr:
     publish: Publier
     tutorialMessage: Vous pouvez publier vos jeux de données sur un ou plusieurs catalogues. Cette publication rendra vos données plus faciles à trouver et permettra à la communauté Open Data d'échanger avec vous.
-
+    confirmOverwrite: Confirmer l'écrasement
+    overwriteMessage: Ce jeu de données distant est déjà publié par le jeu de données "{datasetTitle}". Souhaitez-vous vraiment écraser cette publication ?
+    viewSourceDataset: Voir le jeu de données source
+    yes: Oui
+    no: Non
 </i18n>
 
 <style scoped>

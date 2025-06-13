@@ -156,14 +156,14 @@
           <v-card-actions>
             <v-spacer />
             <v-btn
-              :disabled="!!pluginLocked"
+              :disabled="!!pluginLocked || install.loading.value"
               @click="showForceInstall = false"
             >
               {{ t('cancel') }}
             </v-btn>
             <v-btn
               color="warning"
-              :disabled="!!pluginLocked || !canForceInstall"
+              :disabled="!!pluginLocked || !canForceInstall || install.loading.value"
               @click="install.execute()"
             >
               {{ t('install') }}

@@ -41,6 +41,18 @@ router.post('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const { body } = (await import('#doc/publications/post-req/index.ts')).returnValid(req)
 
+  // Check if they are already a publication with the same dataFairDataset.id and catalog.id
+  const existingPublication = await mongo.publications.countDocuments({
+    'dataFairDataset.id': body.dataFairDataset.id,
+    'catalog.id': body.catalog.id
+  })
+  if (existingPublication) throw httpError(409, 'Publication already exists for this dataset and catalog')
+
+  // In overwrite mode, check if they are already a publication with the same remoteDataset.id, and delete the link
+  if (body.action === 'overwrite' && body.remoteDataset?.id) {
+    await mongo.publications.deleteOne({ 'remoteDataset.id': body.remoteDataset?.id })
+  }
+
   // Check if the catalog exists
   const catalog = await mongo.catalogs.findOne({ _id: body.catalog.id })
   if (!catalog) throw httpError(404, 'Catalog not found')

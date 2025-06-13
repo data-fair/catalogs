@@ -47,6 +47,8 @@ export class CatalogsMongo {
       publications: {
         // Get publications by catalog and owner
         main: { 'catalog.id': 1, 'owner.type': 1, 'owner.id': 1 },
+        // An publication is unique by catalog and dataFairDataset
+        primaryKey: [{ 'catalog.id': 1, 'dataFairDataset.id': 1 }, { unique: true }],
         // Get publications by dataset
         dataset: { 'dataFairDataset.id': 1, 'owner.type': 1, 'owner.id': 1 },
         // For each worker loop, we get random publications with status waiting or running
