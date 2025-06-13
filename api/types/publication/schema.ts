@@ -15,7 +15,7 @@ export default {
     'created',
     'status',
     'action',
-    'publicationUrl',
+    'publicationSite',
     'catalog',
     'dataFairDataset'
   ],
@@ -103,7 +103,7 @@ export default {
         ]
       }
     },
-    publicationUrl: {
+    publicationSite: {
       type: 'string',
       title: 'Publication Site URL',
       'x-i18n-title': {
@@ -114,6 +114,10 @@ export default {
         fr: 'Le site sur lequel sera redirigé l\'utilisateur depuis le jeu de données distant.'
       },
       layout: {
+        if: {
+          expr: 'rootData.dataFairDataset?.id',
+          pure: false
+        },
         getItems: {
           url: '${context.origin}/data-fair/api/v1/datasets/${rootData.dataFairDataset.id}',
           itemsResults: 'data.publicationSites ?? []',
@@ -279,7 +283,7 @@ export default {
       'dataFairDataset',
       'action',
       'remoteDataset',
-      'publicationUrl'
+      'publicationSite'
     ]
   }
 }

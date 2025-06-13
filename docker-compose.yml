@@ -43,7 +43,7 @@ services:
     profiles:
       - dev
       - test
-    image: ghcr.io/data-fair/data-fair:feat-catalogs-integration
+    image: ghcr.io/data-fair/data-fair:master
     restart: on-failure:10
     network_mode: host
     depends_on:

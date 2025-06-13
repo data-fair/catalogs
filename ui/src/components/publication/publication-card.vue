@@ -22,13 +22,16 @@
     </v-card-text>
     <v-card-actions>
       <v-spacer />
-      <!-- <v-btn
+      <v-btn
+        v-if="publication.remoteDataset?.url"
         color="primary"
         density="comfortable"
         variant="text"
         :icon="mdiOpenInNew"
         :title="t('viewPublication')"
-      /> -->
+        :href="publication.remoteDataset.url"
+        target="_blank"
+      />
       <v-menu
         v-model="showRePublishMenu"
         :close-on-content-click="false"

@@ -105,7 +105,11 @@ nvm install
 
 ## Setup the development environment
 
-> To work on the dataset publication feature, you first need to add a publication site on Data Fair. You can configure the publication site for each organization on which you want to run your tests.
+> To work on the dataset publication feature, you first need to add a publication site and setup an API Key on Data Fair.
+
+A. Congifure the publication site
+
+You can configure the publication site for each organization on which you want to run your tests.
 
 Here is the command to type in the browser console, while being connected as a super administrator:
 
@@ -123,6 +127,36 @@ fetch('http://localhost:5600/data-fair/api/v1/settings/user/superadmin/publicati
 ```
 
 *You can replace in the URL the type (user/organization) and the account ID to configure (here superadmin)*
+
+B. Configure the API Key
+
+In the browser console, while being connected as a super administrator, you can create an API key used by the worker to import datasets and read metadata of datasets from the Data Fair API.
+
+```js
+fetch('http://localhost:5600/data-fair/api/v1/settings/user/superadmin', {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    "apiKeys": [{
+      "title": "Catalogs",
+      "scopes": ["datasets"],
+      "adminMode": true,
+      "asAccount": true
+    }]
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data.apiKeys[0].clearKey))
+.catch(error => console.error('Erreur:', error));
+```
+
+Then copy the `clearKey` value returned by the API and paste it in a new file `worker/config/local-development.cjs` file :
+
+```js
+module.exports = {
+  dataFairAPIKey: 'your api key here',
+}
+```
 
 ## Permissions rules
 

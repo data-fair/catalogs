@@ -10,7 +10,7 @@ export default {
   properties: {
     body:
       jsonSchema(publicationSchema)
-        .pickProperties(['catalog', 'action', 'dataFairDataset', 'publicationUrl', 'remoteDataset', 'remoteResource'])
+        .pickProperties(['catalog', 'action', 'dataFairDataset', 'publicationSite', 'remoteDataset', 'remoteResource'])
         .removeId()
         .appendTitle(' post')
         .schema

@@ -54,20 +54,26 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
   const publicationRes = await plugin.publishDataset(catalog.config, dataFairDataset, {
     remoteDataset: pub.remoteDataset,
     remoteResource: pub.remoteResource,
+    publicationSite: pub.publicationSite,
     isResource: pub.action === 'addAsResource'
   })
 
-  // 4. Update the export status
+  // 4. Update the publication status
   Object.assign(pub, {
     remoteResource: publicationRes.remoteResource,
-    remoteDataset: publicationRes.remoteDataset
+    remoteDataset: publicationRes.remoteDataset,
   })
   pub.status = 'done'
-  pub.error = undefined
   pub.lastPublicationDate = new Date().toISOString()
+  delete pub.error
   const validPublication = (await import('../../../api/types/publication/index.ts')).returnValid(pub)
 
-  await mongo.publications.updateOne({ _id: pub._id }, { $set: validPublication })
+  await mongo.publications.updateOne(
+    { _id: pub._id },
+    {
+      $set: validPublication,
+      $unset: { error: '' }
+    })
 }
 
 const deletePublication = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication) => {

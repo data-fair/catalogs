@@ -329,7 +329,7 @@ describe.only('Permissions', () => {
     const createPublicationPayload = (catalogId: string, dataFairDatasetId: string) => ({
       catalog: { id: catalogId },
       dataFairDataset: { id: dataFairDatasetId },
-      publicationUrl: 'http://localhost:5600/data-fair',
+      publicationSite: 'http://localhost:5600/data-fair',
       action: 'create'
     })
 
