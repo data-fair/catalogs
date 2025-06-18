@@ -147,7 +147,8 @@ const formatedPublicationSites = computed(() => {
   return publicationSites.data.value.reduce((acc: Record<string, any>, site: any) => {
     acc[`${site.type}:${site.id}`] = {
       title: site.title,
-      url: site.url
+      url: site.url,
+      datasetUrlTemplate: site.datasetUrlTemplate || site.url + '/datasets/{id}',
     }
     return acc
   }, {})

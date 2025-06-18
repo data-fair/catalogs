@@ -121,7 +121,8 @@ fetch('http://localhost:5600/data-fair/api/v1/settings/user/superadmin/publicati
       "type": "back-office",
       "id": "data-fair",
       "title": "Back Office",
-      "url": "http://localhost:5600/data-fair"
+      "url": "http://localhost:5600/data-fair",
+      "datasetUrlTemplate": "http://localhost:5600/data-fair"
     })
 })
 ```
@@ -157,6 +158,18 @@ module.exports = {
   dataFairAPIKey: 'your api key here',
 }
 ```
+
+## Random information
+
+<details>
+<summary>Expand...</summary>
+
+### package.json scripts description
+
+- `"prepare": "husky || true"` : Initializes Husky hooks before the first `npm install`. The `|| true` ensures the command doesn't fail if Husky is not installed or encounters an error.
+- `EVENTS_LOG_LEVEL=alert` : Disable the lib express events log in the console, to avoid too much noise.
+
+</details>
 
 ## Permissions rules
 

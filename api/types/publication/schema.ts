@@ -121,7 +121,7 @@ export default {
         getItems: {
           url: '${context.origin}/data-fair/api/v1/datasets/${rootData.dataFairDataset?.id}',
           itemsResults: 'data.publicationSites ?? []',
-          itemValue: 'context.publicationSites[item]?.url',
+          itemValue: 'context.publicationSites[item]?.datasetUrlTemplate',
           itemTitle: '`${context.publicationSites[item]?.title} (${context.publicationSites[item]?.url})`',
         },
         props: {
