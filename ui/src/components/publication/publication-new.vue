@@ -148,7 +148,7 @@ const formatedPublicationSites = computed(() => {
     acc[`${site.type}:${site.id}`] = {
       title: site.title,
       url: site.url,
-      datasetUrlTemplate: site.datasetUrlTemplate || site.url + '/datasets/{id}',
+      datasetUrlTemplate: site.datasetUrlTemplate
     }
     return acc
   }, {})

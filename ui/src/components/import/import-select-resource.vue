@@ -25,7 +25,7 @@
         v-if="plugin.metadata.capabilities.includes('additionalFilters')"
         v-model="additionalFilters"
         class="ma-2"
-        :schema="plugin.filtersSchema"
+        :schema="plugin.listFiltersSchema"
         :options="vjsfOptions"
       />
       <v-breadcrumbs

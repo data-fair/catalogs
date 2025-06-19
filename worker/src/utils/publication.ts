@@ -52,11 +52,15 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
 
 const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication, dataFairDataset: Record<string, any>) => {
   // 3. Publish the dataset
-  const publicationRes = await plugin.publishDataset(catalog.config, dataFairDataset, {
-    remoteDataset: pub.remoteDataset,
-    remoteResource: pub.remoteResource,
+  const publicationRes = await plugin.publishDataset({
+    catalogConfig: catalog.config,
+    dataset: dataFairDataset,
+    publication: {
+      remoteDataset: pub.remoteDataset,
+      remoteResource: pub.remoteResource,
+      isResource: pub.action === 'addAsResource'
+    },
     publicationSite: pub.publicationSite,
-    isResource: pub.action === 'addAsResource'
   })
 
   // 4. Update the publication status
@@ -85,7 +89,11 @@ const deletePublication = async (catalog: Catalog, plugin: CatalogPlugin, pub: P
     return
   }
 
-  await plugin.deleteDataset(catalog.config, pub.remoteDataset.id, pub.remoteResource?.id)
+  await plugin.deleteDataset({
+    catalogConfig: catalog.config,
+    datasetId: pub.remoteDataset.id,
+    resourceId: pub.remoteResource?.id
+  })
   await mongo.publications.deleteOne({ _id: pub._id })
 }
 

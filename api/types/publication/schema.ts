@@ -104,8 +104,8 @@ export default {
       }
     },
     publicationSite: {
-      type: 'string',
-      title: 'Publication Site URL',
+      type: 'object',
+      title: 'Publication Site',
       'x-i18n-title': {
         fr: 'Site de publication'
       },
@@ -113,6 +113,22 @@ export default {
       'x-i18n-description': {
         fr: 'Le site sur lequel sera redirigé l\'utilisateur depuis le jeu de données distant.'
       },
+      required: ['title', 'url', 'datasetUrlTemplate'],
+      properties: {
+        title: {
+          type: 'string',
+          description: 'Title of the publication site'
+        },
+        url: {
+          type: 'string',
+          description: 'URL of the publication site'
+        },
+        datasetUrlTemplate: {
+          type: 'string',
+          description: 'Template for the URL to view the dataset in the publication site, using micro-template syntax.',
+        }
+      },
+      additionalProperties: false,
       layout: {
         // if: {
         //   expr: 'rootData.dataFairDataset?.id',
@@ -121,7 +137,7 @@ export default {
         getItems: {
           url: '${context.origin}/data-fair/api/v1/datasets/${rootData.dataFairDataset?.id}',
           itemsResults: 'data.publicationSites ?? []',
-          itemValue: 'context.publicationSites[item]?.datasetUrlTemplate',
+          itemValue: 'context.publicationSites[item]',
           itemTitle: '`${context.publicationSites[item]?.title} (${context.publicationSites[item]?.url})`',
         },
         props: {

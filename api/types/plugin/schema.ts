@@ -38,7 +38,7 @@ export default {
     configSchema: {
       type: 'object'
     },
-    filtersSchema: {
+    listFiltersSchema: {
       type: 'object'
     },
     importConfigSchema: {
