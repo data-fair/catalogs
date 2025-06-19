@@ -123,7 +123,8 @@ const session = useSessionAuthenticated()
 const { catalog, plugin, existingImports } = defineProps<{
   catalog: {
     id: string
-    title?: string
+    title: string
+    config: Record<string, any>
   },
   plugin: Plugin,
   existingImports?: Import[]
@@ -183,7 +184,11 @@ const handleNext = (next: () => void) => {
   else next()
 }
 
-const vjsfOptions: VjsfOptions = {
+const vjsfOptions = computed<VjsfOptions>(() => ({
+  context: {
+    resourceId: selectedResource.value?.id || '',
+    catalogConfig: catalog.config
+  },
   density: 'comfortable',
   initialValidation: 'always',
   locale: session.lang.value,
@@ -191,7 +196,7 @@ const vjsfOptions: VjsfOptions = {
   titleDepth: 4,
   validateOn: 'blur',
   xI18n: true
-}
+}))
 
 </script>
 

@@ -39,7 +39,7 @@
       <v-tabs-window-item value="import">
         <import-list
           v-if="pluginFetch.data.value?.metadata.capabilities.includes('import') && pluginFetch.data.value"
-          :catalog="{ id: catalogFetch.data.value._id, title: catalogFetch.data.value.title }"
+          :catalog="{ id: catalogFetch.data.value._id, title: catalogFetch.data.value.title, config: catalogFetch.data.value.config }"
           :plugin="pluginFetch.data.value"
         />
       </v-tabs-window-item>

@@ -61,7 +61,8 @@ const { t } = useI18n()
 const { catalog } = defineProps<{
   catalog: {
     id: string
-    title?: string
+    title: string
+    config: Record<string, any>
   },
   plugin: Plugin
 }>()
