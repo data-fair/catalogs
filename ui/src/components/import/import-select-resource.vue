@@ -21,13 +21,14 @@
     select-strategy="single"
   >
     <template #top>
-      <vjsf
-        v-if="plugin.metadata.capabilities.includes('additionalFilters')"
-        v-model="additionalFilters"
-        class="ma-2"
-        :schema="plugin.listFiltersSchema"
-        :options="vjsfOptions"
-      />
+      <v-form v-if="plugin.metadata.capabilities.includes('additionalFilters')">
+        <vjsf
+          v-model="additionalFilters"
+          class="ma-2"
+          :schema="plugin.listFiltersSchema"
+          :options="vjsfOptions"
+        />
+      </v-form>
       <v-breadcrumbs
         :items="breadcrumbItems"
         class="pa-0"

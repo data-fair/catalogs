@@ -154,7 +154,7 @@ fetch('http://localhost:5600/data-fair/api/v1/settings/user/superadmin', {
 Then copy the `clearKey` value returned by the API and paste it in a new file `worker/config/local-development.cjs` file :
 
 ```js
-module.exports = {
+export default {
   dataFairAPIKey: 'your api key here',
 }
 ```

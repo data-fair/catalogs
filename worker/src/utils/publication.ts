@@ -89,12 +89,22 @@ const deletePublication = async (catalog: Catalog, plugin: CatalogPlugin, pub: P
     return
   }
 
-  await plugin.deleteDataset({
-    catalogConfig: catalog.config,
-    datasetId: pub.remoteDataset.id,
-    resourceId: pub.remoteResource?.id
-  })
+  try {
+    await plugin.deleteDataset({
+      catalogConfig: catalog.config,
+      datasetId: pub.remoteDataset.id,
+      resourceId: pub.remoteResource?.id
+    })
+  } catch (error: any) {
+    internalError('worker-delete-publication-error', `Error while deleting publication: ${error.message}`, error)
+    // Ignore errors during deletion, we will delete the publication anyway
+  }
+
   await mongo.publications.deleteOne({ _id: pub._id })
+  if (catalog.deletionRequested) {
+    const remainingPublications = await mongo.publications.findOne({ 'catalog.id': catalog._id })
+    if (!remainingPublications) await mongo.catalogs.deleteOne({ _id: catalog._id })
+  }
 }
 
 export default { process }

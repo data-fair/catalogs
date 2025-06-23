@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   dataDir: './data/test',
   mongoUrl: 'mongodb://localhost:27017/data-fair-catalogs-test',
   observer: {

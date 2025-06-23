@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   dataDir: '../data/development',
   host: 'localhost:5600',
   privateDataFairUrl: 'http://localhost:5600/data-fair',

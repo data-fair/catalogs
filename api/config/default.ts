@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   dataDir: '/app/data',
   mongoUrl: 'mongodb://localhost:27017/data-fair-catalogs',
   npm: {
@@ -13,8 +13,8 @@ module.exports = {
   privateEventsUrl: undefined,
   secretKeys: {
     catalogs: undefined,
-    identities: undefined,
-    events: undefined
+    events: undefined,
+    identities: undefined
   },
   serveUi: true,
   tmpDir: undefined,

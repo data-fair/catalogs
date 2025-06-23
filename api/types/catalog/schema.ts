@@ -46,6 +46,12 @@ export default {
       },
       layout: 'textarea'
     },
+    deletionRequested: {
+      type: 'boolean',
+      description: 'If true, the catalog is marked for deletion and will be deleted after all publications are deleted',
+      default: false,
+      readOnly: true
+    },
     plugin: {
       type: 'string',
       readOnly: true

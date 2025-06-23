@@ -80,22 +80,22 @@
 
         <!-- Step 3: Catalog configuration -->
         <v-stepper-window-item value="3">
-          <v-form v-model="valid">
-            <v-defaults-provider
-              :defaults="{
-                global: {
-                  hideDetails: 'auto'
-                }
-              }"
-            >
+          <v-defaults-provider
+            :defaults="{
+              global: {
+                hideDetails: 'auto'
+              }
+            }"
+          >
+            <v-form v-model="valid">
               <vjsf
                 v-model="newCatalog"
                 class="mr-2"
                 :schema="catalogSchema"
                 :options="vjsfOptions"
               />
-            </v-defaults-provider>
-          </v-form>
+            </v-form>
+          </v-defaults-provider>
         </v-stepper-window-item>
       </v-stepper-window>
 

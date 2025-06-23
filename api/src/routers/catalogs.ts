@@ -68,6 +68,9 @@ router.get('/', async (req, res) => {
   const filters = findUtils.query(params, { plugins: 'plugin' })
   const queryWithFilters = Object.assign(filters, query)
 
+  // Exclude catalogs marked for deletion
+  queryWithFilters.deletionRequested = { $ne: true }
+
   // Filter capabilities
   if (params.capabilities) queryWithFilters.capabilities = { $all: params.capabilities?.split(',') ?? [] }
 
@@ -172,14 +175,11 @@ router.patch('/:id', async (req, res) => {
 })
 
 // Delete a catalog (and all its publications if deletePublications query)
-// TODO: Delete also all publications for this catalog ? Maybe not ? It's an option ?
 router.delete('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
   assertAccountRole(sessionState, catalog.owner, 'admin')
-
-  await mongo.catalogs.deleteOne({ _id: req.params.id })
 
   // Delete also all publications for this catalog if asked
   if (req.query.deletePublications) {
@@ -187,7 +187,19 @@ router.delete('/:id', async (req, res) => {
       { 'catalog.id': req.params.id },
       { $set: { action: 'delete', status: 'waiting' } }
     )
+
+    // The catalog will be deleted by the publication task,
+    // After each publication is deleted
+    await mongo.catalogs.updateOne(
+      { _id: req.params.id },
+      { $set: { deletionRequested: true } }
+    )
+  } else { // Delete only publication's links
+    await mongo.publications.deleteMany({ 'catalog.id': req.params.id })
+    await mongo.catalogs.deleteOne({ _id: req.params.id })
   }
+  // Delete all imports for this catalog
+  await mongo.imports.deleteMany({ 'catalog.id': req.params.id })
 
   if (config.privateEventsUrl && config.secretKeys.events) {
     const msg = req.query.deletePublications ? 'a été supprimé avec ses publications' : 'a été supprimé'

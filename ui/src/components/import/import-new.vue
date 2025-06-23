@@ -6,9 +6,9 @@
     <v-expansion-panel
       color="primary"
       static
+      value="0"
       :title="t('createNewImport')"
       :expand-icon="mdiPlusCircle"
-      value="0"
     >
       <v-expansion-panel-text>
         <v-stepper

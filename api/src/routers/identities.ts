@@ -35,6 +35,14 @@ export default createIdentitiesRouter(
   // onDelete
   async (identity) => {
     debug('Incoming sd webhook for delete', identity)
-    // TODO: delete all catalogs, imports and publications for this identity ?
+    // Delete all catalogs, imports and publications for this identity
+    const filter = { 'owner.type': identity.type, 'owner.id': identity.id }
+
+    await mongo.catalogs.deleteMany(filter)
+    await mongo.imports.deleteMany(filter)
+    await mongo.publications.deleteMany(filter)
+
+    // Remote datasets are not deleted, only the links to them
+    // When departments are deleted, do nothing
   }
 )

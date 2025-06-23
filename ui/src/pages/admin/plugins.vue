@@ -94,6 +94,7 @@
         {{ availablePlugins.length }}
       </span>
       {{ t('availablePlugins') }}
+
       <v-menu
         v-model="showForceInstall"
         :close-on-content-click="false"

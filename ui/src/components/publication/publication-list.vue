@@ -5,6 +5,7 @@
       color="primary"
       static
       :title="t('createNewPublication')"
+      :expand-icon="mdiPlusCircle"
     >
       <v-expansion-panel-text>
         <publication-new

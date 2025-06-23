@@ -19,7 +19,7 @@
   "dependencies": {
     "@data-fair/catalogs-shared": "*",
     "@data-fair/lib-node": "^2.8.1",
-    "config": "^3.3.12",
+    "config": "^4.0.0",
     "debug": "^4.4.1",
     "form-data": "^4.0.0",
     "fs-extra": "^11.3.0",

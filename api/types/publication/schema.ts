@@ -293,6 +293,21 @@ export default {
       description: 'Error message if the publication failed'
     }
   },
+  // JSON-Schema-to-typescript does not support conditional required properties
+  // https://stackoverflow.com/questions/38717933/jsonschema-attribute-conditionally-required
+  // anyOf: [
+  //   {
+  //     properties: {
+  //       action: { enum: ['addAsResource', 'overwrite'] }
+  //     },
+  //     required: ['remoteDataset']
+  //   },
+  //   {
+  //     properties: {
+  //       action: { enum: ['create', 'delete'] }
+  //     }
+  //   }
+  // ],
   layout: {
     title: null,
     children: [

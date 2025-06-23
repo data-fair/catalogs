@@ -25,7 +25,7 @@ describe('plugin', () => {
       version: '0.1.1' // Previous version to test update
     })
     assert.equal(res.data.name, '@data-fair/catalog-mock', 'Plugin name should match')
-    assert.equal(pluginId, res.data.id, 'Plugin ID should match')
+    assert.equal(res.data.id, pluginId, 'Plugin ID should match')
     assert.equal(res.data.version, '0.1.1', 'Plugin version should match')
 
     // Only superadmin can install plugins

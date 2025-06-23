@@ -143,31 +143,34 @@ async function iter (task: Task, type: typeof types[number]) {
 async function acquireNext (type: typeof types[number]): Promise<Task | undefined> {
   const collection = type === 'import' ? mongo.imports : mongo.publications
   // Check if there is a scheduled task to process
-  if (type === 'import') {
-    const tasksToUpdate = await mongo.imports.find(
-      { status: { $ne: 'waiting' }, nextImportDate: { $lte: new Date().toISOString() } }
-    ).toArray()
+  if (type === 'import') scheduleImport()
 
-    for (const task of tasksToUpdate) {
-      await mongo.imports.updateOne(
-        { _id: task._id },
-        {
-          $set: {
-            status: 'waiting',
-            nextImportDate: getNextImportDate(task.scheduling)
-          }
-        }
-      )
-    }
-  }
   const cursor = collection.aggregate<Task>([
     { $match: { status: 'waiting' } }, { $sample: { size: 10 } }
   ])
 
-  while (await cursor.hasNext()) {
-    const task = (await cursor.next())!
+  while (await cursor?.hasNext()) {
+    const task = (await cursor!.next())!
     const ack = await locks.acquire(`${type}:${task._id}`, 'worker-loop-iter')
     if (!ack) continue
     return task
+  }
+}
+
+async function scheduleImport () {
+  const tasksToUpdate = await mongo.imports.find(
+    { status: { $ne: 'waiting' }, nextImportDate: { $lte: new Date().toISOString() } }
+  ).toArray()
+
+  for (const task of tasksToUpdate) {
+    await mongo.imports.updateOne(
+      { _id: task._id },
+      {
+        $set: {
+          status: 'waiting',
+          nextImportDate: getNextImportDate(task.scheduling)
+        }
+      }
+    )
   }
 }

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   dataDir: 'DATA_DIR',
   dataFairAPIKey: 'DATA_FAIR_API_KEY',
   host: 'HOST',

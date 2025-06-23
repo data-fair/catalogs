@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   dataDir: 'DATA_DIR',
   mongoUrl: 'MONGO_URL',
   npm: {
