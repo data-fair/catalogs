@@ -1,6 +1,7 @@
 import type { Catalog, Import } from '#api/types'
 import type { CatalogPlugin, Resource } from '@data-fair/lib-common-types/catalog/index.js'
 
+import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
 import axios from '@data-fair/lib-node/axios.js'
 import fs from 'fs-extra'
@@ -79,6 +80,10 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
     await mongo.imports.updateOne({ _id: imp._id }, {
       $set: { status: 'error', error: 'Failed to download resource file' }
     })
+    await wsEmit(`import/${imp._id}`, {
+      status: 'error',
+      error: 'Failed to download resource file'
+    })
     internalError('worker-download-failed', 'Failed to download resource file', {
       catalogId: catalog._id,
       resource,
@@ -102,16 +107,20 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
   )
 
   // Update import document
+  const newValues = {
+    dataFairDataset: {
+      id: dataset.id,
+      title: dataset.title,
+    },
+    status: 'done',
+    lastImportDate: new Date().toISOString()
+  }
+
   await mongo.imports.updateOne({ _id: imp._id }, {
-    $set: {
-      dataFairDataset: {
-        id: dataset.id,
-        title: dataset.title,
-      },
-      status: 'done',
-      lastImportDate: new Date().toISOString()
-    }
+    $set: { newValues },
+    $unset: { error: 1 }
   })
+  await wsEmit(`import/${imp._id}`, { ...newValues, error: undefined })
 
   await tmpDir.cleanup() // Clean up temporary directory
 }

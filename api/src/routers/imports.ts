@@ -2,6 +2,7 @@ import type { Import } from '#types'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
+import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import { assertAccountRole, session, httpError } from '@data-fair/lib-express'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import mongo from '#mongo'
@@ -73,10 +74,8 @@ router.post('/', async (req, res) => {
       { returnDocument: 'after' }
     )
 
-    if (!updatedImport) {
-      throw httpError(500, 'Failed to update existing import')
-    }
-
+    if (!updatedImport) throw httpError(500, 'Failed to update existing import')
+    await wsEmit(`import/${updatedImport._id}`, { ...updatedImport, error: undefined })
     return res.status(200).json(updatedImport)
   }
 
@@ -96,6 +95,7 @@ router.post('/', async (req, res) => {
 
   const validImport = await validateImport(imp)
   await mongo.imports.insertOne(validImport)
+  await wsEmit(`import/${validImport._id}`, validImport)
 
   res.status(201).json(validImport)
 })
@@ -113,6 +113,7 @@ router.patch('/:id', async (req, res) => {
       error: undefined
     }
   })
+  await wsEmit(`import/${id}`, { status: 'waiting', error: undefined })
 
   if (imp.matchedCount === 0) throw httpError(404, 'Import not found')
   res.status(200).json(imp)

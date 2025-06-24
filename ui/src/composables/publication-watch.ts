@@ -21,7 +21,7 @@ export const usePublicationWatch = (publicationsStore: PublicationsStore, public
   // Subscribe to deletion of this publication
   if (keys.includes('delete')) {
     ws?.subscribe(`publication/${publicationId}/deleted`, async () => {
-      publicationsStore.refresh()
+      await publicationsStore.refresh()
       // TODO: ui notif ?
       ws?.unsubscribe(`publication/${publicationId}`, () => { })
       ws?.unsubscribe(`publication/${publicationId}/deleted`, () => { })

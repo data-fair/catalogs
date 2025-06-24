@@ -31,7 +31,6 @@
         :title="t('viewDataset')"
       />
       <v-menu
-        v-if="imp.status !== 'waiting'"
         v-model="showReImportMenu"
         :close-on-content-click="false"
         max-width="500"
@@ -42,6 +41,8 @@
             color="warning"
             density="comfortable"
             variant="text"
+            :disabled="deleteImport.loading.value"
+            :loading="reImport.loading.value || imp.status === 'running' || imp.status === 'waiting'"
             :icon="mdiUpload"
             :title="t('reImport')"
           />
@@ -85,6 +86,8 @@
             color="warning"
             density="comfortable"
             variant="text"
+            :disabled="imp.status === 'waiting'"
+            :loading="deleteImport.loading.value"
             :icon="mdiDelete"
             :title="t('deleteDataset')"
           />
@@ -133,13 +136,10 @@ import type { Import } from '#api/types'
 
 const { t } = useI18n()
 const { dayjs } = useLocaleDayjs()
+const importsStore = useImportsStore()
 
 const { imp } = defineProps<{
   imp: Import
-}>()
-
-const emit = defineEmits<{
-  (e: 'onDelete'): void
 }>()
 
 const showDeleteMenu = ref(false)
@@ -149,7 +149,7 @@ const deleteOnlyLink = ref(false)
 
 const deleteImport = useAsyncAction(
   async () => {
-    await $fetch(`/imports/${imp._id}?onlyLink=${deleteOnlyLink.value}`, {
+    await $fetch(`/imports/${imp._id}`, {
       method: 'DELETE'
     })
 
@@ -159,7 +159,7 @@ const deleteImport = useAsyncAction(
         baseURL: $sitePath
       })
     }
-    emit('onDelete')
+    await importsStore.refresh()
     showDeleteMenu.value = false
   },
   {
@@ -179,7 +179,7 @@ const reImport = useAsyncAction(
       }
     })
 
-    // TODO: subscribe ws
+    useImportWatch(importsStore, imp._id, 'update')
     showReImportMenu.value = false
   },
   {

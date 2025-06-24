@@ -172,7 +172,7 @@ const createPublication = useAsyncAction(
       body: newPublication.value,
     })
     newPublication.value = initPublication()
-    publicationsStore.refresh()
+    await publicationsStore.refresh()
     usePublicationWatch(publicationsStore, publication._id, 'update')
     showPublishConfirm.value = false
     expandedPanel.value = []

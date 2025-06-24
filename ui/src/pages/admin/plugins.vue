@@ -266,7 +266,7 @@ const install = useAsyncAction(
       body
     })
 
-    installedPluginsFetch.refresh()
+    await installedPluginsFetch.refresh()
     pluginLocked.value = null
     showForceInstall.value = false
     selectedFile.value = undefined
@@ -283,7 +283,7 @@ const uninstall = useAsyncAction(
     await $fetch(`/plugins/${pluginId}`, {
       method: 'DELETE'
     })
-    installedPluginsFetch.refresh()
+    await installedPluginsFetch.refresh()
     pluginLocked.value = null
     showDeleteMenu.value = null
   },

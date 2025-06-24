@@ -1,4 +1,4 @@
-<template>
+<template data-iframe-height>
   <publication-new
     class="mb-4"
     :catalog="catalog"
@@ -25,7 +25,7 @@
   </v-row>
   <span
     v-else-if="!publicationsStore.count.value"
-    class="d-flex justify-center text-h6 mt-4"
+    class="d-flex justify-center text-h6"
   >
     {{ catalog
       ? t('noPublicationsFromCatalog')

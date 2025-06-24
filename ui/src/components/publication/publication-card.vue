@@ -156,7 +156,7 @@ const deletePublication = useAsyncAction(
       method: 'DELETE'
     })
 
-    if (deleteOnlyLink.value) publicationsStore.refresh()
+    if (deleteOnlyLink.value) await publicationsStore.refresh()
     else usePublicationWatch(publicationsStore, publication._id, ['update', 'delete'])
     showDeleteMenu.value = false
   },
@@ -171,7 +171,6 @@ const rePublish = useAsyncAction(
       method: 'POST'
     })
 
-    publicationsStore.refresh()
     usePublicationWatch(publicationsStore, publication._id, 'update')
     showRePublishMenu.value = false
   },

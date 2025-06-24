@@ -1,14 +1,12 @@
-<template>
+<template data-iframe-height>
   <import-new
     class="mb-4"
     :catalog="catalog"
     :plugin="plugin"
-    :existing-imports="importsFetch.data.value?.results"
-    @on-publish="importsFetch.refresh()"
   />
 
   <v-row
-    v-if="importsFetch.loading.value"
+    v-if="importsStore.importsFetch.loading.value"
     class="d-flex align-stretch"
   >
     <v-col
@@ -26,36 +24,31 @@
     </v-col>
   </v-row>
   <span
-    v-else-if="!importsFetch.data.value?.results.length"
+    v-else-if="!importsStore.count.value"
     class="d-flex justify-center text-h6"
   >
     {{ t('noImports') }}
   </span>
   <template v-else>
-    <h3 class="text-h5">
-      {{ t('nbImports', importsFetch.data.value?.results.length || 0) }}
+    <h3 class="text-h5 mb-4">
+      {{ t('nbImports', importsStore.count.value) }}
     </h3>
     <v-row class="d-flex align-stretch">
       <v-col
-        v-for="imp in importsFetch.data.value?.results"
+        v-for="imp in importsStore.imports.value"
         :key="imp._id"
         md="4"
         sm="6"
         cols="12"
       >
-        <import-card
-          :imp="imp"
-          @on-delete="importsFetch.refresh()"
-        />
+        <import-card :imp="imp" />
       </v-col>
     </v-row>
   </template>
 </template>
 
 <script setup lang="ts">
-import type { Import, Plugin } from '#api/types'
-
-const { t } = useI18n()
+import type { Plugin } from '#api/types'
 
 // Used to filter the imports
 const { catalog } = defineProps<{
@@ -67,9 +60,8 @@ const { catalog } = defineProps<{
   plugin: Plugin
 }>()
 
-const importsFetch = useFetch<{ results: Import[] }>(`${$apiPath}/imports`, {
-  query: { catalogId: catalog.id }
-})
+const { t } = useI18n()
+const importsStore = provideImportsStore(catalog.id)
 
 </script>
 

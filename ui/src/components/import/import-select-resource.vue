@@ -102,7 +102,7 @@
 
 <script setup lang="ts">
 import type { Folder, Resource } from '@data-fair/lib-common-types/catalog/index.js'
-import type { Import, Plugin } from '#api/types'
+import type { Plugin } from '#api/types'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import { VDataTable, VDataTableServer } from 'vuetify/components'
@@ -110,9 +110,10 @@ import formatBytes from '@data-fair/lib-vue/format/bytes.js'
 
 const { t } = useI18n()
 const session = useSessionAuthenticated()
-const { catalogId, existingImports, plugin } = defineProps<{
+const importsStore = useImportsStore()
+
+const { catalogId, plugin } = defineProps<{
   catalogId: string,
-  existingImports?: Import[],
   plugin: Plugin
 }>()
 
@@ -169,8 +170,7 @@ watch(selected, (newSelected) => {
 
 // Function to check if a resource is already imported
 const isResourceImported = (resourceId: string): boolean => {
-  if (!existingImports) return false
-  return existingImports.some(imp => imp.remoteResource.id === resourceId)
+  return importsStore.imports.value.some(imp => imp.remoteResource.id === resourceId)
 }
 
 /** Function to handle row click for resource selection */

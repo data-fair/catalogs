@@ -35,7 +35,6 @@
               <import-select-resource
                 v-model="selectedResource"
                 :catalog-id="catalog.id"
-                :existing-imports="existingImports"
                 :plugin="plugin"
               />
             </v-stepper-window-item>
@@ -116,18 +115,16 @@ import { toCRON } from '@data-fair/catalogs-shared/cron.ts'
 
 const { t } = useI18n()
 const session = useSessionAuthenticated()
+const importsStore = useImportsStore()
 
-const { catalog, plugin, existingImports } = defineProps<{
+const { catalog, plugin } = defineProps<{
   catalog: {
     id: string
     title: string
     config: Record<string, any>
   },
-  plugin: Plugin,
-  existingImports?: Import[]
+  plugin: Plugin
 }>()
-
-const emit = defineEmits(['onPublish'])
 
 const step = ref('1')
 const selectedResource = ref<{ id: string, title: string } | null>(null)
@@ -147,27 +144,25 @@ const importSchema = computed(() => {
 const createImport = useAsyncAction(async () => {
   if (!selectedResource.value || !validImportConfig.value) return
 
-  // Construct the body for the API request
-  const body = {
-    catalog: {
-      id: catalog.id,
-      title: catalog.title
-    },
-    remoteResource: {
-      id: selectedResource.value.id,
-      title: selectedResource.value.title
-    },
-    scheduling: importConfig.value.scheduling,
-    config: importConfig.value.config || {}
-  }
-
   // Create the import via API
-  await $fetch('/imports', {
+  const imp = await $fetch('/imports', {
     method: 'POST',
-    body
+    body: {
+      catalog: {
+        id: catalog.id,
+        title: catalog.title
+      },
+      remoteResource: {
+        id: selectedResource.value.id,
+        title: selectedResource.value.title
+      },
+      scheduling: importConfig.value.scheduling,
+      config: importConfig.value.config || {}
+    }
   })
 
-  emit('onPublish', selectedResource.value)
+  await importsStore.refresh()
+  useImportWatch(importsStore, imp._id, 'update')
 
   selectedResource.value = null
   validImportConfig.value = false

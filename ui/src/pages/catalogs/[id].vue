@@ -98,8 +98,8 @@ const tabs = computed(() => {
 })
 
 // Wait for catalogFetch to be initialized before fetching the plugin
-watch(() => catalogFetch.data.value?.plugin, (plugin) => {
-  if (plugin) pluginFetch.refresh()
+watch(() => catalogFetch.data.value?.plugin, async (plugin) => {
+  if (plugin) await pluginFetch.refresh()
 })
 
 watch(
