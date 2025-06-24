@@ -12,8 +12,11 @@ declare global {
   const $uiConfig: typeof import('~/context')['$uiConfig']
   const EffectScope: typeof import('vue')['EffectScope']
   const breadcrumbs: typeof import('../src/utils/breadcrumbs')['default']
+  const catalogStore: typeof import('../src/composables/catalog-store')['default']
+  const catalogStoreKey: typeof import('../src/composables/catalog-store')['catalogStoreKey']
   const computed: typeof import('vue')['computed']
   const createApp: typeof import('vue')['createApp']
+  const createCatalogStore: typeof import('../src/composables/catalog-store')['createCatalogStore']
   const createImportsStore: typeof import('../src/composables/imports-store')['createImportsStore']
   const createPublicationsStore: typeof import('../src/composables/publications-store')['createPublicationsStore']
   const customRef: typeof import('vue')['customRef']
@@ -79,6 +82,7 @@ declare global {
   const onUpdated: typeof import('vue')['onUpdated']
   const onWatcherCleanup: typeof import('vue')['onWatcherCleanup']
   const provide: typeof import('vue')['provide']
+  const provideCatalogStore: typeof import('../src/composables/catalog-store')['provideCatalogStore']
   const provideImportsStore: typeof import('../src/composables/imports-store')['provideImportsStore']
   const providePublicationsStore: typeof import('../src/composables/publications-store')['providePublicationsStore']
   const publicationsStore: typeof import('../src/composables/publications-store')['default']
@@ -100,6 +104,7 @@ declare global {
   const useAsyncAction: typeof import('@data-fair/lib-vue/async-action.js')['useAsyncAction']
   const useAttrs: typeof import('vue')['useAttrs']
   const useBooleanSearchParam: typeof import('@data-fair/lib-vue/reactive-search-params.js')['useBooleanSearchParam']
+  const useCatalogStore: typeof import('../src/composables/catalog-store')['useCatalogStore']
   const useConceptFilters: typeof import('@data-fair/lib-vue/concept-filters.js')['useConceptFilters']
   const useCssModule: typeof import('vue')['useCssModule']
   const useCssVars: typeof import('vue')['useCssVars']
@@ -137,6 +142,9 @@ declare global {
   export type { Component, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
+  export type { CatalogStore } from '../src/composables/catalog-store'
+  import('../src/composables/catalog-store')
+  // @ts-ignore
   export type { ImportsStore } from '../src/composables/imports-store'
   import('../src/composables/imports-store')
   // @ts-ignore
@@ -158,8 +166,11 @@ declare module 'vue' {
     readonly $uiConfig: UnwrapRef<typeof import('~/context')['$uiConfig']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly breadcrumbs: UnwrapRef<typeof import('../src/utils/breadcrumbs')['default']>
+    readonly catalogStore: UnwrapRef<typeof import('../src/composables/catalog-store')['default']>
+    readonly catalogStoreKey: UnwrapRef<typeof import('../src/composables/catalog-store')['catalogStoreKey']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
+    readonly createCatalogStore: UnwrapRef<typeof import('../src/composables/catalog-store')['createCatalogStore']>
     readonly createImportsStore: UnwrapRef<typeof import('../src/composables/imports-store')['createImportsStore']>
     readonly createPublicationsStore: UnwrapRef<typeof import('../src/composables/publications-store')['createPublicationsStore']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
@@ -225,6 +236,7 @@ declare module 'vue' {
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
+    readonly provideCatalogStore: UnwrapRef<typeof import('../src/composables/catalog-store')['provideCatalogStore']>
     readonly provideImportsStore: UnwrapRef<typeof import('../src/composables/imports-store')['provideImportsStore']>
     readonly providePublicationsStore: UnwrapRef<typeof import('../src/composables/publications-store')['providePublicationsStore']>
     readonly publicationsStore: UnwrapRef<typeof import('../src/composables/publications-store')['default']>
@@ -246,6 +258,7 @@ declare module 'vue' {
     readonly useAsyncAction: UnwrapRef<typeof import('@data-fair/lib-vue/async-action.js')['useAsyncAction']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
     readonly useBooleanSearchParam: UnwrapRef<typeof import('@data-fair/lib-vue/reactive-search-params.js')['useBooleanSearchParam']>
+    readonly useCatalogStore: UnwrapRef<typeof import('../src/composables/catalog-store')['useCatalogStore']>
     readonly useConceptFilters: UnwrapRef<typeof import('@data-fair/lib-vue/concept-filters.js')['useConceptFilters']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>

@@ -34,8 +34,6 @@
             <v-stepper-window-item value="1">
               <import-select-resource
                 v-model="selectedResource"
-                :catalog-id="catalog.id"
-                :plugin="plugin"
               />
             </v-stepper-window-item>
 
@@ -102,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Plugin, Import } from '#api/types'
+import type { Import } from '#api/types'
 
 import cronstrue from 'cronstrue'
 import 'cronstrue/locales/en'
@@ -116,15 +114,7 @@ import { toCRON } from '@data-fair/catalogs-shared/cron.ts'
 const { t } = useI18n()
 const session = useSessionAuthenticated()
 const importsStore = useImportsStore()
-
-const { catalog, plugin } = defineProps<{
-  catalog: {
-    id: string
-    title: string
-    config: Record<string, any>
-  },
-  plugin: Plugin
-}>()
+const { catalog, plugin } = useCatalogStore()
 
 const step = ref('1')
 const selectedResource = ref<{ id: string, title: string } | null>(null)
@@ -135,8 +125,8 @@ const expandedPanel = ref([])
 const importSchema = computed(() => {
   const schema = jsonSchema(importSchemaBase)
 
-  if (plugin.metadata.capabilities.includes('importConfig')) {
-    schema.addProperty('config', { ...plugin.importConfigSchema })
+  if (catalog.value?.capabilities.includes('importConfig')) {
+    schema.addProperty('config', { ...plugin.value?.importConfigSchema })
   }
   return schema.makePatchSchema().schema
 })
@@ -149,8 +139,8 @@ const createImport = useAsyncAction(async () => {
     method: 'POST',
     body: {
       catalog: {
-        id: catalog.id,
-        title: catalog.title
+        id: catalog.value?._id,
+        title: catalog.value?.title
       },
       remoteResource: {
         id: selectedResource.value.id,
@@ -179,7 +169,7 @@ const handleNext = (next: () => void) => {
 const vjsfOptions = computed<VjsfOptions>(() => ({
   context: {
     resourceId: selectedResource.value?.id || '',
-    catalogConfig: catalog.config
+    catalogConfig: catalog.value?.config
   },
   density: 'comfortable',
   initialValidation: 'always',

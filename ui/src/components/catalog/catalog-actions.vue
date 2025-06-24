@@ -1,11 +1,11 @@
 <template>
   <v-list
+    v-if="catalog"
     data-iframe-height
     density="compact"
     style="background-color: transparent;"
   >
     <v-menu
-      v-if="canAdmin"
       v-model="showDuplicateMenu"
       :close-on-content-click="false"
       max-width="500"
@@ -62,7 +62,6 @@
     </v-menu>
 
     <v-menu
-      v-if="canAdmin"
       v-model="showDeleteMenu"
       :close-on-content-click="false"
       max-width="500"
@@ -118,7 +117,6 @@
     </v-menu>
 
     <v-menu
-      v-if="canAdmin"
       v-model="showChangeOwnerMenu"
       :close-on-content-click="false"
       max-width="500"
@@ -187,28 +185,24 @@
 </template>
 
 <script setup lang="ts">
-import type { Catalog } from '#api/types'
 import ownerPick from '@data-fair/lib-vuetify/owner-pick.vue'
 
-const { canAdmin, catalog } = defineProps<{
-  canAdmin: boolean
-  catalog: Catalog
-}>()
-
 const { t } = useI18n()
+const { catalog } = useCatalogStore()
+
 const showDuplicateMenu = ref(false)
 const showDeleteMenu = ref(false)
 const showChangeOwnerMenu = ref(false)
 const deletePublication = ref(false)
 const ownersReady = ref(false)
 const newOwner = ref<Record<string, string> | null>(null)
-const duplicateTitle = ref(catalog?.title + t('copy'))
+const duplicateTitle = ref(catalog.value?.title + t('copy'))
 
 const router = useRouter()
 
 const changeOwner = useAsyncAction(
   async () => {
-    await $fetch(`/catalogs/${catalog?._id}`, {
+    await $fetch(`/catalogs/${catalog.value?._id}`, {
       method: 'PATCH',
       body: JSON.stringify({ owner: newOwner.value })
     })
@@ -223,8 +217,8 @@ const changeOwner = useAsyncAction(
 const deleteCatalog = useAsyncAction(
   async () => {
     const url = deletePublication.value
-      ? `/catalogs/${catalog?._id}?deletePublications=true`
-      : `/catalogs/${catalog?._id}`
+      ? `/catalogs/${catalog.value?._id}?deletePublications=true`
+      : `/catalogs/${catalog.value?._id}`
 
     await $fetch(url, { method: 'DELETE' })
     await router.replace('/catalogs')
@@ -242,11 +236,11 @@ const duplicateCatalog = useAsyncAction(
     const newCatalog = await $fetch('/catalogs', {
       method: 'POST',
       body: JSON.stringify({
-        title: duplicateTitle.value || catalog?.title + t('copy'),
-        description: catalog?.description,
-        plugin: catalog?.plugin,
-        owner: catalog?.owner,
-        config: catalog?.config,
+        title: duplicateTitle.value || catalog.value?.title + t('copy'),
+        description: catalog.value?.description,
+        plugin: catalog.value?.plugin,
+        owner: catalog.value?.owner,
+        config: catalog.value?.config,
       })
     })
     await router.push(`/catalogs/${newCatalog._id}`)

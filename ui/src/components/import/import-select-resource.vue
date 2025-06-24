@@ -21,11 +21,11 @@
     select-strategy="single"
   >
     <template #top>
-      <v-form v-if="plugin.metadata.capabilities.includes('additionalFilters')">
+      <v-form v-if="catalog?.capabilities.includes('additionalFilters')">
         <vjsf
           v-model="additionalFilters"
           class="ma-2"
-          :schema="plugin.listFiltersSchema"
+          :schema="plugin?.listFiltersSchema"
           :options="vjsfOptions"
         />
       </v-form>
@@ -102,7 +102,6 @@
 
 <script setup lang="ts">
 import type { Folder, Resource } from '@data-fair/lib-common-types/catalog/index.js'
-import type { Plugin } from '#api/types'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import { VDataTable, VDataTableServer } from 'vuetify/components'
@@ -111,11 +110,7 @@ import formatBytes from '@data-fair/lib-vue/format/bytes.js'
 const { t } = useI18n()
 const session = useSessionAuthenticated()
 const importsStore = useImportsStore()
-
-const { catalogId, plugin } = defineProps<{
-  catalogId: string,
-  plugin: Plugin
-}>()
+const { catalog, plugin } = useCatalogStore()
 
 // Navigation state
 const currentFolderId = ref<string | null>(null)
@@ -127,7 +122,7 @@ const currentPage = ref<number>(1)
 const itemsPerPage = ref<number>(10)
 
 const additionalFilters = ref<Record<string, any>>({})
-const supportsPagination = computed(() => plugin.metadata.capabilities.includes('pagination'))
+const supportsPagination = computed(() => catalog.value?.capabilities.includes('pagination'))
 const tableComponent = computed(() => supportsPagination.value ? VDataTableServer : VDataTable)
 
 // Fetch folder data based on current folder ID
@@ -136,7 +131,7 @@ const fetchFolders = useFetch<{
   results: (Folder | Resource)[]
   path: Folder[]
 }>(
-  `${$apiPath}/catalogs/${catalogId}/resources`, {
+  `${$apiPath}/catalogs/${catalog.value?._id}/resources`, {
       query: computed(() => ({
         ...(currentFolderId.value && { currentFolderId: currentFolderId.value }),
         ...(supportsPagination.value && {
@@ -167,6 +162,9 @@ watch(selected, (newSelected) => {
     resourceSelected.value = null
   }
 })
+
+// Refresh list when catalog config changes
+watch(() => catalog.value?.config, () => fetchFolders.refresh())
 
 // Function to check if a resource is already imported
 const isResourceImported = (resourceId: string): boolean => {

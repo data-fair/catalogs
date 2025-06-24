@@ -15,10 +15,7 @@
         @update:model-value="patch.execute()"
       >
         <template #activity>
-          <catalog-activity
-            :catalog="Object.assign(catalog, editCatalog)"
-            :plugin-title="plugin.metadata.title"
-          />
+          <catalog-activity />
         </template>
       </vjsf>
     </v-form>
@@ -26,32 +23,26 @@
 </template>
 
 <script setup lang="ts">
-import type { Catalog, Plugin } from '#api/types'
+import type { Catalog } from '#api/types'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog/index.ts'
 
-const { catalog, plugin, catalogId, canAdmin } = defineProps<{
-  catalog: Catalog
-  plugin: Plugin
-  catalogId: string
-  canAdmin: boolean
-}>()
-
-const session = useSessionAuthenticated()
 const { t } = useI18n()
+const session = useSessionAuthenticated()
+const { catalog, plugin } = useCatalogStore()
 
 const valid = ref(false)
 const editCatalog: Ref<Partial<Catalog>> = ref({
-  title: catalog.title,
-  description: catalog.description,
-  config: catalog.config
+  title: catalog.value?.title,
+  description: catalog.value?.description,
+  config: catalog.value?.config
 })
 
 const catalogSchema = computed(() => {
   const schema = jsonSchema(catalogSchemaBase)
-    .addProperty('config', { ...plugin.configSchema, title: t('configuration') })
+    .addProperty('config', { ...plugin.value?.configSchema, title: t('configuration') })
     .makePatchSchema()
     .schema
   return schema
@@ -59,15 +50,13 @@ const catalogSchema = computed(() => {
 
 const patch = useAsyncAction(
   async () => {
-    if (!valid.value || !canAdmin) return
-    const res = await $fetch(`/catalogs/${catalogId}`, {
+    if (!valid.value) return
+    const res = await $fetch(`/catalogs/${catalog.value?._id}`, {
       method: 'PATCH',
       body: JSON.stringify(editCatalog.value),
     })
 
-    Object.assign(editCatalog.value, {
-      updated: res.updated
-    })
+    if (catalog.value) Object.assign(catalog.value, res)
   },
   {
     error: t('errorSavingCatalog')
@@ -78,7 +67,6 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   density: 'comfortable',
   initialValidation: 'always',
   locale: session.lang.value,
-  readOnly: !canAdmin,
   removeAdditional: true,
   titleDepth: 3,
   updateOn: 'blur',

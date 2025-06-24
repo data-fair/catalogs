@@ -1,9 +1,5 @@
 <template data-iframe-height>
-  <import-new
-    class="mb-4"
-    :catalog="catalog"
-    :plugin="plugin"
-  />
+  <import-new class="mb-4" />
 
   <v-row
     v-if="importsStore.importsFetch.loading.value"
@@ -48,20 +44,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Plugin } from '#api/types'
 
-// Used to filter the imports
-const { catalog } = defineProps<{
-  catalog: {
-    id: string
-    title: string
-    config: Record<string, any>
-  },
-  plugin: Plugin
+const { catalogId } = defineProps<{
+  catalogId: string
 }>()
 
 const { t } = useI18n()
-const importsStore = provideImportsStore(catalog.id)
+const importsStore = provideImportsStore(catalogId)
 
 </script>
 
