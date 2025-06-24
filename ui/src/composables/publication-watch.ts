@@ -1,7 +1,7 @@
 import type { Publication } from '#api/types'
 import type { PublicationsStore } from './publications-store'
 
-export type WatchKey = 'delete' | 'update'
+type WatchKey = 'delete' | 'update'
 
 export const usePublicationWatch = (publicationsStore: PublicationsStore, publicationId: string, keys: WatchKey | WatchKey[]) => {
   // const { sendUiNotif } = useUiNotif()

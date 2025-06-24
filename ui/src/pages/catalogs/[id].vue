@@ -56,8 +56,7 @@
 const route = useRoute<'/catalogs/[id]'>()
 const { t } = useI18n()
 const { catalog, catalogFetch, plugin, pluginFetch } = provideCatalogStore(route.params.id)
-
-const activeTab = ref('import')
+const activeTab = useStringSearchParam('tab', { default: 'import' })
 
 const tabs = computed(() => {
   const capabilities = catalog.value?.capabilities ?? []

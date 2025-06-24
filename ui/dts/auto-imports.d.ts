@@ -148,9 +148,6 @@ declare global {
   export type { ImportsStore } from '../src/composables/imports-store'
   import('../src/composables/imports-store')
   // @ts-ignore
-  export type { WatchKey } from '../src/composables/publication-watch'
-  import('../src/composables/publication-watch')
-  // @ts-ignore
   export type { PublicationsStore } from '../src/composables/publications-store'
   import('../src/composables/publications-store')
 }

@@ -152,7 +152,7 @@ const createImport = useAsyncAction(async () => {
   })
 
   await importsStore.refresh()
-  useImportWatch(importsStore, imp._id, 'update')
+  useImportWatch(importsStore, imp._id)
 
   selectedResource.value = null
   validImportConfig.value = false

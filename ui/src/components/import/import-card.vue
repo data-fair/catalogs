@@ -179,7 +179,7 @@ const reImport = useAsyncAction(
       }
     })
 
-    useImportWatch(importsStore, imp._id, 'update')
+    useImportWatch(importsStore, imp._id)
     showReImportMenu.value = false
   },
   {
