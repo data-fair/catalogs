@@ -1,8 +1,5 @@
 <template>
-  <v-expansion-panels
-    v-model="expandedPanel"
-    class="px-1"
-  >
+  <v-expansion-panels v-model="expandedPanel">
     <v-expansion-panel
       color="primary"
       static

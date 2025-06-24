@@ -1,25 +1,12 @@
 <template>
-  <v-expansion-panels>
-    <v-expansion-panel
-      class="mb-4"
-      color="primary"
-      static
-      :title="t('createNewPublication')"
-      :expand-icon="mdiPlusCircle"
-    >
-      <v-expansion-panel-text>
-        <publication-new
-          :catalog="catalog"
-          :data-fair-dataset="dataFairDataset"
-          :publication-list="publicationsFetch.data.value?.results"
-          @on-publish="publicationsFetch.refresh()"
-        />
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-  </v-expansion-panels>
+  <publication-new
+    class="mb-4"
+    :catalog="catalog"
+    :data-fair-dataset="dataFairDataset"
+  />
 
   <v-row
-    v-if="publicationsFetch.loading.value"
+    v-if="publicationsStore.publicationsFetch.loading.value"
     class="d-flex align-stretch"
   >
     <v-col
@@ -37,7 +24,7 @@
     </v-col>
   </v-row>
   <span
-    v-else-if="!publicationsFetch.data.value?.results.length"
+    v-else-if="!publicationsStore.count.value"
     class="d-flex justify-center text-h6 mt-4"
   >
     {{ catalog
@@ -47,11 +34,11 @@
   </span>
   <template v-else>
     <h3 class="text-h5 mb-4">
-      {{ t('nbPublications', publicationsFetch.data.value?.results.length || 0) }}
+      {{ t('nbPublications', publicationsStore.count.value) }}
     </h3>
     <v-row class="d-flex align-stretch">
       <v-col
-        v-for="publication in publicationsFetch.data.value?.results"
+        v-for="publication in publicationsStore.publications.value"
         :key="publication._id"
         md="4"
         sm="6"
@@ -60,7 +47,6 @@
         <publication-card
           :publication="publication"
           :from-catalog="!!catalog"
-          @on-delete="publicationsFetch.refresh()"
         />
       </v-col>
     </v-row>
@@ -68,9 +54,6 @@
 </template>
 
 <script setup lang="ts">
-import type { PublicationsGetRes } from '#api/doc'
-
-const { t } = useI18n()
 
 // Used to filter the publications
 const { catalog, dataFairDataset } = defineProps<{
@@ -84,24 +67,18 @@ const { catalog, dataFairDataset } = defineProps<{
   },
 }>()
 
-const publicationsFetch = useFetch<PublicationsGetRes>(`${$apiPath}/publications`, {
-  query: {
-    catalogId: catalog?.id,
-    dataFairDatasetId: dataFairDataset?.id
-  }
-})
+const { t } = useI18n()
+const publicationsStore = providePublicationsStore(catalog?.id, dataFairDataset?.id)
 
 </script>
 
 <i18n lang="yaml">
   en:
-    createNewPublication: Create a new publication
     nbPublications: 'No publications | 1 publication | {count} publications'
     noPublicationsFromDataset: This dataset is not yet published on any catalog
     noPublicationsFromCatalog: This catalog does not contain any publications
 
   fr:
-    createNewPublication: Créer une nouvelle publication
     nbPublications: 'Aucune publication | 1 publication | {count} publications'
     noPublicationsFromDataset: Ce jeu de données n'est publié sur un aucun catalogue
     noPublicationsFromCatalog: Ce catalogue ne contient aucune publication

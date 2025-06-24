@@ -68,9 +68,7 @@ const { catalog } = defineProps<{
 }>()
 
 const importsFetch = useFetch<{ results: Import[] }>(`${$apiPath}/imports`, {
-  query: {
-    catalogId: catalog.id
-  }
+  query: { catalogId: catalog.id }
 })
 
 </script>

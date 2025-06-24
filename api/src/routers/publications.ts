@@ -2,6 +2,7 @@ import type { Publication } from '#types'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
+import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import { assertAccountRole, session, httpError } from '@data-fair/lib-express'
 import mongo from '#mongo'
 import findUtils from '../utils/find.ts'
@@ -73,6 +74,7 @@ router.post('/', async (req, res) => {
 
   const validPublication = await validatePublication(pub)
   await mongo.publications.insertOne(validPublication)
+  await wsEmit(`publication/${validPublication._id}`, validPublication)
 
   res.status(201).json(validPublication)
 })
@@ -84,8 +86,9 @@ router.post('/:id', async (req, res) => {
 
   await mongo.publications.updateOne(
     { _id: req.params.id },
-    { $set: { status: 'waiting' } }
+    { $set: { status: 'waiting' }, $unset: { error: 1 } }
   )
+  await wsEmit(`publication/${req.params.id}`, { status: 'waiting', error: undefined })
 
   res.status(204).send()
 })
@@ -96,14 +99,17 @@ router.delete('/:id', async (req, res) => {
   assertAccountRole(sessionState, sessionState.account, 'admin')
 
   if (req.query.onlyLink === 'true') {
-    const res = await mongo.publications.deleteOne({ _id: req.params.id })
-    if (res.deletedCount === 0) throw httpError(404, 'Publication not found')
+    await mongo.publications.deleteOne({ _id: req.params.id })
   } else {
-    const res = await mongo.publications.updateOne(
+    await mongo.publications.updateOne(
       { _id: req.params.id },
-      { $set: { action: 'delete', status: 'waiting' } }
+      { $set: { action: 'delete', status: 'waiting' }, $unset: { error: 1 } }
     )
-    if (res.matchedCount === 0) throw httpError(404, 'Publication not found')
+    await wsEmit(`publication/${req.params.id}`, {
+      action: 'delete',
+      status: 'waiting',
+      error: undefined
+    })
   }
 
   res.status(204).send()

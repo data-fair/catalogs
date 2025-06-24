@@ -43,6 +43,8 @@
             color="warning"
             density="comfortable"
             variant="text"
+            :disabled="publication.status === 'waiting' && publication.action === 'delete'"
+            :loading="rePublish.loading.value || (publication.status === 'waiting' && publication.action !== 'delete')"
             :icon="mdiUpload"
             :title="t('rePublish')"
           />
@@ -86,6 +88,8 @@
             color="warning"
             density="comfortable"
             variant="text"
+            :disabled="publication.status === 'waiting' && publication.action !== 'delete'"
+            :loading="deletePublication.loading.value || (publication.status === 'waiting' && publication.action === 'delete')"
             :icon="mdiDelete"
             :title="t('deletePublication')"
           />
@@ -134,14 +138,11 @@ import type { Publication } from '#api/types'
 
 const { t } = useI18n()
 const { dayjs } = useLocaleDayjs()
+const publicationsStore = usePublicationsStore()
 
 const { publication } = defineProps<{
   publication: Publication
   fromCatalog?: boolean
-}>()
-
-const emit = defineEmits<{
-  (e: 'onDelete'): void
 }>()
 
 const showDeleteMenu = ref(false)
@@ -155,8 +156,8 @@ const deletePublication = useAsyncAction(
       method: 'DELETE'
     })
 
-    if (deleteOnlyLink) emit('onDelete')
-    // else // Connect the websocket to the publication deletion event
+    if (deleteOnlyLink.value) publicationsStore.refresh()
+    else usePublicationWatch(publicationsStore, publication._id, ['update', 'delete'])
     showDeleteMenu.value = false
   },
   {
@@ -170,7 +171,8 @@ const rePublish = useAsyncAction(
       method: 'POST'
     })
 
-    // TODO: subscribe ws
+    publicationsStore.refresh()
+    usePublicationWatch(publicationsStore, publication._id, 'update')
     showRePublishMenu.value = false
   },
   {

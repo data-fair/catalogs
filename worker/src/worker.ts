@@ -5,7 +5,7 @@ import Debug from 'debug'
 import { existsSync } from 'fs'
 import resolvePath from 'resolve-path'
 import path from 'path'
-import * as wsEmitter from '@data-fair/lib-node/ws-emitter.js'
+import { emit as wsEmit, init as wsInit } from '@data-fair/lib-node/ws-emitter.js'
 import { startObserver, stopObserver, internalError } from '@data-fair/lib-node/observer.js'
 import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
@@ -34,7 +34,7 @@ export const start = async () => {
   const db = mongo.db
   await locks.start(db)
   await upgradeScripts(db, locks, config.upgradeRoot)
-  await wsEmitter.init(db)
+  await wsInit(db)
   if (config.observer.active) await startObserver(config.observer.port)
 
   mainLoopPromise = mainLoop()
@@ -132,6 +132,7 @@ async function iter (task: Task, type: typeof types[number]) {
   } catch (e: any) {
     debug('Error while process', type, task._id, e)
     await collection.updateOne({ _id: task._id }, { $set: { status: 'error', error: e?.message || e } })
+    await wsEmit(`${type}/${task._id}`, { status: 'error', error: e?.message || e })
   } finally {
     await locks.release(`${type}:${task._id}`)
   }

@@ -2,6 +2,7 @@ import type { Catalog, Publication } from '#api/types'
 import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
 import type { AxiosRequestConfig } from 'axios'
 
+import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
 import axios from '@data-fair/lib-node/axios.js'
 import config from '#config'
@@ -78,29 +79,30 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
     { _id: pub._id },
     {
       $set: validPublication,
-      $unset: { error: '' }
+      $unset: { error: 1 }
     })
+  await wsEmit(`publication/${pub._id}`, { ...validPublication, error: undefined })
 }
 
 const deletePublication = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication) => {
   if (!pub.remoteDataset) {
     internalError('worker-missing-remote-data', 'try do delete a publication without remote dataset, weird')
-    await mongo.publications.deleteOne({ _id: pub._id })
-    return
-  }
-
-  try {
-    await plugin.deleteDataset({
-      catalogConfig: catalog.config,
-      datasetId: pub.remoteDataset.id,
-      resourceId: pub.remoteResource?.id
-    })
-  } catch (error: any) {
-    internalError('worker-delete-publication-error', `Error while deleting publication: ${error.message}`, error)
-    // Ignore errors during deletion, we will delete the publication anyway
+  } else {
+    try {
+      await plugin.deleteDataset({
+        catalogConfig: catalog.config,
+        datasetId: pub.remoteDataset.id,
+        resourceId: pub.remoteResource?.id
+      })
+    } catch (error: any) {
+      internalError('worker-delete-publication-error', `Error while deleting publication: ${error.message}`, error)
+      // Ignore errors during deletion, we will delete the publication anyway
+    }
   }
 
   await mongo.publications.deleteOne({ _id: pub._id })
+  await wsEmit(`publication/${pub._id}/deleted`, { }) // Notify the UI that the publication has been deleted
+
   if (catalog.deletionRequested) {
     const remainingPublications = await mongo.publications.findOne({ 'catalog.id': catalog._id })
     if (!remainingPublications) await mongo.catalogs.deleteOne({ _id: catalog._id })

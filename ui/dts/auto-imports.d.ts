@@ -14,6 +14,7 @@ declare global {
   const breadcrumbs: typeof import('../src/utils/breadcrumbs')['default']
   const computed: typeof import('vue')['computed']
   const createApp: typeof import('vue')['createApp']
+  const createPublicationsStore: typeof import('../src/composables/publications-store')['createPublicationsStore']
   const customRef: typeof import('vue')['customRef']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
   const defineComponent: typeof import('vue')['defineComponent']
@@ -75,6 +76,9 @@ declare global {
   const onUpdated: typeof import('vue')['onUpdated']
   const onWatcherCleanup: typeof import('vue')['onWatcherCleanup']
   const provide: typeof import('vue')['provide']
+  const providePublicationsStore: typeof import('../src/composables/publications-store')['providePublicationsStore']
+  const publicationsStore: typeof import('../src/composables/publications-store')['default']
+  const publicationsStoreKey: typeof import('../src/composables/publications-store')['publicationsStoreKey']
   const reactive: typeof import('vue')['reactive']
   const readonly: typeof import('vue')['readonly']
   const ref: typeof import('vue')['ref']
@@ -102,6 +106,8 @@ declare global {
   const useLocaleDayjs: typeof import('@data-fair/lib-vue/locale-dayjs.js')['useLocaleDayjs']
   const useModel: typeof import('vue')['useModel']
   const useNumberSearchParam: typeof import('@data-fair/lib-vue/reactive-search-params.js')['useNumberSearchParam']
+  const usePublicationWatch: typeof import('../src/composables/publication-watch')['usePublicationWatch']
+  const usePublicationsStore: typeof import('../src/composables/publications-store')['usePublicationsStore']
   const useReactiveSearchParams: typeof import('@data-fair/lib-vue/reactive-search-params.js')['useReactiveSearchParams']
   const useRoute: typeof import('vue-router')['useRoute']
   const useRouter: typeof import('vue-router')['useRouter']
@@ -124,6 +130,12 @@ declare global {
   // @ts-ignore
   export type { Component, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { WatchKey } from '../src/composables/publication-watch'
+  import('../src/composables/publication-watch')
+  // @ts-ignore
+  export type { PublicationsStore } from '../src/composables/publications-store'
+  import('../src/composables/publications-store')
 }
 
 // for vue template auto import
@@ -139,6 +151,7 @@ declare module 'vue' {
     readonly breadcrumbs: UnwrapRef<typeof import('../src/utils/breadcrumbs')['default']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
+    readonly createPublicationsStore: UnwrapRef<typeof import('../src/composables/publications-store')['createPublicationsStore']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
@@ -200,6 +213,9 @@ declare module 'vue' {
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
+    readonly providePublicationsStore: UnwrapRef<typeof import('../src/composables/publications-store')['providePublicationsStore']>
+    readonly publicationsStore: UnwrapRef<typeof import('../src/composables/publications-store')['default']>
+    readonly publicationsStoreKey: UnwrapRef<typeof import('../src/composables/publications-store')['publicationsStoreKey']>
     readonly reactive: UnwrapRef<typeof import('vue')['reactive']>
     readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
@@ -227,6 +243,8 @@ declare module 'vue' {
     readonly useLocaleDayjs: UnwrapRef<typeof import('@data-fair/lib-vue/locale-dayjs.js')['useLocaleDayjs']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
     readonly useNumberSearchParam: UnwrapRef<typeof import('@data-fair/lib-vue/reactive-search-params.js')['useNumberSearchParam']>
+    readonly usePublicationWatch: UnwrapRef<typeof import('../src/composables/publication-watch')['usePublicationWatch']>
+    readonly usePublicationsStore: UnwrapRef<typeof import('../src/composables/publications-store')['usePublicationsStore']>
     readonly useReactiveSearchParams: UnwrapRef<typeof import('@data-fair/lib-vue/reactive-search-params.js')['useReactiveSearchParams']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>

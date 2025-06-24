@@ -3,6 +3,7 @@ import resolvePath from 'resolve-path'
 import { app } from './app.ts'
 import { session, assertAuthenticated, getAccountRole } from '@data-fair/lib-express'
 import * as wsServer from '@data-fair/lib-express/ws-server.js'
+import { init as wsEmitterInit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { startObserver, stopObserver, internalError } from '@data-fair/lib-node/observer.js'
 import { createHttpTerminator } from 'http-terminator'
@@ -60,6 +61,7 @@ export const start = async () => {
     if (!pub) return false
     return getAccountRole(sessionState, pub.owner) === 'admin'
   })
+  wsEmitterInit(mongo.db)
 
   server.listen(config.port)
   await new Promise(resolve => server.once('listening', resolve))
