@@ -2,6 +2,8 @@ import type { AxiosAuthOptions } from '@data-fair/lib-node/axios-auth.js'
 import { axiosBuilder } from '@data-fair/lib-node/axios.js'
 import { axiosAuth as _axiosAuth } from '@data-fair/lib-node/axios-auth.js'
 import fs from 'fs-extra'
+import FormData from 'form-data'
+import path from 'path'
 
 const directoryUrl = 'http://localhost:5600/simple-directory'
 
@@ -23,9 +25,13 @@ export const axiosAuth = (opts: string | Omit<AxiosAuthOptions, 'directoryUrl' |
 export const installMockPlugin = async () => {
   console.log('Installing mock plugin...')
   const superadmin = await axiosAuth('superadmin@test.com')
-  await superadmin.post('/api/plugins', {
-    name: '@data-fair/catalog-mock',
-    version: '0.2.0'
+
+  const tarballPath = path.join(import.meta.dirname, 'catalog-mock.tgz')
+  const formData = new FormData()
+  formData.append('file', fs.createReadStream(tarballPath))
+
+  await superadmin.post('/api/plugins', formData, {
+    headers: formData.getHeaders()
   })
   console.log('Mock plugin installed successfully.')
 }

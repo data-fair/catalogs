@@ -7,6 +7,7 @@ import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { assertAccountRole, session, httpError } from '@data-fair/lib-express'
+import { cipher, decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 import { resolvedSchema as catalogSchema } from '#types/catalog/index.ts'
 import mongo from '#mongo'
 import config from '#config'
@@ -55,6 +56,31 @@ const validateCatalog = async (catalog: Partial<Catalog>) => {
   return validCatalog
 }
 
+const prepareCatalog = async (catalog: Catalog) => {
+  const ret: {
+    config?: Catalog['config'],
+    secrets?: Catalog['secrets'],
+    capabilities?: Catalog['capabilities']
+  } = {}
+
+  const plugin = await findUtils.getPlugin(catalog.plugin)
+  const prepareRes = await plugin.prepare({
+    catalogConfig: catalog.config,
+    capabilities: catalog.capabilities,
+    secrets: decipherSecrets(catalog.secrets, config.cipherPassword)
+  })
+
+  if (prepareRes.catalogConfig) ret.config = prepareRes.catalogConfig as Catalog['config']
+  if (prepareRes.capabilities) ret.capabilities = prepareRes.capabilities
+  if (prepareRes.secrets) {
+    ret.secrets = {}
+    for (const key of Object.keys(prepareRes.secrets)) {
+      ret.secrets[key] = cipher(prepareRes.secrets[key], config.cipherPassword)
+    }
+  }
+  return ret
+}
+
 // Get the list of catalogs
 router.get('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
@@ -93,6 +119,8 @@ router.get('/', async (req, res) => {
     mongo.catalogs.aggregate(catalogFacets(query, showAll)).toArray()
   ])
 
+  // Remove secrets from each result
+  results.forEach(catalog => delete catalog.secrets)
   res.json({ results, count, facets: facets[0] })
 })
 
@@ -105,7 +133,7 @@ router.post('/', async (req, res) => {
   catalog.owner = catalog.owner ?? sessionState.account
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
-  const plugin: CatalogPlugin = await findUtils.getPlugin(catalog.plugin)
+  const plugin = await findUtils.getPlugin(catalog.plugin)
   catalog.capabilities = plugin.metadata.capabilities
 
   catalog._id = nanoid()
@@ -116,11 +144,13 @@ router.post('/', async (req, res) => {
   }
 
   const validCatalog = await validateCatalog(catalog)
+  Object.assign(validCatalog, await prepareCatalog(validCatalog))
   await mongo.catalogs.insertOne(validCatalog)
 
   if (config.privateEventsUrl && config.secretKeys.events) {
     sendCatalogEvent(validCatalog, 'a été créé', 'create', sessionState)
   }
+  delete validCatalog.secrets // Do not return secrets in the response
   res.status(200).json(validCatalog)
 })
 
@@ -130,6 +160,8 @@ router.get('/:id', async (req, res) => {
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
   assertAccountRole(sessionState, catalog.owner, 'admin')
+
+  delete catalog.secrets // Do not return secrets in the response
   res.status(200).json(catalog)
 })
 
@@ -154,7 +186,7 @@ router.patch('/:id', async (req, res) => {
     date: new Date().toISOString()
   }
 
-  const patch: { $unset?: { [key: string]: true }, $set?: { [key: string]: any } } = {}
+  const patch: Record<string, any> = { $set: {} }
   for (const key in req.body) {
     if (req.body[key] === null) {
       patch.$unset = patch.$unset || {}
@@ -165,12 +197,16 @@ router.patch('/:id', async (req, res) => {
       patch.$set[key] = req.body[key]
     }
   }
-  const patchedCatalog = { ...catalog, ...req.body }
-  await validateCatalog(patchedCatalog)
+  const patchedCatalog = await validateCatalog({ ...catalog, ...req.body })
+  const preparedCatalog = await prepareCatalog(patchedCatalog)
+  Object.assign(patch.$set, preparedCatalog)
+  Object.assign(patchedCatalog, preparedCatalog)
+
   await mongo.catalogs.updateOne({ _id: req.params.id }, patch)
   if (config.privateEventsUrl && config.secretKeys.events) {
     sendCatalogEvent(patchedCatalog, 'a été modifié', 'patch', sessionState)
   }
+  delete patchedCatalog.secrets // Do not return secrets in the response
   res.status(200).json(patchedCatalog)
 })
 
@@ -218,7 +254,11 @@ router.get('/:id/resources', async (req, res) => {
   // Execute the plugin function
   const plugin = await findUtils.getPlugin(catalog.plugin)
   if (!plugin.metadata.capabilities.includes('import')) throw httpError(501, 'Plugin does not support listing resources')
-  const datasets = await plugin.list({ catalogConfig: catalog.config, params: req.query as Record<string, any> })
+  const datasets = await plugin.list({
+    catalogConfig: catalog.config,
+    secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
+    params: req.query as Record<string, any>
+  })
 
   res.status(200).json(datasets)
 })

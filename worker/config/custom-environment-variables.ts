@@ -1,4 +1,5 @@
 export default {
+  cipherPassword: 'CIPHER_PASSWORD',
   dataDir: 'DATA_DIR',
   dataFairAPIKey: 'DATA_FAIR_API_KEY',
   host: 'HOST',

@@ -1,4 +1,5 @@
 export default {
+  cipherPassword: 'test',
   dataDir: './data/test',
   mongoUrl: 'mongodb://localhost:27017/data-fair-catalogs-test',
   observer: {

@@ -4,6 +4,7 @@ import type { AxiosRequestConfig } from 'axios'
 
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
+import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 import axios from '@data-fair/lib-node/axios.js'
 import config from '#config'
 import mongo from '#mongo'
@@ -55,6 +56,7 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
   // 3. Publish the dataset
   const publicationRes = await plugin.publishDataset({
     catalogConfig: catalog.config,
+    secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
     dataset: dataFairDataset,
     publication: {
       remoteDataset: pub.remoteDataset,
@@ -91,6 +93,7 @@ const deletePublication = async (catalog: Catalog, plugin: CatalogPlugin, pub: P
     try {
       await plugin.deleteDataset({
         catalogConfig: catalog.config,
+        secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
         datasetId: pub.remoteDataset.id,
         resourceId: pub.remoteResource?.id
       })

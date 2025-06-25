@@ -1,3 +1,6 @@
+import fs from 'fs-extra'
+import FormData from 'form-data'
+import path from 'path'
 import { strict as assert } from 'node:assert'
 import { it, describe, before, after } from 'node:test'
 import { axios, axiosAuth, cleanAll, startApiServer, stopApiServer } from './utils/index.ts'
@@ -10,7 +13,7 @@ const userOrga = await axiosAuth({ email: 'user@test.com', org: 'KWqAGZ4mG' })
 // Mock project : https://github.com/data-fair/catalog-mock
 const plugin = {
   name: '@data-fair/catalog-mock',
-  version: '0.2.0'
+  version: '0.2.1'
 }
 const pluginId = '@data-fair-catalog-mock'
 
@@ -37,10 +40,6 @@ describe('plugin', () => {
   })
 
   it('should install a plugin from tarball', async () => {
-    const FormData = (await import('form-data')).default
-    const fs = await import('fs')
-    const path = await import('path')
-
     const tarballPath = path.join(import.meta.dirname, 'utils', 'catalog-mock.tgz')
     const formData = new FormData()
     formData.append('file', fs.createReadStream(tarballPath))
@@ -51,7 +50,7 @@ describe('plugin', () => {
 
     assert.equal(res.data.name, '@data-fair/catalog-mock', 'Plugin name should match')
     assert.equal(pluginId, res.data.id, 'Plugin ID should match')
-    assert.equal(res.data.version, '0.2.0', 'Plugin version should match tarball version')
+    assert.equal(res.data.version, '0.2.1', 'Plugin version should match tarball version')
 
     // Only superadmin can install plugins
     await assert.rejects(

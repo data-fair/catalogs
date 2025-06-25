@@ -1,4 +1,5 @@
 export default {
+  cipherPassword: undefined,
   dataDir: '/app/data',
   dataFairAPIKey: undefined,
   host: undefined,

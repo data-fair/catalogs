@@ -3,10 +3,11 @@ import type { CatalogPlugin, Resource } from '@data-fair/lib-common-types/catalo
 
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
+import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 import axios from '@data-fair/lib-node/axios.js'
+import { promisify } from 'util'
 import fs from 'fs-extra'
 import path from 'path'
-import { promisify } from 'util'
 import FormData from 'form-data'
 import tmp from 'tmp-promise'
 import config from '#config'
@@ -59,7 +60,11 @@ const createAndUploadDataset = async (
 
 export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Import) => {
   // Get the resource from the catalog
-  const resource = await plugin.getResource(catalog.config, imp.remoteResource.id)
+  const resource = await plugin.getResource({
+    catalogConfig: catalog.config,
+    secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
+    resourceId: imp.remoteResource.id
+  })
   if (!resource) {
     await mongo.imports.deleteOne({ _id: imp._id })
     internalError('worker-missing-resource', 'found an import without associated resource, weird')
@@ -72,6 +77,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
   try {
     filePath = await plugin.downloadResource({
       catalogConfig: catalog.config,
+      secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
       importConfig: imp.config || {},
       resourceId: resource.id,
       tmpDir: tmpDir.path,

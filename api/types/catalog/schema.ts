@@ -72,6 +72,13 @@ export default {
       type: 'object',
       description: 'Plugin-specific configuration : this content varies dewaiting on the used plugin'
     },
+    secrets: {
+      type: 'object',
+      readOnly: true,
+      additionalProperties: {
+        $ref: '#/$defs/cipheredContent'
+      }
+    },
     created: {
       type: 'object',
       additionalProperties: false,
@@ -119,6 +126,29 @@ export default {
           type: 'string',
           description: 'Date of the last update for this catalog',
           format: 'date-time'
+        }
+      }
+    }
+  },
+  $defs: {
+    cipheredContent: {
+      type: 'object',
+      additionalProperties: false,
+      required: [
+        'iv',
+        'alg',
+        'data'
+      ],
+      properties: {
+        iv: {
+          type: 'string',
+        },
+        alg: {
+          type: 'string',
+          const: 'aes256'
+        },
+        data: {
+          type: 'string',
         }
       }
     }

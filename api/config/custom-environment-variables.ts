@@ -1,4 +1,5 @@
 export default {
+  cipherPassword: 'CIPHER_PASSWORD',
   dataDir: 'DATA_DIR',
   mongoUrl: 'MONGO_URL',
   npm: {

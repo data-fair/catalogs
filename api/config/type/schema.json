@@ -11,6 +11,7 @@
   "title": "Api config",
   "additionalProperties": false,
   "required": [
+    "cipherPassword",
     "dataDir",
     "mongoUrl",
     "observer",
@@ -20,6 +21,9 @@
     "serveUi"
   ],
   "properties": {
+    "cipherPassword": {
+      "type": "string"
+    },
     "dataDir": {
       "type": "string"
     },
