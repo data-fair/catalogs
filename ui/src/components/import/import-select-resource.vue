@@ -29,26 +29,43 @@
           :options="vjsfOptions"
         />
       </v-form>
-      <v-breadcrumbs
-        :items="breadcrumbItems"
-        class="pa-0"
-        divider="/"
-      >
-        <template #prepend>
-          <v-icon
-            :icon="mdiHome"
-            class="mb-1 mr-2"
-            @click="navigate(null)"
-          />/
-        </template>
-        <template #item="{ item, index }">
-          <v-breadcrumbs-item
-            :title="item.title"
-            :color="item.disabled ? 'primary' : undefined"
-            @click="navigate(breadcrumbItems[index].path)"
-          />
-        </template>
-      </v-breadcrumbs>
+      <div class="d-flex align-center">
+        <v-breadcrumbs
+          :items="breadcrumbItems"
+          class="pa-0 ml-4"
+          divider="/"
+        >
+          <template #prepend>
+            <v-icon
+              :icon="mdiHome"
+              class="mb-1 mr-2"
+              @click="navigate(null)"
+            />/
+          </template>
+          <template #item="{ item, index }">
+            <v-breadcrumbs-item
+              :title="item.title"
+              :color="item.disabled ? 'primary' : undefined"
+              @click="navigate(breadcrumbItems[index].path)"
+            />
+          </template>
+        </v-breadcrumbs>
+        <v-spacer />
+        <v-text-field
+          v-if="supportsSearch"
+          v-model="search"
+          class="mx-4"
+          color="primary"
+          density="compact"
+          max-width="400"
+          variant="outlined"
+          :append-inner-icon="mdiMagnify"
+          :placeholder="t('search')"
+          autofocus
+          hide-details
+          clearable
+        />
+      </div>
     </template>
 
     <template #item.data-table-select="{ internalItem, isSelected, toggleSelect }">
@@ -121,7 +138,9 @@ const resourceSelected = defineModel<{ id: string, title: string } | null>()
 const currentPage = ref<number>(1)
 const itemsPerPage = ref<number>(10)
 
+const search = ref<string>('')
 const additionalFilters = ref<Record<string, any>>({})
+const supportsSearch = computed(() => catalog.value?.capabilities.includes('search'))
 const supportsPagination = computed(() => catalog.value?.capabilities.includes('pagination'))
 const tableComponent = computed(() => supportsPagination.value ? VDataTableServer : VDataTable)
 
@@ -134,6 +153,7 @@ const fetchFolders = useFetch<{
   `${$apiPath}/catalogs/${catalog.value?._id}/resources`, {
       query: computed(() => ({
         ...(currentFolderId.value && { currentFolderId: currentFolderId.value }),
+        ...(supportsSearch.value && { q: search.value }),
         ...(supportsPagination.value && {
           page: currentPage.value,
           size: itemsPerPage.value
@@ -239,6 +259,7 @@ en:
   import: Import
   noItemsFound: No items found at this level
   name: Name
+  search: Search...
   size: Size
   format: Format
   loading: Loading resources...
@@ -248,6 +269,7 @@ fr:
   import: Importer
   noItemsFound: Aucun élément trouvé à ce niveau
   name: Nom
+  search: Rechercher...
   size: Taille
   format: Format
   loading: Chargement des ressources...

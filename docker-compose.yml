@@ -14,6 +14,19 @@ services:
   # related services from the data-fair stack
   #####
 
+  events:
+    profiles:
+      - dev
+    image: ghcr.io/data-fair/events:main
+    network_mode: host
+    environment:
+      - PORT=8088
+      - PRIVATE_DIRECTORY_URL=http://localhost:5600/simple-directory
+      - SECRET_IDENTITIES=secret-identities
+      - SECRET_EVENTS=secret-events
+      - SECRET_SENDMAILS=secret-sendmails
+      - OBSERVER_ACTIVE=false
+
   simple-directory:
     profiles:
       - dev
@@ -96,19 +109,6 @@ services:
       - 27017:27017
     volumes:
       - mongo-data:/data/db
-
-  events:
-    profiles:
-      - dev
-    image: ghcr.io/data-fair/events:main
-    network_mode: host
-    environment:
-      - PORT=8088
-      - PRIVATE_DIRECTORY_URL=http://localhost:5600/simple-directory
-      - SECRET_IDENTITIES=secret-identities
-      - SECRET_EVENTS=secret-events
-      - SECRET_SENDMAILS=secret-sendmails
-      - OBSERVER_ACTIVE=false
 
 volumes:
   elasticsearch-data:
