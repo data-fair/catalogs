@@ -112,12 +112,12 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
       id: dataset.id,
       title: dataset.title,
     },
-    status: 'done',
+    status: 'done' as const,
     lastImportDate: new Date().toISOString()
   }
 
   await mongo.imports.updateOne({ _id: imp._id }, {
-    $set: { newValues },
+    $set: newValues,
     $unset: { error: 1 }
   })
   await wsEmit(`import/${imp._id}`, { ...newValues, error: undefined })
