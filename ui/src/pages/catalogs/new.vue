@@ -19,24 +19,24 @@
           :title="t('selectCatalogType')"
           value="1"
           :color="step === '1' ? 'primary' : ''"
-          :complete="!!newCatalog.plugin"
+          :complete="!!newPlugin"
           editable
         />
         <template v-if="hasDepartments">
           <v-divider />
           <v-stepper-item
-            :title="t('selectOwner')"
             value="2"
+            :title="t('selectOwner')"
             :color="step === '2' ? 'primary' : ''"
-            :editable="!!newCatalog.plugin"
+            :editable="!!newPlugin"
           />
         </template>
         <v-divider />
         <v-stepper-item
-          :title="t('information')"
           value="3"
+          :title="t('information')"
           :color="step === '3' ? 'primary' : ''"
-          :editable="!!newCatalog.plugin"
+          :editable="!!newPlugin"
         />
       </v-stepper-header>
 
@@ -56,11 +56,11 @@
             >
               <v-card
                 class="h-100"
-                :color="newCatalog.plugin === plugin.id ? 'primary' : ''"
-                @click="newCatalog.plugin = plugin.id; step = hasDepartments ? '2' : '3'"
+                :color="newPlugin === plugin.id ? 'primary' : ''"
+                @click="newPlugin = plugin.id; step = hasDepartments ? '2' : '3'"
               >
                 <template #title>
-                  <span :class="newCatalog.plugin !== plugin.id ? 'text-primary' : ''">
+                  <span :class="newPlugin !== plugin.id ? 'text-primary' : ''">
                     {{ plugin.metadata.title }}
                   </span>
                 </template>
@@ -73,7 +73,7 @@
         <!-- Step 2: Select owner (optional) -->
         <v-stepper-window-item value="2">
           <owner-pick
-            v-model="newCatalog.owner"
+            v-model="newOwner"
             v-model:ready="ownersReady"
           />
         </v-stepper-window-item>
@@ -108,7 +108,7 @@
           <v-btn
             color="primary"
             variant="flat"
-            :disabled="step === '3' && (!valid || !newCatalog.plugin)"
+            :disabled="step === '3' && (!valid || !newPlugin)"
             :loading="createCatalog.loading.value"
             @click="step === '2' ? step = '3' : createCatalog.execute()"
           >
@@ -121,6 +121,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Account } from '@data-fair/lib-common-types/session'
 import type { Plugin } from '#api/types'
 import type { CatalogPostReq } from '#api/doc'
 
@@ -138,7 +139,9 @@ const installedPluginsFetch = useFetch<{ results: Plugin[], count: number }>(`${
 
 const step = ref('1')
 const showCreateMenu = ref(false)
-const newCatalog: Ref<CatalogPostReq['body']> = ref({ owner: session.state.account, plugin: '', title: '', config: {} })
+const newCatalog = ref<Partial<CatalogPostReq['body']>>({})
+const newPlugin = ref<string | undefined>(undefined)
+const newOwner = ref<Account | undefined>(undefined)
 const ownersReady = ref(false)
 const valid = ref(false)
 
@@ -150,7 +153,7 @@ const hasDepartments = computedAsync(async (): Promise<boolean> => {
 }, false)
 
 const catalogSchema = computed(() => {
-  const configSchema = installedPluginsFetch.data.value?.results.find(p => p.id === newCatalog.value.plugin)?.configSchema
+  const configSchema = installedPluginsFetch.data.value?.results.find(p => p.id === newPlugin.value)?.configSchema
   if (!configSchema) return
   catalogSchemaBase.layout.children = ['title', 'description', 'config'] // Remove activity layout
 
@@ -166,7 +169,11 @@ const createCatalog = useAsyncAction(
   async () => {
     const catalog = await $fetch('/catalogs', {
       method: 'POST',
-      body: JSON.stringify(newCatalog.value)
+      body: {
+        owner: newOwner.value,
+        plugin: newPlugin.value,
+        ...newCatalog.value
+      },
     })
 
     await router.replace({ path: `/catalogs/${catalog._id}` })
@@ -191,9 +198,7 @@ const vjsfOptions: VjsfOptions = {
   density: 'comfortable',
   initialValidation: 'always',
   locale: session.lang.value,
-  readOnlyPropertiesMode: 'hide',
   titleDepth: 3,
-  // useExamples: 'help',
   validateOn: 'blur',
   xI18n: true
 }
