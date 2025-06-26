@@ -7,7 +7,14 @@
       :title
       :text
       border
-    />
+    >
+      <template
+        v-if="!text"
+        #text
+      >
+        <slot />
+      </template>
+    </v-alert>
   </v-container>
 </template>
 

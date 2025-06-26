@@ -15,7 +15,7 @@ const plugin = {
   name: '@data-fair/catalog-mock',
   version: '0.2.1'
 }
-const pluginId = '@data-fair-catalog-mock'
+const pluginId = '@data-fair-catalog-mock-0'
 
 describe('plugin', () => {
   before(startApiServer)

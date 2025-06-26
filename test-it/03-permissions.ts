@@ -25,7 +25,7 @@ describe('Permissions', () => {
 
   const createCatalogPayload = (owner: any) => ({
     title: 'Test Catalog',
-    plugin: '@data-fair-catalog-mock',
+    plugin: '@data-fair-catalog-mock-0',
     owner,
     config: {
       url: 'https://data.gouv.fr'

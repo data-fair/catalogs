@@ -141,7 +141,7 @@ const step = ref('1')
 const showCreateMenu = ref(false)
 const newCatalog = ref<Partial<CatalogPostReq['body']>>({})
 const newPlugin = ref<string | undefined>(undefined)
-const newOwner = ref<Account | undefined>(undefined)
+const newOwner = ref<Account | undefined>(session.state.account)
 const ownersReady = ref(false)
 const valid = ref(false)
 
@@ -180,7 +180,6 @@ const createCatalog = useAsyncAction(
     showCreateMenu.value = false
   },
   {
-    success: t('catalogCreated'),
     error: t('errorCreatingCatalog'),
   }
 )
@@ -208,7 +207,6 @@ const vjsfOptions: VjsfOptions = {
 <i18n lang="yaml">
   en:
     catalogs: Catalogs
-    catalogCreated: Catalog created!
     configuration: Configuration
     create: Create
     createCatalog: Create a catalog
@@ -222,7 +220,6 @@ const vjsfOptions: VjsfOptions = {
 
   fr:
     catalogs: Catalogues
-    catalogCreated: Catalogue créé !
     configuration: Configuration
     create: Créer
     createCatalog: Créer un catalogue

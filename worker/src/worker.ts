@@ -2,7 +2,7 @@ import type { Publication, Import } from '#api/types'
 import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
 
 import Debug from 'debug'
-import { existsSync } from 'fs'
+import fs from 'fs'
 import resolvePath from 'resolve-path'
 import path from 'path'
 import { emit as wsEmit, init as wsInit } from '@data-fair/lib-node/ws-emitter.js'
@@ -28,7 +28,7 @@ type Task = Import | Publication
 
 // Start the worker (start the mail loop and all dependencies)
 export const start = async () => {
-  if (!existsSync(config.dataDir)) throw new Error(`Data directory ${resolvePath(config.dataDir)} was not mounted`)
+  if (!fs.existsSync(config.dataDir)) throw new Error(`Data directory ${resolvePath(config.dataDir)} was not mounted`)
 
   await mongo.init()
   const db = mongo.db
@@ -116,8 +116,11 @@ async function iter (task: Task, type: typeof types[number]) {
   }
   debug(`Catalog ${catalog.title}`)
 
-  // Invalidate the cache by adding a timestamp to the import
-  const plugin: CatalogPlugin = (await import(path.resolve(config.dataDir, 'plugins', catalog.plugin, 'index.ts') + `?update=${Date.now()}`)).default
+  const pluginJsonPath = path.resolve(config.dataDir, 'plugins', catalog.plugin, 'plugin.json')
+  const pluginJson = JSON.parse(fs.readFileSync(pluginJsonPath, 'utf8'))
+  const pluginPath = path.resolve(config.dataDir, 'plugins', catalog.plugin, pluginJson.version, 'index.ts')
+
+  const plugin: CatalogPlugin = (await import(pluginPath)).default
   if (!plugin) {
     await collection.deleteOne({ _id: task._id })
     return internalError('worker-missing-plugin', 'found a task without associated plugin, weird')

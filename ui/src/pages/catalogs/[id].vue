@@ -6,8 +6,20 @@
   />
   <layout-error
     v-else-if="pluginFetch.error.value"
-    :text="t('errorFetchingPlugin')"
-  />
+  >
+    {{ t('errorFetchingPlugin') }}
+    <v-spacer />
+    <v-btn
+      v-if="session.state.user.adminMode"
+      color="warning"
+      class="mt-2"
+      density="comfortable"
+      :prepend-icon="mdiDelete"
+      @click="deleteCatalog.execute()"
+    >
+      {{ t('delete') }}
+    </v-btn>
+  </layout-error>
   <v-container
     v-else-if="catalog"
     data-iframe-height
@@ -54,6 +66,8 @@
 <script setup lang="ts">
 
 const route = useRoute<'/catalogs/[id]'>()
+const router = useRouter()
+const session = useSessionAuthenticated()
 const { t } = useI18n()
 const { catalog, catalogFetch, plugin, pluginFetch } = provideCatalogStore(route.params.id)
 const activeTab = useStringSearchParam('tab', { default: 'import' })
@@ -80,6 +94,17 @@ watch(
   }
 )
 
+const deleteCatalog = useAsyncAction(
+  async () => {
+    await $fetch(`/catalogs/${catalog.value?._id}?deletePublications=true`, { method: 'DELETE' })
+    await router.replace('/catalogs')
+  },
+  {
+    success: t('catalogDeleted'),
+    error: t('errorDeletingCatalog'),
+  }
+)
+
 /** Urls of assets */
 const assetsUrls = {
   checklist: new URL('~/assets/checklist.svg', import.meta.url).href,
@@ -90,6 +115,7 @@ const assetsUrls = {
 <i18n lang="yaml">
   en:
     catalogs: Catalogs
+    delete: Delete Catalog
     description: Check the general information of the catalog or modify its configuration.
     errorFetchingCatalogText: The catalog may not exist or you may not have access rights to it (Did you select the wrong active account?).
     errorFetchingCatalogTitle: Error fetching the catalog.
@@ -99,6 +125,7 @@ const assetsUrls = {
     publication: Publications
   fr:
     catalogs: Catalogues
+    delete: Supprimer le catalogue
     description: Consulter les informations générales du catalogue ou modifier sa configuration.
     errorFetchingCatalogText: Il est possible que le catalogue n'existe pas ou que vous n'ayez pas les droits d'accès sur ce dernier (Vous avez peut-être sélectionné le mauvais compte actif ?).
     errorFetchingCatalogTitle: Erreur lors du chargement du catalogue.

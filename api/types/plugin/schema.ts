@@ -21,7 +21,7 @@ export default {
     id: {
       type: 'string',
       pattern: '^[^/]*$',
-      example: '@data-fair-catalog-mock'
+      example: '@data-fair-catalog-mock-0'
     },
     name: {
       type: 'string',

@@ -7,6 +7,7 @@ import { Router } from 'express'
 import { promisify } from 'util'
 import fs from 'fs-extra'
 import path from 'path'
+import semver from 'semver'
 import tmp from 'tmp-promise'
 import multer from 'multer'
 import { assertAccountRole, httpError, session } from '@data-fair/lib-express'
@@ -82,25 +83,31 @@ router.post('/', upload.single('file'), async (req: Request & { file?: Express.M
 
     // generate plugin.json from package.json
     const packageJson = await fs.readJson(path.join(extractedPath, 'package.json'))
-    id = packageJson.name.replace('/', '-')
+    id = packageJson.name.replace('/', '-') + '-' + semver.major(packageJson.version)
     pluginJson = {
       id,
       name: packageJson.name,
       description: packageJson.description,
       version: packageJson.version
     }
+
+    // move the extracted plugin to the final destination :
+    // 'pluginsDir/pluginId/pluginVersion
+    const pluginDir = path.join(pluginsDir, id)
+    await fs.remove(pluginDir) // Remove old version if exists
+    await fs.move(extractedPath, path.join(pluginDir, packageJson.version))
+
+    // Write metadata to 'pluginsDir/pluginId/plugin.json'
     await fs.writeFile(
-      path.join(extractedPath, 'plugin.json'),
+      path.join(pluginDir, 'plugin.json'),
       JSON.stringify(pluginJson, null, 2)
     )
 
-    // move the extracted plugin to the final destination
-    await fs.move(extractedPath, path.join(pluginsDir, id), { overwrite: true })
-    await dir.cleanup()
-    if (req.file) await fs.remove(req.file.path)
+    await dir.cleanup() // Delete the temporary directory
+    if (req.file) await fs.remove(req.file.path) // Delete the uploaded file if exists
   } catch (error: any) {
-    await dir.cleanup()
-    if (req.file) await fs.remove(req.file.path)
+    await dir.cleanup() // Delete the temporary directory
+    if (req.file) await fs.remove(req.file.path) // Delete the uploaded file if exists
     throw httpError(400, `Failed to install plugin: ${error.message || error}`)
   }
 

@@ -1,5 +1,6 @@
 import type { AxiosRequestConfig } from 'axios'
 
+import semver from 'semver'
 import { Router } from 'express'
 import memoize from 'memoizee'
 import axios from '@data-fair/lib-node/axios.js'
@@ -40,7 +41,7 @@ const memoizedSearch = memoize(async (q: string | undefined) => {
   for (const o of res.data.objects) {
     if (!o.package.keywords || !o.package.keywords.includes('data-fair-catalogs-plugin')) continue
     const plugin = {
-      id: o.package.name.replace('/', '-'),
+      id: o.package.name.replace('/', '-') + '-' + semver.major(o.package.version),
       name: o.package.name,
       description: o.package.description,
       version: o.package.version

@@ -29,7 +29,7 @@
         :title="plugin.name"
       >
         <v-spacer />
-        {{ t('usedTimesVersion', { count: installedPluginsFetch.data.value?.facets.usages[plugin.id], version: plugin.version }) }}
+        {{ t('usedTimesVersion', { count: installedPluginsFetch.data.value?.facets.usages[plugin.id] || 0, version: plugin.version }) }}
         <v-btn
           v-if="hasUpdateAvailable(plugin)"
           color="warning"
@@ -190,6 +190,7 @@
         flat
       >
         <v-spacer />
+        {{ plugin.version }}
         <v-btn
           color="primary"
           :title="t('install')"
@@ -301,8 +302,7 @@ const availablePlugins = computed(() => {
 })
 
 const hasUpdateAvailable = (plugin: PluginPost) => {
-  const availablePlugin = availablePluginsFetch.data.value?.results.find(r => (r.name === plugin.name && r.version === plugin.version))
-  if (availablePlugin?.version !== plugin.version) return availablePlugin
+  return availablePluginsFetch.data.value?.results.find(r => (r.name === plugin.name && r.version !== plugin.version))
 }
 </script>
 

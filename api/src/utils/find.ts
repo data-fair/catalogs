@@ -47,8 +47,12 @@ fs.ensureDirSync(pluginsDir)
 export const getPlugin = async (pluginId: string): Promise<CatalogPlugin> => {
   try {
     if (!pluginId) throw httpError(400, 'Plugin ID is required')
-    // Invalidate the cache by adding a timestamp to the import
-    return (await import(path.resolve(pluginsDir, pluginId, 'index.ts') + `?update=${Date.now()}`)).default
+
+    const pluginJsonPath = path.join(pluginsDir, pluginId, 'plugin.json')
+    const pluginJson = JSON.parse(fs.readFileSync(pluginJsonPath, 'utf8'))
+    const pluginPath = path.join(pluginsDir, pluginId, pluginJson.version, 'index.ts')
+    if (!pluginPath) throw httpError(404, `No version found in plugin ${pluginId}`)
+    return (await import(pluginPath)).default
   } catch (e: any) {
     if (e.message.includes('Cannot find module')) throw httpError(404, `Plugin ${pluginId} not found (or error in plugin : ${e.message})`)
     throw e // Rethrow other errors
