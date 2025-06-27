@@ -242,16 +242,18 @@ const headers = computed(() => [
   { title: t('format'), key: 'format' }
 ])
 
-const vjsfOptions: VjsfOptions = {
+const vjsfOptions = computed<VjsfOptions>(() => ({
+  context: {
+    catalogConfig: catalog.value?.config || {}, // Provide catalog configuration to Vjsf
+  },
   density: 'comfortable',
   initialValidation: 'always',
   locale: session.lang.value,
-  readOnlyPropertiesMode: 'hide',
   titleDepth: 3,
   updateOn: 'blur',
   validateOn: 'blur',
   xI18n: true
-}
+}))
 </script>
 
 <i18n lang="yaml">

@@ -1,3 +1,4 @@
+/* eslint-disable no-template-curly-in-string */
 export default {
   $id: 'https://github.com/data-fair/catalogs/import',
   'x-exports': [
@@ -111,8 +112,15 @@ export default {
     },
     dataFairDataset: {
       type: 'object',
+      title: 'Dataset to update (optional)',
+      'x-i18n-title': {
+        fr: 'Jeu de données à mettre à jour (optionnel)'
+      },
+      description: 'You can choose an existing dataset of type **file** or **remote file** to update with this catalog.<br>*A remote dataset will be converted to a simple dataset*<br>You can also leave this field empty to create a new dataset.',
+      'x-i18n-description': {
+        fr: 'Vous pouvez choisir un jeu de données existant de type **fichier** ou **fichier distant** à mettre à jours avec ce catalogue.<br>*Un jeu de données distant sera converti en jeu de données simple*<br>Vous pouvez aussi laisser ce champ vide pour créer un nouveau jeu de données.'
+      },
       additionalProperties: false,
-      readOnly: true,
       required: ['id'],
       properties: {
         id: {
@@ -120,6 +128,15 @@ export default {
         },
         title: {
           type: 'string'
+        }
+      },
+      layout: {
+        getItems: {
+          url: '${context.origin}/data-fair/api/v1/datasets?mine=true&raw=true&type=file&select=id,title',
+          qSearchParam: 'q',
+          itemsResults: 'data.results',
+          itemTitle: '`${item.title} (${item.id})`',
+          itemKey: 'item.id'
         }
       }
     },

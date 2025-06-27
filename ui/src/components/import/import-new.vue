@@ -148,7 +148,10 @@ const createImport = useAsyncAction(async () => {
         title: selectedResource.value.title
       },
       scheduling: importConfig.value.scheduling,
-      config: importConfig.value.config || {}
+      config: importConfig.value.config || {},
+      ...(importConfig.value.dataFairDataset
+        ? { dataFairDataset: importConfig.value.dataFairDataset }
+        : {})
     }
   })
 
@@ -170,7 +173,9 @@ const handleNext = (next: () => void) => {
 const vjsfOptions = computed<VjsfOptions>(() => ({
   context: {
     resourceId: selectedResource.value?.id || '',
-    catalogConfig: catalog.value?.config
+    catalogConfig: catalog.value?.config,
+    origin: window.location.origin,
+
   },
   density: 'comfortable',
   initialValidation: 'always',
@@ -190,6 +195,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
       monthly: Every month,
       weekly: Every week,
       daily: Every day,
+      hourly: ''
     previous: Previous
     step1:
       title: Select Resource
@@ -204,6 +210,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
       monthly: Tous les mois,
       weekly: Toutes les semaines,
       daily: Tous les jours,
+      hourly: ''
     previous: Précédent
     step1:
       title: Sélection d'une ressource

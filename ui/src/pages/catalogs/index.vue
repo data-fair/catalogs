@@ -49,6 +49,7 @@
         >
           <catalog-card
             :catalog="catalog"
+            :plugin-name="pluginsFetch.data.value?.results.find(p => p.id === catalog.plugin)?.metadata.title || ''"
             :show-owner="showAll || !!(catalog.owner.department && !session.state.account.department)"
           />
         </v-col>
@@ -81,8 +82,7 @@ const { t } = useI18n()
 
 const catalogsParams = computed(() => {
   const params: Record<string, any> = {
-    showAll: showAll.value,
-    select: '_id,title,plugin',
+    showAll: showAll.value
   }
   if (plugins.value.length) params.plugins = plugins.value.join(',')
   if (owners.value.length) params.owners = owners.value.join(',')

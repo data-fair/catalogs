@@ -28,8 +28,10 @@ const createAndUploadDataset = async (
   datasetId?: string
 ): Promise<any> => {
   const formData = new FormData()
-  formData.append('title', resource.title)
-  formData.append('description', resource.description || '')
+  if (!datasetId) {
+    formData.append('title', resource.title)
+    formData.append('description', resource.description || '')
+  }
   formData.append('file', fs.createReadStream(filePath))
 
   const getLength = promisify(formData.getLength.bind(formData))
@@ -54,6 +56,22 @@ const createAndUploadDataset = async (
       host: config.host
     }
   })
+
+  // Convert to a simple file dataset if it's a remote file
+  if (datasetId && dataset.data.remoteFile) {
+    await axios({
+      method: 'patch',
+      url: `/api/v1/datasets/${dataset.data.id}`,
+      baseURL: config.privateDataFairUrl,
+      data: { remoteFile: null },
+      headers: {
+        'x-apiKey': config.dataFairAPIKey,
+        'x-account': JSON.stringify(catalog.owner),
+        'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
+        host: config.host
+      }
+    })
+  }
 
   return dataset.data
 }

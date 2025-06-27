@@ -1,3 +1,41 @@
+export const catalogsWithCounts = (queryWithFilters: Record<string, any>, sort: any, skip: number, size: number, project: Record<string, any>) => {
+  return [
+    { $match: queryWithFilters },
+    {
+      $lookup: {
+        from: 'imports',
+        localField: '_id',
+        foreignField: 'catalog.id',
+        as: 'imports'
+      }
+    },
+    {
+      $lookup: {
+        from: 'publications',
+        localField: '_id',
+        foreignField: 'catalog.id',
+        as: 'publications'
+      }
+    },
+    {
+      $addFields: {
+        importsCount: { $size: '$imports' },
+        publicationsCount: { $size: '$publications' }
+      }
+    },
+    {
+      $project: {
+        imports: 0,
+        publications: 0,
+      }
+    },
+    ...(Object.keys(project).length > 0 ? [{ $project: project }] : []),
+    { $sort: sort },
+    { $skip: skip },
+    { $limit: size }
+  ]
+}
+
 export const catalogFacets = (query: Record<string, any>, showAll: boolean) => {
   const aggregationPipeline = [
     {

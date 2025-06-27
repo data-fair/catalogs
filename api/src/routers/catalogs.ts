@@ -12,7 +12,7 @@ import { resolvedSchema as catalogSchema } from '#types/catalog/index.ts'
 import mongo from '#mongo'
 import config from '#config'
 import findUtils from '#utils/find.ts'
-import { catalogFacets } from '#utils/facets.ts'
+import { catalogFacets, catalogsWithCounts } from '#utils/catalogsAggregations.ts'
 
 const router = Router()
 export default router
@@ -94,27 +94,31 @@ router.get('/', async (req, res) => {
   const filters = findUtils.query(params, { plugins: 'plugin' })
   const queryWithFilters = Object.assign(filters, query)
 
-  // Exclude catalogs marked for deletion
-  queryWithFilters.deletionRequested = { $ne: true }
-
   // Filter capabilities
   if (params.capabilities) queryWithFilters.capabilities = { $all: params.capabilities?.split(',') ?? [] }
 
   // Filter by owner (if showAll)
   const showAll = params.showAll === 'true'
-  if (showAll && params.owners) {
-    queryWithFilters.$or = params.owners.split(',').map(owner => {
-      const [type, id] = owner.split(':')
-      if (!type || !id) throw httpError(400, 'Invalid owner format')
-      return {
-        'owner.type': type,
-        'owner.id': id
-      }
-    })
+  if (showAll) {
+    if (params.owners) {
+      queryWithFilters.$or = params.owners.split(',').map(owner => {
+        const [type, id] = owner.split(':')
+        if (!type || !id) throw httpError(400, 'Invalid owner format')
+        return {
+          'owner.type': type,
+          'owner.id': id
+        }
+      })
+    }
+  } else {
+    // Exclude catalogs marked for deletion
+    queryWithFilters.deletionRequested = { $ne: true }
   }
 
   const [results, count, facets] = await Promise.all([
-    size > 0 ? mongo.catalogs.find(queryWithFilters).limit(size).skip(skip).sort(sort).project(project).toArray() : Promise.resolve([]),
+    size > 0
+      ? mongo.catalogs.aggregate(catalogsWithCounts(queryWithFilters, sort, skip, size, project)).toArray()
+      : Promise.resolve([]),
     mongo.catalogs.countDocuments(query),
     mongo.catalogs.aggregate(catalogFacets(query, showAll)).toArray()
   ])
