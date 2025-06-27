@@ -11,7 +11,7 @@
     "#mongo": "./src/mongo.ts",
     "#types": "./types/index.ts",
     "#types/*": "./types/*",
-    "#utils/*": "./src/utils/*"
+    "#utils/*": "./src/misc/utils/*"
   },
   "devDependencies": {
     "@data-fair/lib-common-types": "^1.10.6",
