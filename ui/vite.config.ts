@@ -45,6 +45,7 @@ export default defineConfig({
             'mdiAccount',
             'mdiAlert',
             'mdiCodeJson',
+            'mdiCog',
             'mdiContentDuplicate',
             'mdiDelete',
             'mdiDotsVertical',

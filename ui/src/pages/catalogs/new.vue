@@ -184,14 +184,12 @@ const createCatalog = useAsyncAction(
   }
 )
 
-onMounted(() => {
-  setBreadcrumbs([{
-    text: t('catalogs'),
-    to: '/catalogs'
-  }, {
-    text: t('createCatalog')
-  }])
-})
+setBreadcrumbs([{
+  text: t('catalogs'),
+  to: '/catalogs'
+}, {
+  text: t('createCatalog')
+}])
 
 const vjsfOptions: VjsfOptions = {
   density: 'comfortable',

@@ -48,7 +48,6 @@
         <v-icon
           color="primary"
           :icon="mdiDownload"
-          class="me-2"
         />
         {{ t('imports', catalog.importsCount || 0 ) }}
       </template>
@@ -57,7 +56,6 @@
         <v-icon
           color="primary"
           :icon="mdiUpload"
-          class="me-2"
         />
         {{ t('publications', catalog.publicationsCount || 0 ) }}
       </template>

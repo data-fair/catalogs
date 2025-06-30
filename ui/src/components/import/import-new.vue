@@ -49,7 +49,6 @@
                 }"
               >
                 <v-form v-model="validImportConfig">
-                  <!-- TODO ? -->
                   <vjsf
                     v-model="importConfig"
                     :schema="importSchema"

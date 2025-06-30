@@ -9,7 +9,7 @@
     :items="levelData"
     :items-length="fetchFolders.data.value?.count || 0"
     :items-per-page-options="[5, 10, 20]"
-    :item-selectable="(item: any) => item.type === 'resource' && !isResourceImported(item.id)"
+    :item-selectable="(item: any) => item.type === 'resource'"
     :loading="fetchFolders.loading.value ? 'primary' : false"
     :loading-text="t('loading')"
     :row-props="(data: any) => ({
@@ -88,7 +88,6 @@
       <div
         v-else
         class="d-flex align-center"
-        :class="{ 'text-disabled': isResourceImported(item.id) }"
       >
         <v-icon
           :icon="getResourceIcon(item.mimeType)"
@@ -194,7 +193,7 @@ const isResourceImported = (resourceId: string): boolean => {
 /** Function to handle row click for resource selection */
 const handleRowClick = (item: any) => {
   if (item.type !== 'resource') return
-  if (isResourceImported(item.id)) return // Don't allow selection of already imported resources
+  // if (isResourceImported(item.id)) return // Don't allow selection of already imported resources
   if (selected.value.includes(item.id)) selected.value = []
   else selected.value = [item.id]
 }

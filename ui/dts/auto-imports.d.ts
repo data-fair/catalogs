@@ -40,6 +40,7 @@ declare global {
   const mdiAccount: typeof import('@mdi/js')['mdiAccount']
   const mdiAlert: typeof import('@mdi/js')['mdiAlert']
   const mdiCodeJson: typeof import('@mdi/js')['mdiCodeJson']
+  const mdiCog: typeof import('@mdi/js')['mdiCog']
   const mdiContentDuplicate: typeof import('@mdi/js')['mdiContentDuplicate']
   const mdiDelete: typeof import('@mdi/js')['mdiDelete']
   const mdiDotsVertical: typeof import('@mdi/js')['mdiDotsVertical']
@@ -191,6 +192,7 @@ declare module 'vue' {
     readonly mdiAccount: UnwrapRef<typeof import('@mdi/js')['mdiAccount']>
     readonly mdiAlert: UnwrapRef<typeof import('@mdi/js')['mdiAlert']>
     readonly mdiCodeJson: UnwrapRef<typeof import('@mdi/js')['mdiCodeJson']>
+    readonly mdiCog: UnwrapRef<typeof import('@mdi/js')['mdiCog']>
     readonly mdiContentDuplicate: UnwrapRef<typeof import('@mdi/js')['mdiContentDuplicate']>
     readonly mdiDelete: UnwrapRef<typeof import('@mdi/js')['mdiDelete']>
     readonly mdiDotsVertical: UnwrapRef<typeof import('@mdi/js')['mdiDotsVertical']>

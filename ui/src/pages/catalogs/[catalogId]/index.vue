@@ -25,19 +25,11 @@
     data-iframe-height
   >
     <layout-section-tabs
-      :title="t('metadata')"
-      :src="assetsUrls.checklist"
-      :description="t('description')"
-    />
-
-    <catalog-config v-if="catalog && plugin" />
-
-    <layout-section-tabs
       v-if="tabs.length"
       v-model="activeTab"
       class="mt-4"
-      title="Jeux de données"
-      :src="assetsUrls.progress"
+      :title="catalog.title"
+      :src="assetsUrl"
       :tabs="tabs"
     />
 
@@ -55,21 +47,25 @@
           :catalog="{ id: catalog._id, title: catalog.title }"
         />
       </v-tabs-window-item>
+
+      <v-tabs-window-item value="configuration">
+        <catalog-config />
+      </v-tabs-window-item>
     </v-tabs-window>
 
     <layout-actions>
-      <catalog-actions :is-small="true" />
+      <catalog-actions />
     </layout-actions>
   </v-container>
 </template>
 
 <script setup lang="ts">
 
-const route = useRoute<'/catalogs/[id]'>()
+const route = useRoute<'/catalogs/[catalogId]/'>()
 const router = useRouter()
 const session = useSessionAuthenticated()
 const { t } = useI18n()
-const { catalog, catalogFetch, plugin, pluginFetch } = provideCatalogStore(route.params.id)
+const { catalog, catalogFetch, plugin, pluginFetch } = provideCatalogStore(route.params.catalogId)
 const activeTab = useStringSearchParam('tab', { default: 'import' })
 
 const tabs = computed(() => {
@@ -81,18 +77,9 @@ const tabs = computed(() => {
   if (capabilities.includes('publishDataset')) {
     tabs.push({ id: 'publication', title: t('publication'), icon: mdiUpload })
   }
+  tabs.push({ id: 'configuration', title: t('configuration'), icon: mdiCog })
   return tabs
 })
-
-watch(
-  () => catalog.value?.title,
-  (title) => {
-    setBreadcrumbs([
-      { text: t('catalogs'), to: '/catalogs' },
-      { text: title ?? '' }
-    ])
-  }
-)
 
 const deleteCatalog = useAsyncAction(
   async () => {
@@ -105,33 +92,41 @@ const deleteCatalog = useAsyncAction(
   }
 )
 
-/** Urls of assets */
-const assetsUrls = {
-  checklist: new URL('~/assets/checklist.svg', import.meta.url).href,
-  progress: new URL('~/assets/progress.svg', import.meta.url).href,
-}
+watch(
+  () => catalog.value?.title,
+  (title) => {
+    setBreadcrumbs([
+      { text: t('catalogs'), to: '/catalogs' },
+      { text: title ?? '' }
+    ])
+  }
+)
+
+const assetsUrl = new URL('~/assets/www.svg', import.meta.url).href
 </script>
 
 <i18n lang="yaml">
   en:
     catalogs: Catalogs
+    catalogDeleted: Catalog deleted!
+    configuration: Configuration
     delete: Delete Catalog
-    description: Check the general information of the catalog or modify its configuration.
+    errorDeletingCatalog: Error deleting the catalog.
     errorFetchingCatalogText: The catalog may not exist or you may not have access rights to it (Did you select the wrong active account?).
     errorFetchingCatalogTitle: Error fetching the catalog.
     errorFetchingPlugin: Error fetching the plugin. Please contact us if the problem persists.
     import: Import
-    metadata: Metadata
     publication: Publications
   fr:
     catalogs: Catalogues
+    catalogDeleted: Catalogue supprimé !
+    configuration: Configuration
     delete: Supprimer le catalogue
-    description: Consulter les informations générales du catalogue ou modifier sa configuration.
+    errorDeletingCatalog: Erreur lors de la suppression du catalogue.
     errorFetchingCatalogText: Il est possible que le catalogue n'existe pas ou que vous n'ayez pas les droits d'accès sur ce dernier (Vous avez peut-être sélectionné le mauvais compte actif ?).
     errorFetchingCatalogTitle: Erreur lors du chargement du catalogue.
     errorFetchingPlugin: Erreur lors du chargement du plugin. Merci de nous contacter si le problème persiste.
     import: Import
-    metadata: Métadonnées
     publication: Publications
 
 </i18n>

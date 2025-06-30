@@ -2,9 +2,10 @@
   <v-card
     :title="t('importTitle', { title: imp.remoteResource?.title ?? imp.remoteResource?.id })"
     :subtitle="t(`importStatus.${imp.status}`)"
+    :to="`/catalogs/${imp.catalog.id}/imports/${imp._id}`"
     class="h-100 d-flex flex-column"
   >
-    <v-card-text class="pb-0">
+    <v-card-text>
       <div
         v-if="imp.error"
         class="text-error"
@@ -18,7 +19,7 @@
         {{ t('nextImportDate') }} {{ dayjs(imp.nextImportDate).format('LLL') }}
       </div>
     </v-card-text>
-    <v-card-actions class="mt-auto">
+    <!-- <v-card-actions>
       <v-spacer />
       <v-btn
         v-if="imp.dataFairDataset"
@@ -89,17 +90,17 @@
             :disabled="imp.status === 'waiting'"
             :loading="deleteImport.loading.value"
             :icon="mdiDelete"
-            :title="t('deleteDataset')"
+            :title="t('deleteImport')"
           />
         </template>
         <v-card
           rounded="lg"
-          :title="t('deleteDataset')"
+          :title="t('deleteImport')"
           variant="elevated"
           :loading="deleteImport.loading.value ? 'warning' : undefined"
         >
           <v-card-text class="pb-0">
-            {{ t('deleteDatasetConfirm') }}
+            {{ t('deleteImportConfirm') }}
             <v-checkbox
               v-model="deleteOnlyLink"
               base-color="warning"
@@ -127,7 +128,7 @@
           </v-card-actions>
         </v-card>
       </v-menu>
-    </v-card-actions>
+    </v-card-actions> -->
   </v-card>
 </template>
 
@@ -136,56 +137,56 @@ import type { Import } from '#api/types'
 
 const { t } = useI18n()
 const { dayjs } = useLocaleDayjs()
-const importsStore = useImportsStore()
+// const importsStore = useImportsStore()
 
 const { imp } = defineProps<{
   imp: Import
 }>()
 
-const showDeleteMenu = ref(false)
-const showReImportMenu = ref(false)
-/** If true, delete only the link between the local dataset and the remote resource */
-const deleteOnlyLink = ref(false)
+// const showDeleteMenu = ref(false)
+// const showReImportMenu = ref(false)
+// /** If true, delete only the link between the local dataset and the remote resource */
+// const deleteOnlyLink = ref(false)
 
-const deleteImport = useAsyncAction(
-  async () => {
-    await $fetch(`/imports/${imp._id}`, {
-      method: 'DELETE'
-    })
+// const deleteImport = useAsyncAction(
+//   async () => {
+//     await $fetch(`/imports/${imp._id}`, {
+//       method: 'DELETE'
+//     })
 
-    if (!deleteOnlyLink.value && imp.dataFairDataset) {
-      await $fetch(`/data-fair/api/v1/datasets/${imp.dataFairDataset.id}`, {
-        method: 'DELETE',
-        baseURL: $sitePath
-      })
-    }
-    await importsStore.refresh()
-    showDeleteMenu.value = false
-  },
-  {
-    error: t('deleteImportError')
-  }
-)
+//     if (!deleteOnlyLink.value && imp.dataFairDataset) {
+//       await $fetch(`/data-fair/api/v1/datasets/${imp.dataFairDataset.id}`, {
+//         method: 'DELETE',
+//         baseURL: $sitePath
+//       })
+//     }
+//     await importsStore.refresh()
+//     showDeleteMenu.value = false
+//   },
+//   {
+//     error: t('deleteImportError')
+//   }
+// )
 
-const reImport = useAsyncAction(
-  async () => {
-    await $fetch('/imports', {
-      method: 'POST',
-      body: {
-        catalog: imp.catalog,
-        remoteResource: imp.remoteResource,
-        scheduling: imp.scheduling,
-        config: imp.config
-      }
-    })
+// const reImport = useAsyncAction(
+//   async () => {
+//     await $fetch('/imports', {
+//       method: 'POST',
+//       body: {
+//         catalog: imp.catalog,
+//         remoteResource: imp.remoteResource,
+//         scheduling: imp.scheduling,
+//         config: imp.config
+//       }
+//     })
 
-    useImportWatch(importsStore, imp._id)
-    showReImportMenu.value = false
-  },
-  {
-    error: t('createImportError')
-  }
-)
+//     useImportWatch(importsStore, imp._id)
+//     showReImportMenu.value = false
+//   },
+//   {
+//     error: t('createImportError')
+//   }
+// )
 
 </script>
 
@@ -193,8 +194,8 @@ const reImport = useAsyncAction(
   en:
     createImportError: 'Error creating import'
     deleteOnlyLink: 'Delete only the link'
-    deleteDataset: 'Delete Dataset'
-    deleteDatasetConfirm: 'Are you sure you want to delete this import? This action will also delete the imported dataset. However, you can choose to delete only the import: the link between the remote resource and the imported dataset will be removed.'
+    deleteImport: 'Delete Import'
+    deleteImportConfirm: 'Are you sure you want to delete this import? This action will also delete the imported dataset. However, you can choose to delete only the import: the link between the remote resource and the imported dataset will be removed.'
     deleteImportError: 'Error deleting import'
     error: 'Error'
     importTitle: '{title}'
@@ -214,8 +215,8 @@ const reImport = useAsyncAction(
   fr:
     createImportError: "Erreur lors de la création de l'import"
     deleteOnlyLink: 'Supprimer uniquement le lien'
-    deleteDataset: 'Supprimer le jeu de données'
-    deleteDatasetConfirm: "Êtes-vous sûr de vouloir supprimer cet import ? Cette action supprimera également le jeu de données importé. Vous pouvez cependant choisir de supprimer uniquement l'import : le lien entre la ressource distante et jeu de données importé."
+    deleteImport: "Supprimer l'import"
+    deleteImportConfirm: "Êtes-vous sûr de vouloir supprimer cet import ? Cette action supprimera également le jeu de données importé. Vous pouvez cependant choisir de supprimer uniquement l'import : le lien entre la ressource distante et jeu de données importé."
     deleteImportError: 'Erreur lors de la demande de suppression'
     error: 'Erreur'
     importTitle: '{title}'
