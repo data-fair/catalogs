@@ -60,37 +60,6 @@ router.post('/', async (req, res) => {
   if (!catalog) throw httpError(404, 'Catalog not found')
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
-  // Check if an import with the same catalog.id and remoteResource.id already exists
-  const existingImport = await mongo.imports.findOne({
-    'catalog.id': body.catalog.id,
-    'remoteResource.id': body.remoteResource.id
-  })
-
-  if (existingImport) {
-    // Update existing import: reset status to waiting and clear errors
-    const updatedImport = await mongo.imports.findOneAndUpdate(
-      { _id: existingImport._id },
-      {
-        $set: {
-          status: 'waiting',
-          updated: {
-            id: sessionState.user.id,
-            name: sessionState.user.name,
-            date: new Date().toISOString()
-          }
-        },
-        $unset: {
-          error: ''
-        }
-      },
-      { returnDocument: 'after' }
-    )
-
-    if (!updatedImport) throw httpError(500, 'Failed to update existing import')
-    await wsEmit(`import/${updatedImport._id}`, { ...updatedImport, error: undefined })
-    return res.status(200).json(updatedImport)
-  }
-
   // Create new import if none exists
   const imp: Partial<Import> = { ...body }
   imp._id = nanoid()
@@ -128,7 +97,7 @@ router.patch('/:id', async (req, res) => {
 
   // Restrict the parts of the import that can be edited
   const acceptedParts = Object.keys(importSchema.properties)
-    .filter(k => sessionState.user.adminMode || !(importSchema.properties)[k].readOnly)
+    .filter(k => sessionState.user.adminMode || !(importSchema.properties)[k].readOnly || 'status')
 
   for (const key in req.body) {
     if (!acceptedParts.includes(key)) throw httpError(400, `Unsupported patch part ${key}`)

@@ -81,6 +81,11 @@ const importSchema = computed(() => {
 
 const patch = useAsyncAction(
   async () => {
+    // In VJSF, when we add a new item in an array, here like a scheduling,
+    // valid stay true but the item added in the array is null (witout defaults values)
+    // So we need to wait a bit to ensure the item is filled with defaults values
+    await new Promise(resolve => setTimeout(resolve, 1))
+
     if (!valid.value) return
     const res = await $fetch(`${$apiPath}/imports/${route.params.importId}`, {
       method: 'PATCH',

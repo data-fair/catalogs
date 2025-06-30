@@ -47,7 +47,7 @@
         :loading="reImport.loading.value ? 'warning' : undefined"
       >
         <v-card-text class="pb-0">
-          {{ t('reImportComfirm') }}
+          {{ t('reImportConfirm') }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -165,47 +165,40 @@ const deleteImport = useAsyncAction(
 
 const reImport = useAsyncAction(
   async () => {
-    await $fetch('/imports', {
-      method: 'POST',
+    await $fetch(`${$apiPath}/imports/${imp._id}`, {
+      method: 'PATCH',
       body: {
-        catalog: imp.catalog,
-        remoteResource: imp.remoteResource,
-        scheduling: imp.scheduling,
-        config: imp.config
+        status: 'waiting'
       }
     })
 
     // useImportWatch(importsStore, imp._id)
     showReImportMenu.value = false
-  },
-  {
-    error: t('createImportError')
   }
 )
+
 </script>
 
 <i18n lang="yaml">
   en:
-    createImportError: 'Error creating import'
-    deleteOnlyLink: 'Delete only the link'
     deleteImport: 'Delete Import'
     deleteImportConfirm: 'Are you sure you want to delete this import? This action will also delete the imported dataset. However, you can choose to delete only the import: the link between the remote resource and the imported dataset will be removed.'
     deleteImportError: 'Error deleting import'
+    deleteOnlyLink: 'Delete only the link'
     no: 'No'
     reImport: 'Re-import'
-    reImportComfirm: 'Are you sure you want to re-import this resource? The already imported data will be overwritten.'
+    reImportConfirm: 'Are you sure you want to re-import this resource? The already imported data will be overwritten.'
     viewDataset: 'View imported dataset'
     yes: 'Yes'
 
   fr:
-    createImportError: "Erreur lors de la création de l'import"
-    deleteOnlyLink: 'Supprimer uniquement le lien'
     deleteImport: "Supprimer l'import"
     deleteImportConfirm: "Êtes-vous sûr de vouloir supprimer cet import ? Cette action supprimera également le jeu de données importé. Vous pouvez cependant choisir de supprimer uniquement l'import : le lien entre la ressource distante et jeu de données importé."
     deleteImportError: 'Erreur lors de la demande de suppression'
+    deleteOnlyLink: 'Supprimer uniquement le lien'
     no: 'Non'
     reImport: 'Importer à nouveau'
-    reImportComfirm: 'Êtes-vous sûr de vouloir réimporter cette resource ? Les données déjà importées seront écrasées.'
+    reImportConfirm: 'Êtes-vous sûr de vouloir réimporter cette resource ? Les données déjà importées seront écrasées.'
     viewDataset: 'Voir le jeu de données importé'
     yes: 'Oui'
 

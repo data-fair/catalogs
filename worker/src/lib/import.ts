@@ -24,15 +24,20 @@ tmp.setGracefulCleanup()
 const createAndUploadDataset = async (
   catalog: Catalog,
   resource: Resource,
-  filePath: string,
   datasetId?: string
 ): Promise<any> => {
   const formData = new FormData()
   if (!datasetId) {
     formData.append('title', resource.title)
     formData.append('description', resource.description || '')
+    if (resource.frequency) formData.append('frequency', resource.frequency)
+    if (resource.image) formData.append('image', resource.image)
+    if (resource.license) formData.append('license', resource.license)
+    if (resource.keywords) formData.append('keywords', resource.keywords)
+    if (resource.origin) formData.append('origin', resource.origin)
+    if (resource.schema) formData.append('schema', resource.schema)
   }
-  formData.append('file', fs.createReadStream(filePath))
+  formData.append('file', fs.createReadStream(resource.filePath))
 
   const getLength = promisify(formData.getLength.bind(formData))
   const contentLength = await getLength()
@@ -77,27 +82,15 @@ const createAndUploadDataset = async (
 }
 
 export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Import) => {
-  // Get the resource from the catalog
-  const resource = await plugin.getResource({
-    catalogConfig: catalog.config,
-    secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
-    resourceId: imp.remoteResource.id
-  })
-  if (!resource) {
-    await mongo.imports.deleteOne({ _id: imp._id })
-    internalError('worker-missing-resource', 'found an import without associated resource, weird')
-    return
-  }
-
   const tmpDir = await tmp.dir({ unsafeCleanup: true, tmpdir: baseTmpDir, prefix: `catalog-import-${catalog._id}-${imp._id}` })
 
-  let filePath: string | undefined
+  let resource: Resource | undefined
   try {
-    filePath = await plugin.downloadResource({
+    resource = await plugin.getResource({
       catalogConfig: catalog.config,
       secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
       importConfig: imp.config || {},
-      resourceId: resource.id,
+      resourceId: imp.remoteResource.id,
       tmpDir: tmpDir.path,
     })
   } catch (err) {
@@ -115,7 +108,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
     })
     throw err
   }
-  if (!filePath) {
+  if (!resource) {
     internalError('worker-download-failed', 'Failed to download resource file without error')
     throw new Error('Failed to download resource file without error')
   }
@@ -126,7 +119,6 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
   const dataset = await createAndUploadDataset(
     catalog,
     resource,
-    filePath,
     existingDatasetId
   )
 

@@ -54,12 +54,14 @@
 </template>
 
 <script setup lang="ts">
+import type { Account } from '@data-fair/lib-common-types/session'
 
 // Used to filter the publications
 const { catalog, dataFairDataset } = defineProps<{
   catalog?: {
     id: string
     title?: string
+    owner?: Account
   },
   dataFairDataset?: {
     id: string

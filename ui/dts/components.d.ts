@@ -15,7 +15,6 @@ declare module 'vue' {
     CatalogsActions: typeof import('./../src/components/catalogs-actions.vue')['default']
     ImportActions: typeof import('./../src/components/import/import-actions.vue')['default']
     ImportCard: typeof import('./../src/components/import/import-card.vue')['default']
-    ImportConfig: typeof import('./../src/components/import/import-config.vue')['default']
     ImportList: typeof import('./../src/components/import/import-list.vue')['default']
     ImportNew: typeof import('./../src/components/import/import-new.vue')['default']
     ImportSelectResource: typeof import('./../src/components/import/import-select-resource.vue')['default']

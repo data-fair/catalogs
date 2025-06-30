@@ -117,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Folder, Resource } from '@data-fair/lib-common-types/catalog/index.js'
+import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import { VDataTable, VDataTableServer } from 'vuetify/components'
@@ -144,22 +144,18 @@ const supportsPagination = computed(() => catalog.value?.capabilities.includes('
 const tableComponent = computed(() => supportsPagination.value ? VDataTableServer : VDataTable)
 
 // Fetch folder data based on current folder ID
-const fetchFolders = useFetch<{
-  count: number
-  results: (Folder | Resource)[]
-  path: Folder[]
-}>(
+const fetchFolders = useFetch<Awaited<ReturnType<CatalogPlugin['list']>>>(
   `${$apiPath}/catalogs/${catalog.value?._id}/resources`, {
-      query: computed(() => ({
-        ...(currentFolderId.value && { currentFolderId: currentFolderId.value }),
-        ...(supportsSearch.value && { q: search.value }),
-        ...(supportsPagination.value && {
-          page: currentPage.value,
-          size: itemsPerPage.value
-        }),
-        ...additionalFilters.value
-      }))
-    })
+    query: computed(() => ({
+      ...(currentFolderId.value && { currentFolderId: currentFolderId.value }),
+      ...(supportsSearch.value && { q: search.value }),
+      ...(supportsPagination.value && {
+        page: currentPage.value,
+        size: itemsPerPage.value
+      }),
+      ...additionalFilters.value
+    }))
+  })
 
 // Check if the selected resource changes
 watch(selected, (newSelected) => {
@@ -174,9 +170,8 @@ watch(selected, (newSelected) => {
 
     // Find the resource in the current results
     const selectedResource = results.find((item: any) => item.type === 'resource' && item.id === selectedId)
-    if (selectedResource) {
-      resourceSelected.value = selectedResource as Resource
-    }
+    if (!selectedResource) return
+    resourceSelected.value = selectedResource
   } else {
     resourceSelected.value = null
   }

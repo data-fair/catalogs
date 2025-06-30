@@ -44,7 +44,11 @@
       <v-tabs-window-item value="publication">
         <publication-list
           v-if="catalog.capabilities.includes('publishDataset')"
-          :catalog="{ id: catalog._id, title: catalog.title }"
+          :catalog="{
+            id: catalog._id,
+            title: catalog.title,
+            owner: catalog.owner
+          }"
         />
       </v-tabs-window-item>
 
