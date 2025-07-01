@@ -105,7 +105,7 @@ watch(importFetch.data, async (imp) => {
   setBreadcrumbs([
     { text: t('catalogs'), to: '/catalogs' },
     { text: imp.catalog.title ?? imp.catalog.id, to: `/catalogs/${imp.catalog.id}` },
-    { text: t('imports') },
+    { text: t('imports'), to: `/catalogs/${imp.catalog.id}` },
     { text: imp.remoteResource.title ?? imp.remoteResource.id }
   ])
 })

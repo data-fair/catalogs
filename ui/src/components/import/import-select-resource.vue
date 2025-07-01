@@ -118,6 +118,7 @@
 
 <script setup lang="ts">
 import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
+import type { Catalog, Plugin, Import } from '#api/types'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import { VDataTable, VDataTableServer } from 'vuetify/components'
@@ -125,8 +126,10 @@ import formatBytes from '@data-fair/lib-vue/format/bytes.js'
 
 const { t } = useI18n()
 const session = useSessionAuthenticated()
-const importsStore = useImportsStore()
-const { catalog, plugin } = useCatalogStore()
+const { catalog, plugin } = defineProps<{
+  catalog: Catalog
+  plugin: Plugin
+}>()
 
 // Navigation state
 const currentFolderId = ref<string | null>(null)
@@ -139,13 +142,13 @@ const itemsPerPage = ref<number>(10)
 
 const search = ref<string>('')
 const additionalFilters = ref<Record<string, any>>({})
-const supportsSearch = computed(() => catalog.value?.capabilities.includes('search'))
-const supportsPagination = computed(() => catalog.value?.capabilities.includes('pagination'))
+const supportsSearch = computed(() => catalog.capabilities.includes('search'))
+const supportsPagination = computed(() => catalog.capabilities.includes('pagination'))
 const tableComponent = computed(() => supportsPagination.value ? VDataTableServer : VDataTable)
 
 // Fetch folder data based on current folder ID
 const fetchFolders = useFetch<Awaited<ReturnType<CatalogPlugin['list']>>>(
-  `${$apiPath}/catalogs/${catalog.value?._id}/resources`, {
+  `${$apiPath}/catalogs/${catalog._id}/resources`, {
     query: computed(() => ({
       ...(currentFolderId.value && { currentFolderId: currentFolderId.value }),
       ...(supportsSearch.value && { q: search.value }),
@@ -177,12 +180,15 @@ watch(selected, (newSelected) => {
   }
 })
 
-// Refresh list when catalog config changes
-watch(() => catalog.value?.config, () => fetchFolders.refresh())
-
-// Function to check if a resource is already imported
+// Check if a resource is already imported
+const existingImports = useFetch<{ results: Pick<Import, 'remoteResource'>[] }>(`${$apiPath}/imports`, {
+  query: {
+    catalogId: catalog._id,
+    select: 'remoteResource'
+  }
+})
 const isResourceImported = (resourceId: string): boolean => {
-  return importsStore.imports.value.some(imp => imp.remoteResource.id === resourceId)
+  return existingImports.data.value?.results.some(imp => imp.remoteResource.id === resourceId)!!
 }
 
 /** Function to handle row click for resource selection */
@@ -238,7 +244,7 @@ const headers = computed(() => [
 
 const vjsfOptions = computed<VjsfOptions>(() => ({
   context: {
-    catalogConfig: catalog.value?.config || {}, // Provide catalog configuration to Vjsf
+    catalogConfig: catalog.config || {}, // Provide catalog configuration to Vjsf
   },
   density: 'comfortable',
   initialValidation: 'always',

@@ -16,7 +16,7 @@ declare module 'vue' {
     ImportActions: typeof import('./../src/components/import/import-actions.vue')['default']
     ImportCard: typeof import('./../src/components/import/import-card.vue')['default']
     ImportList: typeof import('./../src/components/import/import-list.vue')['default']
-    ImportNew: typeof import('./../src/components/import/import-new.vue')['default']
+    ImportsActions: typeof import('./../src/components/imports-actions.vue')['default']
     ImportSelectResource: typeof import('./../src/components/import/import-select-resource.vue')['default']
     LayoutActions: typeof import('./../src/components/layout/layout-actions.vue')['default']
     LayoutActionsButton: typeof import('./../src/components/layout/layout-actions-button.vue')['default']

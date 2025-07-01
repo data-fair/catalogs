@@ -34,7 +34,7 @@
           <template #prepend>
             <v-icon
               color="warning"
-              :icon="mdiUpload"
+              :icon="mdiDownload"
             />
           </template>
           {{ t('reImport') }}
@@ -132,7 +132,6 @@ import type { Import } from '#api/types'
 
 const { t } = useI18n()
 const router = useRouter()
-// const importsStore = useImportsStore()
 
 const { imp } = defineProps<{
   imp: Import
@@ -172,7 +171,6 @@ const reImport = useAsyncAction(
       }
     })
 
-    // useImportWatch(importsStore, imp._id)
     showReImportMenu.value = false
   }
 )

@@ -27,7 +27,6 @@ import type { Import } from '#api/types'
 
 const { t } = useI18n()
 const { dayjs } = useLocaleDayjs()
-// const importsStore = useImportsStore()
 
 const { imp } = defineProps<{
   imp: Import

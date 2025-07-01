@@ -34,14 +34,14 @@
     />
 
     <v-tabs-window v-model="activeTab">
-      <v-tabs-window-item value="import">
+      <v-tabs-window-item value="imports">
         <import-list
           v-if="catalog.capabilities.includes('import') && plugin"
           :catalog-id="catalog._id"
         />
       </v-tabs-window-item>
 
-      <v-tabs-window-item value="publication">
+      <v-tabs-window-item value="publications">
         <publication-list
           v-if="catalog.capabilities.includes('publishDataset')"
           :catalog="{
@@ -58,7 +58,9 @@
     </v-tabs-window>
 
     <layout-actions>
-      <catalog-actions />
+      <imports-actions v-if="activeTab === 'imports'" />
+      <publications-actions v-else-if="activeTab === 'publications'" />
+      <catalog-actions v-else-if="activeTab === 'configuration'" />
     </layout-actions>
   </v-container>
 </template>
@@ -70,16 +72,16 @@ const router = useRouter()
 const session = useSessionAuthenticated()
 const { t } = useI18n()
 const { catalog, catalogFetch, plugin, pluginFetch } = provideCatalogStore(route.params.catalogId)
-const activeTab = useStringSearchParam('tab', { default: 'import' })
+const activeTab = useStringSearchParam('tab', { default: 'imports' })
 
 const tabs = computed(() => {
   const capabilities = catalog.value?.capabilities ?? []
   const tabs = []
   if (capabilities.includes('import')) {
-    tabs.push({ id: 'import', title: t('import'), icon: mdiDownload })
+    tabs.push({ id: 'imports', title: t('imports'), icon: mdiDownload })
   }
   if (capabilities.includes('publishDataset')) {
-    tabs.push({ id: 'publication', title: t('publication'), icon: mdiUpload })
+    tabs.push({ id: 'publications', title: t('publications'), icon: mdiUpload })
   }
   tabs.push({ id: 'configuration', title: t('configuration'), icon: mdiCog })
   return tabs
@@ -97,11 +99,12 @@ const deleteCatalog = useAsyncAction(
 )
 
 watch(
-  () => catalog.value?.title,
-  (title) => {
+  [activeTab, () => catalog.value?.title],
+  ([tab, title]) => {
     setBreadcrumbs([
       { text: t('catalogs'), to: '/catalogs' },
-      { text: title ?? '' }
+      { text: title ?? '' },
+      { text: t(`tab.${tab}`) },
     ])
   }
 )
@@ -113,26 +116,27 @@ const assetsUrl = new URL('~/assets/www.svg', import.meta.url).href
   en:
     catalogs: Catalogs
     catalogDeleted: Catalog deleted!
-    configuration: Configuration
     delete: Delete Catalog
     errorDeletingCatalog: Error deleting the catalog.
     errorFetchingCatalogText: The catalog may not exist or you may not have access rights to it (Did you select the wrong active account?).
     errorFetchingCatalogTitle: Error fetching the catalog.
     errorFetchingPlugin: Error fetching the plugin. Please contact us if the problem persists.
-    import: Import
-    publication: Publications
+    tab:
+      configuration: Configuration
+      imports: Imports
+      publications: Publications
   fr:
     catalogs: Catalogues
     catalogDeleted: Catalogue supprimé !
-    configuration: Configuration
     delete: Supprimer le catalogue
     errorDeletingCatalog: Erreur lors de la suppression du catalogue.
     errorFetchingCatalogText: Il est possible que le catalogue n'existe pas ou que vous n'ayez pas les droits d'accès sur ce dernier (Vous avez peut-être sélectionné le mauvais compte actif ?).
     errorFetchingCatalogTitle: Erreur lors du chargement du catalogue.
     errorFetchingPlugin: Erreur lors du chargement du plugin. Merci de nous contacter si le problème persiste.
-    import: Import
-    publication: Publications
-
+    tab:
+      configuration: Configuration
+      imports: Imports
+      publications: Publications
 </i18n>
 
 <style scoped>

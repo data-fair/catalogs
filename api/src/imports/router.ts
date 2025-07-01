@@ -111,7 +111,16 @@ router.patch('/:id', async (req, res) => {
     date: new Date().toISOString()
   }
 
-  const patch: Record<string, any> = { $set: {} }
+  // Set the next import date based on scheduling if scheduling was updated
+  if (req.body.scheduling !== undefined) {
+    if (Array.isArray(req.body.scheduling) && req.body.scheduling.length === 0) {
+      req.body.nextImportDate = null
+    } else if (req.body.scheduling) {
+      req.body.nextImportDate = getNextImportDate(req.body.scheduling)
+    }
+  }
+
+  const patch: Record<string, any> = { }
   for (const key in req.body) {
     if (req.body[key] === null) {
       patch.$unset = patch.$unset || {}
@@ -122,14 +131,7 @@ router.patch('/:id', async (req, res) => {
       patch.$set[key] = req.body[key]
     }
   }
-
   const patchedImport = await validateImport({ ...importDoc, ...req.body })
-
-  // Set the next import date based on scheduling if scheduling was updated
-  if (req.body.scheduling) {
-    patch.$set.nextImportDate = getNextImportDate(req.body.scheduling)
-    patchedImport.nextImportDate = patch.$set.nextImportDate
-  }
 
   await mongo.imports.updateOne({ _id: id }, patch)
   res.status(200).json(patchedImport)
