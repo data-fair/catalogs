@@ -28,16 +28,19 @@ const createAndUploadDataset = async (
 ): Promise<any> => {
   const formData = new FormData()
   if (!datasetId) {
-    formData.append('title', resource.title)
-    formData.append('description', resource.description || '')
-    if (resource.frequency) formData.append('frequency', resource.frequency)
-    if (resource.image) formData.append('image', resource.image)
-    if (resource.license) formData.append('license', resource.license)
-    if (resource.keywords) formData.append('keywords', resource.keywords)
-    if (resource.origin) formData.append('origin', resource.origin)
-    if (resource.schema) formData.append('schema', resource.schema)
+    const datasetResource = {
+      title: resource.title,
+      description: resource.description,
+      frequency: resource.frequency,
+      image: resource.image,
+      license: resource.license,
+      keywords: resource.keywords,
+      origin: resource.origin,
+      schema: resource.schema
+    }
+    formData.append('body', JSON.stringify(datasetResource))
   }
-  formData.append('file', fs.createReadStream(resource.filePath))
+  formData.append('dataset', fs.createReadStream(resource.filePath))
 
   const getLength = promisify(formData.getLength.bind(formData))
   const contentLength = await getLength()

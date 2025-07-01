@@ -167,7 +167,7 @@ watch(catalog, (newCatalog) => {
   setBreadcrumbs([
     { text: t('catalogs'), to: '/catalogs' },
     { text: newCatalog.title ?? newCatalog._id, to: `/catalogs/${newCatalog._id}` },
-    { text: t('imports'), to: `/catalogs/${newCatalog._id}?tab=imports` },
+    { text: t('imports'), to: `/catalogs/${newCatalog._id}` },
     { text: t('createNewImport') }
   ])
 })
