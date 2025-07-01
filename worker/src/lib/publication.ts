@@ -1,5 +1,5 @@
 import type { Catalog, Publication } from '#api/types'
-import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
+import type CatalogPlugin from '@data-fair/types-catalogs'
 import type { AxiosRequestConfig } from 'axios'
 
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'

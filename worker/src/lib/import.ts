@@ -1,5 +1,5 @@
 import type { Catalog, Import } from '#api/types'
-import type { CatalogPlugin, Resource } from '@data-fair/lib-common-types/catalog/index.js'
+import type { CatalogPlugin, Resource } from '@data-fair/types-catalogs'
 
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import { internalError } from '@data-fair/lib-node/observer.js'

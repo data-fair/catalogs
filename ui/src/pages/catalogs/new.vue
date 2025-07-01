@@ -64,6 +64,15 @@
                     {{ plugin.metadata.title }}
                   </span>
                 </template>
+                <template #append>
+                  <v-avatar
+                    v-if="plugin.metadata.capabilities.includes('thumbnail')"
+                    :image="`${$apiPath}/plugins/${plugin.id}/thumbnail`"
+                    rounded="0"
+                    class="ml-2"
+                    size="32"
+                  />
+                </template>
                 <v-card-text>{{ plugin.metadata.description }}</v-card-text>
               </v-card>
             </v-col>

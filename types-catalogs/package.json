@@ -1,0 +1,21 @@
+{
+  "name": "@data-fair/types-catalogs",
+  "version": "0.1.0",
+  "description": "Shared schemas and built-in type definitions between the Catalogs service and its plugins.",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "prepublishOnly": "npm run build-types",
+    "build-types": "df-build-types ./"
+  },
+  "author": "",
+  "engines": {
+    "node": "v24"
+  },
+  "files": [
+    "**/schema.json",
+    "**/*.js",
+    "**/*.d.ts"
+  ],
+  "license": "AGPL-3.0-only"
+}

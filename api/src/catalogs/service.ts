@@ -1,5 +1,5 @@
 import type { SessionStateAuthenticated } from '@data-fair/lib-express'
-import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
+import type CatalogPlugin from '@data-fair/types-catalogs'
 import type { Catalog } from '#types'
 
 import eventsQueue from '@data-fair/lib-node/events-queue.js'

@@ -16,7 +16,7 @@
       onClick: () => handleRowClick(data.item),
       style: data.item.type === 'resource' ? 'cursor: pointer' : 'cursor: default'
     })"
-    :show-select="levelData.some(item => item.type === 'resource')"
+    :show-select="levelData.some((item: any) => item.type === 'resource')"
     item-value="id"
     select-strategy="single"
   >
@@ -117,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
+import type CatalogPlugin from '@data-fair/types-catalogs'
 import type { Catalog, Plugin, Import } from '#api/types'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'

@@ -26,8 +26,17 @@
     >
       <v-toolbar
         density="compact"
-        :title="plugin.name"
       >
+        <template #title>
+          {{ plugin.name }}
+          <v-avatar
+            v-if="plugin.metadata.capabilities.includes('thumbnail')"
+            :image="`${$apiPath}/plugins/${plugin.id}/thumbnail`"
+            rounded="0"
+            class="ml-2"
+            size="24"
+          />
+        </template>
         <v-spacer />
         {{ t('usedTimesVersion', { count: installedPluginsFetch.data.value?.facets.usages[plugin.id] || 0, version: plugin.version }) }}
         <v-btn
@@ -208,6 +217,7 @@
 
 <script setup lang="ts">
 import type { PluginsGetRes, PluginPost } from '#api/doc'
+import { gt as semverGt } from 'semver'
 
 const session = useSession()
 const { t } = useI18n()
@@ -302,7 +312,9 @@ const availablePlugins = computed(() => {
 })
 
 const hasUpdateAvailable = (plugin: PluginPost) => {
-  return availablePluginsFetch.data.value?.results.find(r => (r.name === plugin.name && r.version !== plugin.version))
+  const availablePlugin = availablePluginsFetch.data.value?.results.find(r => r.name === plugin.name)
+  if (!availablePlugin) return null
+  return semverGt(availablePlugin.version, plugin.version) ? availablePlugin : null
 }
 </script>
 

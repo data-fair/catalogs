@@ -1,4 +1,4 @@
-import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
+import type CatalogPlugin from '@data-fair/types-catalogs'
 import type { Request } from 'express'
 
 import { exec } from 'child_process'
@@ -128,4 +128,16 @@ export const getPlugin = async (pluginId: string): Promise<CatalogPlugin> => {
     if (e.message.includes('Cannot find module')) throw httpError(404, `Plugin ${pluginId} not found (or error in plugin : ${e.message})`)
     throw e // Rethrow other errors
   }
+}
+
+/**
+ * Get the thumbnail image path for a plugin
+ */
+export const getPluginThumbnailPath = async (pluginId: string): Promise<string | null> => {
+  const pluginJsonPath = path.join(pluginsDir, pluginId, 'plugin.json')
+  const pluginJson = JSON.parse(fs.readFileSync(pluginJsonPath, 'utf8'))
+  const plugin = await getPlugin(pluginId)
+  const thumbnailPath = path.join(pluginsDir, pluginId, pluginJson.version, plugin.metadata.thumbnailPath)
+  if (!fs.existsSync(thumbnailPath)) return null
+  return thumbnailPath
 }

@@ -5,7 +5,7 @@ import { Router } from 'express'
 import fs from 'fs-extra'
 import path from 'path'
 import { assertAccountRole, httpError, session } from '@data-fair/lib-express'
-import { getPlugin, installPlugin, getTarball } from './service.ts'
+import { getPlugin, installPlugin, getTarball, getPluginThumbnailPath } from './service.ts'
 import mongo from '#mongo'
 import config from '#config'
 
@@ -92,4 +92,11 @@ router.delete('/:id', async (req, res) => {
 
   await fs.remove(pluginPath)
   res.status(204).send()
+})
+
+// Serve plugin thumbnails
+router.get('/:id/thumbnail', async (req, res) => {
+  const thumbnailPath = await getPluginThumbnailPath(req.params.id)
+  if (!thumbnailPath) throw httpError(404, 'Thumbnail not found')
+  res.sendFile(thumbnailPath)
 })
