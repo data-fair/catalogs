@@ -114,7 +114,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   context: {
     resourceId: importFetch.data.value?.remoteResource.id || '',
     catalogConfig: catalog.value?.config,
-    origin: window.location.origin,
+    origin: window.location.origin
   },
   density: 'comfortable',
   initialValidation: 'always',
