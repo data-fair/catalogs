@@ -10,7 +10,10 @@ export default {
   },
   oneOf: [
     {
-      title: 'Mensuel',
+      title: 'Monthly',
+      'x-i18n-title': {
+        fr: 'Mensuel'
+      },
       properties: {
         type: { const: 'monthly' },
         month: { const: '*' },
@@ -37,7 +40,10 @@ export default {
       }
     },
     {
-      title: 'Hebdomadaire',
+      title: 'Weekly',
+      'x-i18n-title': {
+        fr: 'Hebdomadaire'
+      },
       properties: {
         type: { const: 'weekly' },
         month: { const: '*' },
@@ -107,7 +113,10 @@ export default {
       }
     },
     {
-      title: 'Journalier',
+      title: 'Daily',
+      'x-i18n-title': {
+        fr: 'Journalier'
+      },
       properties: {
         type: { const: 'daily' },
         month: { const: '*' },
@@ -116,6 +125,32 @@ export default {
         hour: { $ref: '#/$defs/hour' },
         minute: { $ref: '#/$defs/minute' },
         timeZone: { $ref: '#/$defs/timeZone' }
+      }
+    },
+    {
+      title: 'Each # Hours',
+      'x-i18n-title': {
+        fr: 'Toutes les # heures'
+      },
+      properties: {
+        type: { const: 'hourly' },
+        month: { const: '*' },
+        dayOfMonth: { const: '*' },
+        dayOfWeek: { const: '*' },
+        hour: { const: '*' },
+        hourStep: {
+          title: 'Interval in Hours',
+          'x-i18n-title': {
+            fr: 'Interval en heures'
+          },
+          type: 'integer',
+          minimum: 1,
+          maximum: 12,
+          default: 1,
+          layout: { cols: 6 }
+        },
+        minute: { $ref: '#/$defs/minute' },
+        timeZone: { $ref: '#/$defs/timeZone' },
       }
     }
   ],

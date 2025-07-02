@@ -1,5 +1,5 @@
 import type { Catalog, Import } from '#api/types'
-import type { CatalogPlugin, Resource } from '@data-fair/lib-common-types/catalog/index.js'
+import type { CatalogPlugin, Resource } from '@data-fair/types-catalogs'
 
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
@@ -24,13 +24,23 @@ tmp.setGracefulCleanup()
 const createAndUploadDataset = async (
   catalog: Catalog,
   resource: Resource,
-  filePath: string,
   datasetId?: string
 ): Promise<any> => {
   const formData = new FormData()
-  formData.append('title', resource.title)
-  formData.append('description', resource.description || '')
-  formData.append('file', fs.createReadStream(filePath))
+  if (!datasetId) {
+    const datasetResource = {
+      title: resource.title,
+      description: resource.description,
+      frequency: resource.frequency,
+      image: resource.image,
+      license: resource.license,
+      keywords: resource.keywords,
+      origin: resource.origin,
+      schema: resource.schema
+    }
+    formData.append('body', JSON.stringify(datasetResource))
+  }
+  formData.append('dataset', fs.createReadStream(resource.filePath))
 
   const getLength = promisify(formData.getLength.bind(formData))
   const contentLength = await getLength()
@@ -55,31 +65,35 @@ const createAndUploadDataset = async (
     }
   })
 
+  // Convert to a simple file dataset if it's a remote file
+  if (datasetId && dataset.data.remoteFile) {
+    await axios({
+      method: 'patch',
+      url: `/api/v1/datasets/${dataset.data.id}`,
+      baseURL: config.privateDataFairUrl,
+      data: { remoteFile: null },
+      headers: {
+        'x-apiKey': config.dataFairAPIKey,
+        'x-account': JSON.stringify(catalog.owner),
+        'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
+        host: config.host
+      }
+    })
+  }
+
   return dataset.data
 }
 
 export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Import) => {
-  // Get the resource from the catalog
-  const resource = await plugin.getResource({
-    catalogConfig: catalog.config,
-    secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
-    resourceId: imp.remoteResource.id
-  })
-  if (!resource) {
-    await mongo.imports.deleteOne({ _id: imp._id })
-    internalError('worker-missing-resource', 'found an import without associated resource, weird')
-    return
-  }
-
   const tmpDir = await tmp.dir({ unsafeCleanup: true, tmpdir: baseTmpDir, prefix: `catalog-import-${catalog._id}-${imp._id}` })
 
-  let filePath: string | undefined
+  let resource: Resource | undefined
   try {
-    filePath = await plugin.downloadResource({
+    resource = await plugin.getResource({
       catalogConfig: catalog.config,
       secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
       importConfig: imp.config || {},
-      resourceId: resource.id,
+      resourceId: imp.remoteResource.id,
       tmpDir: tmpDir.path,
     })
   } catch (err) {
@@ -97,7 +111,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
     })
     throw err
   }
-  if (!filePath) {
+  if (!resource) {
     internalError('worker-download-failed', 'Failed to download resource file without error')
     throw new Error('Failed to download resource file without error')
   }
@@ -108,7 +122,6 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
   const dataset = await createAndUploadDataset(
     catalog,
     resource,
-    filePath,
     existingDatasetId
   )
 

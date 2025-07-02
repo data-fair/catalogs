@@ -9,14 +9,14 @@
     :items="levelData"
     :items-length="fetchFolders.data.value?.count || 0"
     :items-per-page-options="[5, 10, 20]"
-    :item-selectable="(item: any) => item.type === 'resource' && !isResourceImported(item.id)"
+    :item-selectable="(item: any) => item.type === 'resource'"
     :loading="fetchFolders.loading.value ? 'primary' : false"
     :loading-text="t('loading')"
     :row-props="(data: any) => ({
       onClick: () => handleRowClick(data.item),
       style: data.item.type === 'resource' ? 'cursor: pointer' : 'cursor: default'
     })"
-    :show-select="levelData.some(item => item.type === 'resource')"
+    :show-select="levelData.some((item: any) => item.type === 'resource')"
     item-value="id"
     select-strategy="single"
   >
@@ -88,7 +88,6 @@
       <div
         v-else
         class="d-flex align-center"
-        :class="{ 'text-disabled': isResourceImported(item.id) }"
       >
         <v-icon
           :icon="getResourceIcon(item.mimeType)"
@@ -118,7 +117,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Folder, Resource } from '@data-fair/lib-common-types/catalog/index.js'
+import type CatalogPlugin from '@data-fair/types-catalogs'
+import type { Catalog, Plugin, Import } from '#api/types'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import { VDataTable, VDataTableServer } from 'vuetify/components'
@@ -126,8 +126,10 @@ import formatBytes from '@data-fair/lib-vue/format/bytes.js'
 
 const { t } = useI18n()
 const session = useSessionAuthenticated()
-const importsStore = useImportsStore()
-const { catalog, plugin } = useCatalogStore()
+const { catalog, plugin } = defineProps<{
+  catalog: Catalog
+  plugin: Plugin
+}>()
 
 // Navigation state
 const currentFolderId = ref<string | null>(null)
@@ -140,27 +142,23 @@ const itemsPerPage = ref<number>(10)
 
 const search = ref<string>('')
 const additionalFilters = ref<Record<string, any>>({})
-const supportsSearch = computed(() => catalog.value?.capabilities.includes('search'))
-const supportsPagination = computed(() => catalog.value?.capabilities.includes('pagination'))
+const supportsSearch = computed(() => catalog.capabilities.includes('search'))
+const supportsPagination = computed(() => catalog.capabilities.includes('pagination'))
 const tableComponent = computed(() => supportsPagination.value ? VDataTableServer : VDataTable)
 
 // Fetch folder data based on current folder ID
-const fetchFolders = useFetch<{
-  count: number
-  results: (Folder | Resource)[]
-  path: Folder[]
-}>(
-  `${$apiPath}/catalogs/${catalog.value?._id}/resources`, {
-      query: computed(() => ({
-        ...(currentFolderId.value && { currentFolderId: currentFolderId.value }),
-        ...(supportsSearch.value && { q: search.value }),
-        ...(supportsPagination.value && {
-          page: currentPage.value,
-          size: itemsPerPage.value
-        }),
-        ...additionalFilters.value
-      }))
-    })
+const fetchFolders = useFetch<Awaited<ReturnType<CatalogPlugin['list']>>>(
+  `${$apiPath}/catalogs/${catalog._id}/resources`, {
+    query: computed(() => ({
+      ...(currentFolderId.value && { currentFolderId: currentFolderId.value }),
+      ...(supportsSearch.value && { q: search.value }),
+      ...(supportsPagination.value && {
+        page: currentPage.value,
+        size: itemsPerPage.value
+      }),
+      ...additionalFilters.value
+    }))
+  })
 
 // Check if the selected resource changes
 watch(selected, (newSelected) => {
@@ -175,26 +173,28 @@ watch(selected, (newSelected) => {
 
     // Find the resource in the current results
     const selectedResource = results.find((item: any) => item.type === 'resource' && item.id === selectedId)
-    if (selectedResource) {
-      resourceSelected.value = selectedResource as Resource
-    }
+    if (!selectedResource) return
+    resourceSelected.value = selectedResource
   } else {
     resourceSelected.value = null
   }
 })
 
-// Refresh list when catalog config changes
-watch(() => catalog.value?.config, () => fetchFolders.refresh())
-
-// Function to check if a resource is already imported
+// Check if a resource is already imported
+const existingImports = useFetch<{ results: Pick<Import, 'remoteResource'>[] }>(`${$apiPath}/imports`, {
+  query: {
+    catalogId: catalog._id,
+    select: 'remoteResource'
+  }
+})
 const isResourceImported = (resourceId: string): boolean => {
-  return importsStore.imports.value.some(imp => imp.remoteResource.id === resourceId)
+  return existingImports.data.value?.results.some(imp => imp.remoteResource.id === resourceId)!!
 }
 
 /** Function to handle row click for resource selection */
 const handleRowClick = (item: any) => {
   if (item.type !== 'resource') return
-  if (isResourceImported(item.id)) return // Don't allow selection of already imported resources
+  // if (isResourceImported(item.id)) return // Don't allow selection of already imported resources
   if (selected.value.includes(item.id)) selected.value = []
   else selected.value = [item.id]
 }
@@ -242,16 +242,18 @@ const headers = computed(() => [
   { title: t('format'), key: 'format' }
 ])
 
-const vjsfOptions: VjsfOptions = {
+const vjsfOptions = computed<VjsfOptions>(() => ({
+  context: {
+    catalogConfig: catalog.config || {}, // Provide catalog configuration to Vjsf
+  },
   density: 'comfortable',
   initialValidation: 'always',
   locale: session.lang.value,
-  readOnlyPropertiesMode: 'hide',
   titleDepth: 3,
   updateOn: 'blur',
   validateOn: 'blur',
   xI18n: true
-}
+}))
 </script>
 
 <i18n lang="yaml">

@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import { assertAccountRole, session, httpError } from '@data-fair/lib-express'
 import mongo from '#mongo'
-import findUtils from '../utils/find.ts'
+import findUtils from '#utils/find.ts'
 
 const router = Router()
 export default router

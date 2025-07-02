@@ -38,6 +38,18 @@ router.get('/', async (req, res) => {
   res.json({ results, count })
 })
 
+// Get a specific import by ID
+router.get('/:id', async (req, res) => {
+  const sessionState = await session.reqAuthenticated(req)
+  assertAccountRole(sessionState, sessionState.account, 'admin')
+  const { id } = req.params
+  if (!id) throw httpError(400, 'Import ID is required')
+  const importDoc = await mongo.imports.findOne({ _id: id })
+  if (!importDoc) throw httpError(404, 'Import not found')
+  assertAccountRole(sessionState, importDoc.owner, 'admin')
+  res.json(importDoc)
+})
+
 // Import a distant dataset (create an import document that will be processed by the worker)
 router.post('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
@@ -47,37 +59,6 @@ router.post('/', async (req, res) => {
   const catalog = await mongo.catalogs.findOne({ _id: body.catalog.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
   assertAccountRole(sessionState, catalog.owner, 'admin')
-
-  // Check if an import with the same catalog.id and remoteResource.id already exists
-  const existingImport = await mongo.imports.findOne({
-    'catalog.id': body.catalog.id,
-    'remoteResource.id': body.remoteResource.id
-  })
-
-  if (existingImport) {
-    // Update existing import: reset status to waiting and clear errors
-    const updatedImport = await mongo.imports.findOneAndUpdate(
-      { _id: existingImport._id },
-      {
-        $set: {
-          status: 'waiting',
-          updated: {
-            id: sessionState.user.id,
-            name: sessionState.user.name,
-            date: new Date().toISOString()
-          }
-        },
-        $unset: {
-          error: ''
-        }
-      },
-      { returnDocument: 'after' }
-    )
-
-    if (!updatedImport) throw httpError(500, 'Failed to update existing import')
-    await wsEmit(`import/${updatedImport._id}`, { ...updatedImport, error: undefined })
-    return res.status(200).json(updatedImport)
-  }
 
   // Create new import if none exists
   const imp: Partial<Import> = { ...body }
@@ -107,16 +88,53 @@ router.patch('/:id', async (req, res) => {
   const { id } = req.params
   if (!id) throw httpError(400, 'Import ID is required')
 
-  const imp = await mongo.imports.updateOne({ _id: id }, {
-    $set: {
-      status: 'waiting',
-      error: undefined
-    }
-  })
-  await wsEmit(`import/${id}`, { status: 'waiting', error: undefined })
+  const importDoc = await mongo.imports.findOne({ _id: id })
+  if (!importDoc) throw httpError(404, 'Import not found')
+  assertAccountRole(sessionState, importDoc.owner, 'admin')
 
-  if (imp.matchedCount === 0) throw httpError(404, 'Import not found')
-  res.status(200).json(imp)
+  // Get the import schema to check which fields can be edited
+  const importSchema = (await import('#types/import/index.ts')).resolvedSchema
+
+  // Restrict the parts of the import that can be edited
+  const acceptedParts = Object.keys(importSchema.properties)
+    .filter(k => sessionState.user.adminMode || !(importSchema.properties)[k].readOnly || 'status')
+
+  for (const key in req.body) {
+    if (!acceptedParts.includes(key)) throw httpError(400, `Unsupported patch part ${key}`)
+    // check if the user has the right to change to this owner
+    if (key === 'owner') assertAccountRole(sessionState, req.body.owner, 'admin', { allAccounts: true })
+  }
+
+  req.body.updated = {
+    id: sessionState.user.id,
+    name: sessionState.user.name,
+    date: new Date().toISOString()
+  }
+
+  // Set the next import date based on scheduling if scheduling was updated
+  if (req.body.scheduling !== undefined) {
+    if (Array.isArray(req.body.scheduling) && req.body.scheduling.length === 0) {
+      req.body.nextImportDate = null
+    } else if (req.body.scheduling) {
+      req.body.nextImportDate = getNextImportDate(req.body.scheduling)
+    }
+  }
+
+  const patch: Record<string, any> = { }
+  for (const key in req.body) {
+    if (req.body[key] === null) {
+      patch.$unset = patch.$unset || {}
+      patch.$unset[key] = true
+      delete req.body[key]
+    } else {
+      patch.$set = patch.$set || {}
+      patch.$set[key] = req.body[key]
+    }
+  }
+  const patchedImport = await validateImport({ ...importDoc, ...req.body })
+
+  await mongo.imports.updateOne({ _id: id }, patch)
+  res.status(200).json(patchedImport)
 })
 
 router.delete('/:id', async (req, res) => {

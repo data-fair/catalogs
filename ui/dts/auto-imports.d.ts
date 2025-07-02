@@ -17,7 +17,6 @@ declare global {
   const computed: typeof import('vue')['computed']
   const createApp: typeof import('vue')['createApp']
   const createCatalogStore: typeof import('../src/composables/catalog-store')['createCatalogStore']
-  const createImportsStore: typeof import('../src/composables/imports-store')['createImportsStore']
   const createPublicationsStore: typeof import('../src/composables/publications-store')['createPublicationsStore']
   const customRef: typeof import('vue')['customRef']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
@@ -29,8 +28,6 @@ declare global {
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const h: typeof import('vue')['h']
-  const importsStore: typeof import('../src/composables/imports-store')['default']
-  const importsStoreKey: typeof import('../src/composables/imports-store')['importsStoreKey']
   const inject: typeof import('vue')['inject']
   const isProxy: typeof import('vue')['isProxy']
   const isReactive: typeof import('vue')['isReactive']
@@ -40,6 +37,7 @@ declare global {
   const mdiAccount: typeof import('@mdi/js')['mdiAccount']
   const mdiAlert: typeof import('@mdi/js')['mdiAlert']
   const mdiCodeJson: typeof import('@mdi/js')['mdiCodeJson']
+  const mdiCog: typeof import('@mdi/js')['mdiCog']
   const mdiContentDuplicate: typeof import('@mdi/js')['mdiContentDuplicate']
   const mdiDelete: typeof import('@mdi/js')['mdiDelete']
   const mdiDotsVertical: typeof import('@mdi/js')['mdiDotsVertical']
@@ -83,7 +81,6 @@ declare global {
   const onWatcherCleanup: typeof import('vue')['onWatcherCleanup']
   const provide: typeof import('vue')['provide']
   const provideCatalogStore: typeof import('../src/composables/catalog-store')['provideCatalogStore']
-  const provideImportsStore: typeof import('../src/composables/imports-store')['provideImportsStore']
   const providePublicationsStore: typeof import('../src/composables/publications-store')['providePublicationsStore']
   const publicationsStore: typeof import('../src/composables/publications-store')['default']
   const publicationsStoreKey: typeof import('../src/composables/publications-store')['publicationsStoreKey']
@@ -111,8 +108,6 @@ declare global {
   const useFetch: typeof import('@data-fair/lib-vue/fetch.js')['useFetch']
   const useI18n: typeof import('vue-i18n')['useI18n']
   const useId: typeof import('vue')['useId']
-  const useImportWatch: typeof import('../src/composables/import-watch')['useImportWatch']
-  const useImportsStore: typeof import('../src/composables/imports-store')['useImportsStore']
   const useLink: typeof import('vue-router')['useLink']
   const useLocaleDayjs: typeof import('@data-fair/lib-vue/locale-dayjs.js')['useLocaleDayjs']
   const useModel: typeof import('vue')['useModel']
@@ -139,14 +134,11 @@ declare global {
 // for type re-export
 declare global {
   // @ts-ignore
-  export type { Component, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
+  export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
   export type { CatalogStore } from '../src/composables/catalog-store'
   import('../src/composables/catalog-store')
-  // @ts-ignore
-  export type { ImportsStore } from '../src/composables/imports-store'
-  import('../src/composables/imports-store')
   // @ts-ignore
   export type { PublicationsStore } from '../src/composables/publications-store'
   import('../src/composables/publications-store')
@@ -168,7 +160,6 @@ declare module 'vue' {
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createCatalogStore: UnwrapRef<typeof import('../src/composables/catalog-store')['createCatalogStore']>
-    readonly createImportsStore: UnwrapRef<typeof import('../src/composables/imports-store')['createImportsStore']>
     readonly createPublicationsStore: UnwrapRef<typeof import('../src/composables/publications-store')['createPublicationsStore']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
@@ -180,8 +171,6 @@ declare module 'vue' {
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
-    readonly importsStore: UnwrapRef<typeof import('../src/composables/imports-store')['default']>
-    readonly importsStoreKey: UnwrapRef<typeof import('../src/composables/imports-store')['importsStoreKey']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -191,6 +180,7 @@ declare module 'vue' {
     readonly mdiAccount: UnwrapRef<typeof import('@mdi/js')['mdiAccount']>
     readonly mdiAlert: UnwrapRef<typeof import('@mdi/js')['mdiAlert']>
     readonly mdiCodeJson: UnwrapRef<typeof import('@mdi/js')['mdiCodeJson']>
+    readonly mdiCog: UnwrapRef<typeof import('@mdi/js')['mdiCog']>
     readonly mdiContentDuplicate: UnwrapRef<typeof import('@mdi/js')['mdiContentDuplicate']>
     readonly mdiDelete: UnwrapRef<typeof import('@mdi/js')['mdiDelete']>
     readonly mdiDotsVertical: UnwrapRef<typeof import('@mdi/js')['mdiDotsVertical']>
@@ -234,7 +224,6 @@ declare module 'vue' {
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
     readonly provideCatalogStore: UnwrapRef<typeof import('../src/composables/catalog-store')['provideCatalogStore']>
-    readonly provideImportsStore: UnwrapRef<typeof import('../src/composables/imports-store')['provideImportsStore']>
     readonly providePublicationsStore: UnwrapRef<typeof import('../src/composables/publications-store')['providePublicationsStore']>
     readonly publicationsStore: UnwrapRef<typeof import('../src/composables/publications-store')['default']>
     readonly publicationsStoreKey: UnwrapRef<typeof import('../src/composables/publications-store')['publicationsStoreKey']>
@@ -262,8 +251,6 @@ declare module 'vue' {
     readonly useFetch: UnwrapRef<typeof import('@data-fair/lib-vue/fetch.js')['useFetch']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
-    readonly useImportWatch: UnwrapRef<typeof import('../src/composables/import-watch')['useImportWatch']>
-    readonly useImportsStore: UnwrapRef<typeof import('../src/composables/imports-store')['useImportsStore']>
     readonly useLink: UnwrapRef<typeof import('vue-router')['useLink']>
     readonly useLocaleDayjs: UnwrapRef<typeof import('@data-fair/lib-vue/locale-dayjs.js')['useLocaleDayjs']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>

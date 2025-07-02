@@ -19,7 +19,22 @@ export default {
     results: {
       type: 'array',
       items: {
-        $ref: 'https://github.com/data-fair/catalogs/catalog'
+        allOf: [
+          {
+            $ref: 'https://github.com/data-fair/catalogs/catalog'
+          },
+          {
+            additionalProperties: false,
+            properties: {
+              importsCount: {
+                type: 'number'
+              },
+              publicationsCount: {
+                type: 'number'
+              }
+            }
+          }
+        ]
       }
     }
   },

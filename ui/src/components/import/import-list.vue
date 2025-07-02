@@ -1,8 +1,6 @@
 <template data-iframe-height>
-  <import-new class="mb-4" />
-
   <v-row
-    v-if="importsStore.importsFetch.loading.value"
+    v-if="importsFetch.loading.value"
     class="d-flex align-stretch"
   >
     <v-col
@@ -20,18 +18,18 @@
     </v-col>
   </v-row>
   <span
-    v-else-if="!importsStore.count.value"
+    v-else-if="!importsFetch.data.value?.count"
     class="d-flex justify-center text-h6"
   >
     {{ t('noImports') }}
   </span>
-  <template v-else>
+  <template v-else-if="importsFetch.data.value">
     <h3 class="text-h5 mb-4">
-      {{ t('nbImports', importsStore.count.value) }}
+      {{ t('nbImports', importsFetch.data.value.count) }}
     </h3>
     <v-row class="d-flex align-stretch">
       <v-col
-        v-for="imp in importsStore.imports.value"
+        v-for="imp in importsFetch.data.value.results"
         :key="imp._id"
         md="4"
         sm="6"
@@ -44,13 +42,16 @@
 </template>
 
 <script setup lang="ts">
+import type { Import } from '#api/types'
 
 const { catalogId } = defineProps<{
   catalogId: string
 }>()
 
 const { t } = useI18n()
-const importsStore = provideImportsStore(catalogId)
+const importsFetch = useFetch<{ results: Import[], count: number }>(`${$apiPath}/imports`, {
+  query: { catalogId }
+})
 
 </script>
 

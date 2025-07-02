@@ -1,5 +1,5 @@
 import type { Publication, Import } from '#api/types'
-import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
+import type CatalogPlugin from '@data-fair/types-catalogs'
 
 import Debug from 'debug'
 import fs from 'fs'
@@ -9,8 +9,8 @@ import { emit as wsEmit, init as wsInit } from '@data-fair/lib-node/ws-emitter.j
 import { startObserver, stopObserver, internalError } from '@data-fair/lib-node/observer.js'
 import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
-import importTask from './utils/import.ts'
-import publicationTask from './utils/publication.ts'
+import importTask from './lib/import.ts'
+import publicationTask from './lib/publication.ts'
 import config from '#config'
 import mongo from '#mongo'
 import locks from '#locks'

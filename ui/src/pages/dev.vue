@@ -40,7 +40,6 @@
       <v-btn
         v-if="!session.state.user?.adminMode"
         variant="text"
-        target="_blank"
         :href="url"
         color="admin"
       >

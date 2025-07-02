@@ -1,85 +1,20 @@
-import type { SessionStateAuthenticated } from '@data-fair/lib-express'
-import type { CatalogPlugin } from '@data-fair/lib-common-types/catalog/index.js'
 import type { Catalog } from '#types'
 import type { CatalogPostReq } from '#doc/catalogs/post-req/index.ts'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
-import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { assertAccountRole, session, httpError } from '@data-fair/lib-express'
-import { cipher, decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
+import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 import { resolvedSchema as catalogSchema } from '#types/catalog/index.ts'
 import mongo from '#mongo'
 import config from '#config'
 import findUtils from '#utils/find.ts'
-import { catalogFacets } from '#utils/facets.ts'
+import { getPlugin } from '../plugins/service.ts'
+import { sendCatalogEvent, prepareCatalog, validateCatalog } from './service.ts'
+import { catalogFacets, catalogsWithCounts } from './aggregations.ts'
 
 const router = Router()
 export default router
-
-/**
- * Helper function to send events related to catalogs
- * @param catalog The catalog object
- * @param actionText The text describing the action (e.g. "a été créé")
- * @param topicAction The action part of the topic key (e.g. "create", "delete")
- * @param sessionState Optional session state for authentication
- */
-const sendCatalogEvent = (
-  catalog: Catalog,
-  actionText: string,
-  topicAction: string,
-  sessionState?: SessionStateAuthenticated
-) => {
-  if (!config.privateEventsUrl && !config.secretKeys.events) return
-
-  eventsQueue.pushEvent({
-    title: `Le catalogue ${catalog.title} ${actionText}`,
-    topic: { key: `catalogs:catalog-${topicAction}:${catalog._id}` },
-    sender: catalog.owner,
-    resource: {
-      type: 'catalog',
-      id: catalog._id,
-      title: catalog.title,
-    }
-  }, sessionState)
-}
-
-/**
- * Check that a catalog object is valid
- * Check if the plugin exists
- * Check if the config is valid
- */
-const validateCatalog = async (catalog: Partial<Catalog>) => {
-  const validCatalog = (await import('#types/catalog/index.ts')).returnValid(catalog)
-  const plugin: CatalogPlugin = await findUtils.getPlugin(validCatalog.plugin)
-  plugin.assertConfigValid(validCatalog.config)
-  return validCatalog
-}
-
-const prepareCatalog = async (catalog: Catalog) => {
-  const ret: {
-    config?: Catalog['config'],
-    secrets?: Catalog['secrets'],
-    capabilities?: Catalog['capabilities']
-  } = {}
-
-  const plugin = await findUtils.getPlugin(catalog.plugin)
-  const prepareRes = await plugin.prepare({
-    catalogConfig: catalog.config,
-    capabilities: catalog.capabilities,
-    secrets: decipherSecrets(catalog.secrets, config.cipherPassword)
-  })
-
-  if (prepareRes.catalogConfig) ret.config = prepareRes.catalogConfig as Catalog['config']
-  if (prepareRes.capabilities) ret.capabilities = prepareRes.capabilities
-  if (prepareRes.secrets) {
-    ret.secrets = {}
-    for (const key of Object.keys(prepareRes.secrets)) {
-      ret.secrets[key] = cipher(prepareRes.secrets[key], config.cipherPassword)
-    }
-  }
-  return ret
-}
 
 // Get the list of catalogs
 router.get('/', async (req, res) => {
@@ -94,27 +29,32 @@ router.get('/', async (req, res) => {
   const filters = findUtils.query(params, { plugins: 'plugin' })
   const queryWithFilters = Object.assign(filters, query)
 
-  // Exclude catalogs marked for deletion
-  queryWithFilters.deletionRequested = { $ne: true }
-
   // Filter capabilities
   if (params.capabilities) queryWithFilters.capabilities = { $all: params.capabilities?.split(',') ?? [] }
 
   // Filter by owner (if showAll)
   const showAll = params.showAll === 'true'
-  if (showAll && params.owners) {
-    queryWithFilters.$or = params.owners.split(',').map(owner => {
-      const [type, id] = owner.split(':')
-      if (!type || !id) throw httpError(400, 'Invalid owner format')
-      return {
-        'owner.type': type,
-        'owner.id': id
-      }
-    })
+  if (showAll) {
+    if (params.owners) {
+      queryWithFilters.$or = params.owners.split(',').map(owner => {
+        const [type, id] = owner.split(':')
+        if (!type || !id) throw httpError(400, 'Invalid owner format')
+        return {
+          'owner.type': type,
+          'owner.id': id
+        }
+      })
+    }
+  } else {
+    // Exclude catalogs marked for deletion
+    query.deletionRequested = { $ne: true } // Exclude from count
+    queryWithFilters.deletionRequested = { $ne: true }
   }
 
   const [results, count, facets] = await Promise.all([
-    size > 0 ? mongo.catalogs.find(queryWithFilters).limit(size).skip(skip).sort(sort).project(project).toArray() : Promise.resolve([]),
+    size > 0
+      ? mongo.catalogs.aggregate(catalogsWithCounts(queryWithFilters, sort, skip, size, project)).toArray()
+      : Promise.resolve([]),
     mongo.catalogs.countDocuments(query),
     mongo.catalogs.aggregate(catalogFacets(query, showAll)).toArray()
   ])
@@ -133,7 +73,7 @@ router.post('/', async (req, res) => {
   catalog.owner = catalog.owner ?? sessionState.account
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
-  const plugin = await findUtils.getPlugin(catalog.plugin)
+  const plugin = await getPlugin(catalog.plugin)
   catalog.capabilities = plugin.metadata.capabilities
 
   catalog._id = nanoid()
@@ -219,17 +159,23 @@ router.delete('/:id', async (req, res) => {
 
   // Delete also all publications for this catalog if asked
   if (req.query.deletePublications) {
-    await mongo.publications.updateMany(
+    const result = await mongo.publications.updateMany(
       { 'catalog.id': req.params.id },
       { $set: { action: 'delete', status: 'waiting' } }
     )
 
-    // The catalog will be deleted by the publication task,
-    // After each publication is deleted
-    await mongo.catalogs.updateOne(
-      { _id: req.params.id },
-      { $set: { deletionRequested: true } }
-    )
+    if (result.modifiedCount === 0) {
+      // No publications found, delete the catalog directly
+      await mongo.catalogs.deleteOne({ _id: req.params.id })
+    } else {
+      // Publications found and marked for deletion
+      // The catalog will be deleted by the publication task,
+      // After each publication is deleted
+      await mongo.catalogs.updateOne(
+        { _id: req.params.id },
+        { $set: { deletionRequested: true } }
+      )
+    }
   } else { // Delete only publication's links
     await mongo.publications.deleteMany({ 'catalog.id': req.params.id })
     await mongo.catalogs.deleteOne({ _id: req.params.id })
@@ -252,7 +198,7 @@ router.get('/:id/resources', async (req, res) => {
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
   // Execute the plugin function
-  const plugin = await findUtils.getPlugin(catalog.plugin)
+  const plugin = await getPlugin(catalog.plugin)
   if (!plugin.metadata.capabilities.includes('import')) throw httpError(501, 'Plugin does not support listing resources')
   const datasets = await plugin.list({
     catalogConfig: catalog.config,

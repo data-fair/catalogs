@@ -217,7 +217,7 @@ export default {
           }
         },
         getItems: {
-          url: '${context.origin}/data-fair/api/v1/datasets?raw=true&select=id,title&mine=true',
+          url: '${context.origin}/data-fair/api/v1/datasets?raw=true&select=id,title&owner=${context.ownerFilter}',
           itemsResults: 'data.results',
           itemTitle: '`${item.title} (${item.id})`',
           itemKey: 'item.id',

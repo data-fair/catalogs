@@ -56,7 +56,7 @@
           :loading="rePublish.loading.value ? 'warning' : undefined"
         >
           <v-card-text class="pb-0">
-            {{ t('rePublishComfirm') }}
+            {{ t('rePublishConfirm') }}
           </v-card-text>
           <v-card-actions>
             <v-spacer />
@@ -192,21 +192,21 @@ const rePublish = useAsyncAction(
     lastPublicationDate: 'Last Publication Date'
     no: 'No'
     publicationStatus:
-      waiting: 'Waiting for publication'
-      running: 'Publication in progress'
       done: 'Dataset published'
       error: 'Publication error'
+      running: 'Publication in progress'
+      waiting: 'Waiting for publication'
     publicationStatusDelete:
-      waiting: 'En attente suppression'
-      running: 'En cour de suppression'
       done: 'Publication supprimée'
       error: 'Suppression echouée'
+      running: 'En cour de suppression'
+      waiting: 'En attente suppression'
     publicationTitle:
       catalog: '{title}'
       dataset: '{title}'
     publishAsResource: 'This dataset is published as a resource of the remote dataset'
     rePublish: 'Re-Publish'
-    rePublishComfirm: 'Are you sure you want to re-publish this dataset? The remote dataset will be overwritten.'
+    rePublishConfirm: 'Are you sure you want to re-publish this dataset? The remote dataset will be overwritten.'
     viewPublication: 'View Publication'
     yes: 'Yes'
 
@@ -220,21 +220,21 @@ const rePublish = useAsyncAction(
     lastPublicationDate: 'Date de la dernière publication'
     no: 'Non'
     publicationStatus:
-      waiting: 'En attente de publication'
-      running: 'En cour de publication'
       done: 'Jeu de données publié'
       error: 'Publication en erreur'
+      running: 'En cour de publication'
+      waiting: 'En attente de publication'
     publicationStatusDelete:
-      waiting: 'En attente suppression'
-      running: 'En cour de suppression'
       done: 'Publication supprimée'
       error: 'Suppression echouée'
+      running: 'En cour de suppression'
+      waiting: 'En attente suppression'
     publicationTitle:
       catalog: '{title}'
       dataset: '{title}'
     publishAsResource: 'Ce jeu de données est publié en tant que ressource du jeu de données distant'
     rePublish: 'Re-publier'
-    rePublishComfirm: 'Êtes-vous sûr de vouloir republier ce jeu de données ? Le jeu de données distant sera écrasé.'
+    rePublishConfirm: 'Êtes-vous sûr de vouloir republier ce jeu de données ? Le jeu de données distant sera écrasé.'
     viewPublication: 'Voir la publication'
     yes: 'Oui'
 

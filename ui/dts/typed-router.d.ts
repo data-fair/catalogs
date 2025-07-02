@@ -21,8 +21,11 @@ declare module 'vue-router/auto-routes' {
     '/admin/': RouteRecordInfo<'/admin/', '/admin', Record<never, never>, Record<never, never>>,
     '/admin/plugins': RouteRecordInfo<'/admin/plugins', '/admin/plugins', Record<never, never>, Record<never, never>>,
     '/catalogs/': RouteRecordInfo<'/catalogs/', '/catalogs', Record<never, never>, Record<never, never>>,
-    '/catalogs/[id]': RouteRecordInfo<'/catalogs/[id]', '/catalogs/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
+    '/catalogs/[catalogId]/': RouteRecordInfo<'/catalogs/[catalogId]/', '/catalogs/:catalogId', { catalogId: ParamValue<true> }, { catalogId: ParamValue<false> }>,
+    '/catalogs/[catalogId]/imports/[importId]': RouteRecordInfo<'/catalogs/[catalogId]/imports/[importId]', '/catalogs/:catalogId/imports/:importId', { catalogId: ParamValue<true>, importId: ParamValue<true> }, { catalogId: ParamValue<false>, importId: ParamValue<false> }>,
+    '/catalogs/[catalogId]/imports/new': RouteRecordInfo<'/catalogs/[catalogId]/imports/new', '/catalogs/:catalogId/imports/new', { catalogId: ParamValue<true> }, { catalogId: ParamValue<false> }>,
     '/catalogs/new': RouteRecordInfo<'/catalogs/new', '/catalogs/new', Record<never, never>, Record<never, never>>,
     '/dataset-publications': RouteRecordInfo<'/dataset-publications', '/dataset-publications', Record<never, never>, Record<never, never>>,
+    '/dev': RouteRecordInfo<'/dev', '/dev', Record<never, never>, Record<never, never>>,
   }
 }

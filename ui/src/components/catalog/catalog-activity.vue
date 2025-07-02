@@ -1,7 +1,7 @@
 <template>
   <v-list-item
     :prepend-avatar="avatarUrl"
-    :title="catalog?.owner.name"
+    :title="ownerName"
   />
   <v-list-item
     :prepend-icon="mdiPencil"
@@ -25,6 +25,14 @@ const { dayjs } = useLocaleDayjs()
 const { t } = useI18n()
 const { catalog, plugin } = useCatalogStore()
 
+const ownerName = computed(() => {
+  if (!catalog.value) return ''
+  const baseName = catalog.value.owner.name || catalog.value.owner.id
+  const departmentInfo = catalog.value.owner.departmentName || catalog.value.owner.department
+  return departmentInfo
+    ? `${baseName} - ${departmentInfo}`
+    : baseName
+})
 const avatarUrl = computed(() => {
   if (catalog.value?.owner.department) return `/simple-directory/api/avatars/${catalog.value?.owner.type}/${catalog.value?.owner.id}/${catalog.value?.owner.department}/avatar.png`
   else return `/simple-directory/api/avatars/${catalog.value?.owner.type}/${catalog.value?.owner.id}/avatar.png`

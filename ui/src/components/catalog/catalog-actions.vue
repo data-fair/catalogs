@@ -89,6 +89,7 @@
         <v-card-text class="pb-0">
           {{ t('confirmDeleteCatalog', { title: catalog?.title }) }}
           <v-checkbox
+            v-if="catalog?.capabilities.includes('deletePublication')"
             v-model="deletePublication"
             base-color="warning"
             color="warning"

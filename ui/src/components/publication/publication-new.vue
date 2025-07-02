@@ -101,6 +101,8 @@
 </template>
 
 <script setup lang="ts">
+import type { Account } from '@data-fair/lib-common-types/session'
+
 import tutorialAlert from '@data-fair/lib-vuetify/tutorial-alert.vue'
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import clone from '@data-fair/lib-utils/clone.js'
@@ -114,7 +116,8 @@ const publicationsStore = usePublicationsStore()
 const { catalog, dataFairDataset } = defineProps<{
   catalog?: {
     id: string
-    title?: string
+    title?: string,
+    owner?: Account
   },
   dataFairDataset?: {
     id: string
@@ -190,7 +193,8 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
       title: dataFairDataset?.title
     },
     origin: window.location.origin,
-    publicationSites: formatedPublicationSites.value
+    publicationSites: formatedPublicationSites.value,
+    ownerFilter: `${catalog?.owner?.type}:${catalog?.owner?.id}${catalog?.owner?.department ? `:${catalog?.owner.department}` : ''}`
   },
   density: 'comfortable',
   initialValidation: 'always',

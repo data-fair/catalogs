@@ -84,7 +84,8 @@ COPY --from=worker-installer /app/worker/node_modules worker/node_modules
 COPY package.json README.md LICENSE BUILD.json* ./
 
 EXPOSE 9090
-# USER node # This would be great to use, but not possible as the volumes are mounted as root
+USER node
+
 WORKDIR /app/worker
 CMD ["node", "index.ts"]
 
@@ -118,6 +119,7 @@ COPY package.json README.md LICENSE BUILD.json* ./
 COPY --from=worker /app/package.json package.json
 EXPOSE 8080
 EXPOSE 9090
-# USER node # This would be great to use, but not possible as the volumes are mounted as root
+USER node
+
 WORKDIR /app/api
 CMD ["node", "--max-http-header-size", "64000", "index.ts"]
