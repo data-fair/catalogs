@@ -115,7 +115,7 @@ const session = useSessionAuthenticated()
 const { catalog, plugin } = createCatalogStore(route.params.catalogId)
 
 const step = ref('1')
-const selectedResource = ref<{ id: string, title: string } | null>(null)
+const selectedResource = ref<{ id: string, title: string, origin?: string } | null>(null)
 const validImportConfig = ref(false)
 const importConfig = ref<Partial<Import>>({})
 
@@ -131,24 +131,29 @@ const importSchema = computed(() => {
 const createImport = useAsyncAction(async () => {
   if (!selectedResource.value || !validImportConfig.value) return
 
+  const newImport: Record<string, any> = {
+    catalog: {
+      id: catalog.value?._id,
+      title: catalog.value?.title
+    },
+    remoteResource: {
+      id: selectedResource.value.id,
+      title: selectedResource.value.title
+    },
+    scheduling: importConfig.value.scheduling,
+    config: importConfig.value.config || {}
+  }
+  if (importConfig.value.dataFairDataset) {
+    newImport.dataFairDataset = importConfig.value.dataFairDataset
+  }
+  if (selectedResource.value.origin) {
+    newImport.remoteResource.origin = selectedResource.value.origin
+  }
+
   // Create the import via API
   await $fetch('/imports', {
     method: 'POST',
-    body: {
-      catalog: {
-        id: catalog.value?._id,
-        title: catalog.value?.title
-      },
-      remoteResource: {
-        id: selectedResource.value.id,
-        title: selectedResource.value.title
-      },
-      scheduling: importConfig.value.scheduling,
-      config: importConfig.value.config || {},
-      ...(importConfig.value.dataFairDataset
-        ? { dataFairDataset: importConfig.value.dataFairDataset }
-        : {})
-    }
+    body: newImport
   })
 
   selectedResource.value = null
