@@ -109,7 +109,11 @@ watch(
   }
 )
 
-const assetsUrl = new URL('~/assets/www.svg', import.meta.url).href
+const assetsUrl = computed(() =>
+  catalog.value?.capabilities.includes('thumbnail')
+    ? `${$apiPath}/plugins/${catalog.value?.plugin}/thumbnail`
+    : new URL('~/assets/www.svg', import.meta.url).href
+)
 </script>
 
 <i18n lang="yaml">

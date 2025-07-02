@@ -82,7 +82,8 @@ const { t } = useI18n()
 
 const catalogsParams = computed(() => {
   const params: Record<string, any> = {
-    showAll: showAll.value
+    showAll: showAll.value,
+    size: 1000
   }
   if (plugins.value.length) params.plugins = plugins.value.join(',')
   if (owners.value.length) params.owners = owners.value.join(',')

@@ -30,7 +30,7 @@
     <v-card-text class="pb-0">
       <v-list-item
         v-if="catalog.description"
-        class="my-n2 pa-0"
+        class="my-n6 pa-0"
         density="compact"
         lines="three"
         :subtitle="catalog.description"
