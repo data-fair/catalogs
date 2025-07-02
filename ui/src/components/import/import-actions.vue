@@ -20,6 +20,21 @@
       {{ t('viewDataset') }}
     </v-list-item>
 
+    <v-list-item
+      v-if="imp.remoteResource.origin"
+      rounded
+      :href="imp.remoteResource.origin"
+      target="_blank"
+    >
+      <template #prepend>
+        <v-icon
+          color="primary"
+          :icon="mdiOpenInNew"
+        />
+      </template>
+      {{ t('viewRemoteResource') }}
+    </v-list-item>
+
     <v-menu
       v-model="showReImportMenu"
       :close-on-content-click="false"
@@ -187,6 +202,7 @@ const reImport = useAsyncAction(
     reImport: 'Re-import'
     reImportConfirm: 'Are you sure you want to re-import this resource? The already imported data will be overwritten.'
     viewDataset: 'View imported dataset'
+    viewRemoteResource: 'View remote resource'
     yes: 'Yes'
 
   fr:
@@ -198,6 +214,7 @@ const reImport = useAsyncAction(
     reImport: 'Importer à nouveau'
     reImportConfirm: 'Êtes-vous sûr de vouloir réimporter cette resource ? Les données déjà importées seront écrasées.'
     viewDataset: 'Voir le jeu de données importé'
+    viewRemoteResource: 'Voir la source des données'
     yes: 'Oui'
 
 </i18n>

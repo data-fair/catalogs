@@ -152,6 +152,10 @@ export default {
         },
         title: {
           type: 'string'
+        },
+        origin: {
+          type: 'string',
+          description: 'Origin of the remote resource. An url displayed in the UI.'
         }
       }
     },
