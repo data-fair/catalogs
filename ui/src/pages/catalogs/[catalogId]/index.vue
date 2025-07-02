@@ -89,7 +89,7 @@ const tabs = computed(() => {
 
 const deleteCatalog = useAsyncAction(
   async () => {
-    await $fetch(`/catalogs/${catalog.value?._id}?deletePublications=true`, { method: 'DELETE' })
+    await $fetch(`/catalogs/${catalog.value?._id}`, { method: 'DELETE' })
     await router.replace('/catalogs')
   },
   {

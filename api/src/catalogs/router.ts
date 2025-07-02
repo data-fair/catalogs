@@ -47,6 +47,7 @@ router.get('/', async (req, res) => {
     }
   } else {
     // Exclude catalogs marked for deletion
+    query.deletionRequested = { $ne: true } // Exclude from count
     queryWithFilters.deletionRequested = { $ne: true }
   }
 
@@ -158,17 +159,23 @@ router.delete('/:id', async (req, res) => {
 
   // Delete also all publications for this catalog if asked
   if (req.query.deletePublications) {
-    await mongo.publications.updateMany(
+    const result = await mongo.publications.updateMany(
       { 'catalog.id': req.params.id },
       { $set: { action: 'delete', status: 'waiting' } }
     )
 
-    // The catalog will be deleted by the publication task,
-    // After each publication is deleted
-    await mongo.catalogs.updateOne(
-      { _id: req.params.id },
-      { $set: { deletionRequested: true } }
-    )
+    if (result.modifiedCount === 0) {
+      // No publications found, delete the catalog directly
+      await mongo.catalogs.deleteOne({ _id: req.params.id })
+    } else {
+      // Publications found and marked for deletion
+      // The catalog will be deleted by the publication task,
+      // After each publication is deleted
+      await mongo.catalogs.updateOne(
+        { _id: req.params.id },
+        { $set: { deletionRequested: true } }
+      )
+    }
   } else { // Delete only publication's links
     await mongo.publications.deleteMany({ 'catalog.id': req.params.id })
     await mongo.catalogs.deleteOne({ _id: req.params.id })
