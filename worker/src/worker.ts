@@ -133,7 +133,9 @@ async function iter (task: Task, type: typeof types[number]) {
       await publicationTask.process(catalog, plugin, task as Publication)
     }
   } catch (e: any) {
+    // Normally we should not have errors here, they should be caught before
     debug('Error while process', type, task._id, e)
+    internalError('worker-task-failed', `Failed to process ${type} task : ${task._id}`)
     await collection.updateOne({ _id: task._id }, { $set: { status: 'error', error: e?.message || e } })
     await wsEmit(`${type}/${task._id}`, { status: 'error', error: e?.message || e })
   } finally {
@@ -156,6 +158,7 @@ async function acquireNext (type: typeof types[number]): Promise<Task | undefine
   while (await cursor?.hasNext()) {
     const task = (await cursor!.next())!
     const ack = await locks.acquire(`${type}:${task._id}`, 'worker-loop-iter')
+    await collection.updateOne({ _id: task._id }, { $set: { status: 'running', logs: [] } })
     if (!ack) continue
     return task
   }

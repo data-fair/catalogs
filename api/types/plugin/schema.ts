@@ -45,7 +45,7 @@ export default {
       type: 'object'
     },
     metadata: {
-      $ref: 'https://github.com/data-fair/lib/catalog#/$defs/metadata',
+      $ref: 'https://github.com/data-fair/types-catalogs/metadata',
     }
   }
 }

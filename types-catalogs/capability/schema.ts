@@ -1,0 +1,25 @@
+export default {
+  $id: 'https://github.com/data-fair/types-catalogs/capability',
+  'x-exports': ['types'],
+  type: 'string',
+  title: 'Capability',
+  description: `The list of capabilities that a catalog can have.
+- import: The plugin can list some resources organized in folders and import them
+- search: The plugin can use the search param 'q' in the list method
+- pagination: The plugin can paginate the results of the list method
+- additionalFilters: The plugin can use additional filters in the list method
+- importConfig: The plugin gives an import configuration schema
+- publishDataset: The plugin can publish a dataset
+- deletePublication: The plugin can delete a dataset or a resource published in a remote catalog
+- thumbnail: The plugin provides a thumbnail image`,
+  enum: [
+    'import',
+    'search',
+    'pagination',
+    'additionalFilters',
+    'importConfig',
+    'publishDataset',
+    'deletePublication',
+    'thumbnail'
+  ]
+}

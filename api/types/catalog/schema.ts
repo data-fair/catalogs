@@ -60,7 +60,7 @@ export default {
       type: 'array',
       description: 'Capabilities of this catalog, deduplicated from the plugin',
       items: {
-        $ref: 'https://github.com/data-fair/lib/catalog#/$defs/capability',
+        $ref: 'https://github.com/data-fair/types-catalogs/capability',
       },
       readOnly: true
     },

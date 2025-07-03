@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
   const params = (await import('../../doc/imports/get-req/index.ts')).returnValid(req.query)
   const sort = findUtils.sort(params.sort || 'lastImportDate:-1,created.date:-1')
   const { skip, size } = findUtils.pagination(params)
-  const project = findUtils.project(params.select)
+  const project = { logs: 0 } // Users cannot perform custom projections, and logs aren't returned when listing imports.
   const query = findUtils.filterPermissions(params, sessionState)
   const queryWithFilters = Object.assign(findUtils.query(params, { catalogId: 'catalog.id' }), query)
 

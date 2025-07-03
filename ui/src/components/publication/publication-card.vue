@@ -10,12 +10,7 @@
       >
         {{ t('publishAsResource') }}
       </div>
-      <div
-        v-if="publication.error"
-        class="text-error"
-      >
-        {{ t('error') }}: {{ publication.error }}
-      </div>
+      <!-- TODO: Show the last error if present -->
       <div v-if="publication.lastPublicationDate">
         {{ t('lastPublicationDate') }}: {{ dayjs(publication.lastPublicationDate).format('LLL') }}
       </div>

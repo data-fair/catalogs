@@ -13,9 +13,8 @@
     "node": "v24"
   },
   "files": [
-    "**/schema.json",
-    "**/*.js",
-    "**/*.d.ts"
+    "**.ts",
+    "**/.type/**"
   ],
   "license": "AGPL-3.0-only"
 }

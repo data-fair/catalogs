@@ -86,9 +86,9 @@ router.post('/:id', async (req, res) => {
 
   await mongo.publications.updateOne(
     { _id: req.params.id },
-    { $set: { status: 'waiting' }, $unset: { error: 1 } }
+    { $set: { status: 'waiting' }, $unset: { logs: 1 } }
   )
-  await wsEmit(`publication/${req.params.id}`, { status: 'waiting', error: undefined })
+  await wsEmit(`publication/${req.params.id}`, { status: 'waiting', logs: undefined })
 
   res.status(204).send()
 })
@@ -103,12 +103,12 @@ router.delete('/:id', async (req, res) => {
   } else {
     await mongo.publications.updateOne(
       { _id: req.params.id },
-      { $set: { action: 'delete', status: 'waiting' }, $unset: { error: 1 } }
+      { $set: { action: 'delete', status: 'waiting' }, $unset: { logs: 1 } }
     )
     await wsEmit(`publication/${req.params.id}`, {
       action: 'delete',
       status: 'waiting',
-      error: undefined
+      logs: undefined
     })
   }
 
