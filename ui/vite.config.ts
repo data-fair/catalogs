@@ -44,6 +44,9 @@ export default defineConfig({
           '@mdi/js': [
             'mdiAccount',
             'mdiAlert',
+            'mdiAlertCircle',
+            'mdiCheckCircle',
+            'mdiClock',
             'mdiCodeJson',
             'mdiCog',
             'mdiContentDuplicate',

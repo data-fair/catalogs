@@ -36,6 +36,10 @@ declare global {
   const markRaw: typeof import('vue')['markRaw']
   const mdiAccount: typeof import('@mdi/js')['mdiAccount']
   const mdiAlert: typeof import('@mdi/js')['mdiAlert']
+  const mdiAlertCircle: typeof import('@mdi/js')['mdiAlertCircle']
+  const mdiCheckCircle: typeof import('@mdi/js')['mdiCheckCircle']
+  const mdiChevronDown: typeof import('@mdi/js')['mdiChevronDown']
+  const mdiClock: typeof import('@mdi/js')['mdiClock']
   const mdiCodeJson: typeof import('@mdi/js')['mdiCodeJson']
   const mdiCog: typeof import('@mdi/js')['mdiCog']
   const mdiContentDuplicate: typeof import('@mdi/js')['mdiContentDuplicate']
@@ -179,6 +183,9 @@ declare module 'vue' {
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly mdiAccount: UnwrapRef<typeof import('@mdi/js')['mdiAccount']>
     readonly mdiAlert: UnwrapRef<typeof import('@mdi/js')['mdiAlert']>
+    readonly mdiAlertCircle: UnwrapRef<typeof import('@mdi/js')['mdiAlertCircle']>
+    readonly mdiCheckCircle: UnwrapRef<typeof import('@mdi/js')['mdiCheckCircle']>
+    readonly mdiClock: UnwrapRef<typeof import('@mdi/js')['mdiClock']>
     readonly mdiCodeJson: UnwrapRef<typeof import('@mdi/js')['mdiCodeJson']>
     readonly mdiCog: UnwrapRef<typeof import('@mdi/js')['mdiCog']>
     readonly mdiContentDuplicate: UnwrapRef<typeof import('@mdi/js')['mdiContentDuplicate']>

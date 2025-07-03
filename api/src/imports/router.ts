@@ -76,7 +76,6 @@ router.post('/', async (req, res) => {
 
   const validImport = await validateImport(imp)
   await mongo.imports.insertOne(validImport)
-  await wsEmit(`import/${validImport._id}`, validImport)
 
   res.status(201).json(validImport)
 })
@@ -132,8 +131,9 @@ router.patch('/:id', async (req, res) => {
     }
   }
   const patchedImport = await validateImport({ ...importDoc, ...req.body })
-
   await mongo.imports.updateOne({ _id: id }, patch)
+
+  await wsEmit(`import/${id}`, patchedImport)
   res.status(200).json(patchedImport)
 })
 

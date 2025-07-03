@@ -1,10 +1,18 @@
 <template data-iframe-height>
   <v-list-item
-    class="my-4"
+    class="mb-4"
     :title="t(`status.${imp.status}`, { statusDate })"
   >
     <template #prepend>
+      <v-progress-circular
+        v-if="imp.status === 'running'"
+        class="mr-4"
+        color="primary"
+        size="24"
+        indeterminate
+      />
       <v-icon
+        v-else
         :color="colorsByStatus[imp.status]"
         :icon="iconsByStatus[imp.status]"
       />
@@ -52,7 +60,6 @@
 <script setup lang="ts">
 import type { Log } from '@data-fair/types-catalogs'
 import type { Import } from '#api/types'
-import { mdiAlertCircle, mdiCheckCircle, mdiClockOutline, mdiLoading } from '@mdi/js'
 
 const { t } = useI18n()
 const { dayjs } = useLocaleDayjs()
@@ -111,8 +118,7 @@ const getIcon = (logs: Log[]) => {
 const formatDate = (date: string) => dayjs(date).format('DD/MM/YYYY HH:mm')
 
 const iconsByStatus = {
-  waiting: mdiClockOutline,
-  running: mdiLoading,
+  waiting: mdiClock,
   done: mdiCheckCircle,
   error: mdiAlert
 }
