@@ -17,8 +17,6 @@ declare module 'vue' {
     ImportCard: typeof import('./../src/components/import/import-card.vue')['default']
     ImportList: typeof import('./../src/components/import/import-list.vue')['default']
     ImportLog: typeof import('./../src/components/import/import-log.vue')['default']
-    ImportLogItem: typeof import('./../src/components/import/import-log-item.vue')['default']
-    ImportLogList: typeof import('./../src/components/import/import-log-list.vue')['default']
     ImportLogs: typeof import('./../src/components/import/import-logs.vue')['default']
     ImportsActions: typeof import('./../src/components/imports-actions.vue')['default']
     ImportSelectResource: typeof import('./../src/components/import/import-select-resource.vue')['default']

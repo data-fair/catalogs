@@ -44,6 +44,7 @@ export const start = async () => {
    *
    * Channel format:
    * - 'import/<importId>'
+   * - 'import/<importId>/logs'
    * - 'publication/<publicationId>'
    *
    * Can subscribe only to import and publication that the user is admin

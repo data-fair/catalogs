@@ -7,7 +7,7 @@
   >
     <v-row no-gutters>
       <v-col
-        v-if="$vuetify.display.mdAndUp"
+        v-if="$vuetify.display.mdAndUp && src"
         cols="2"
         class="d-flex align-center"
       >
@@ -18,7 +18,7 @@
       </v-col>
       <v-col
         cols="auto"
-        :class="$vuetify.display.mdAndUp ? '' : 'px-4'"
+        :class="$vuetify.display.mdAndUp && src ? '' : 'px-4'"
       >
         <h3 class="text-h5 my-3">
           {{ title }}

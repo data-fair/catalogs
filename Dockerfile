@@ -42,6 +42,8 @@ COPY api/config api/config
 COPY api/types api/types
 COPY api/doc api/doc
 COPY worker/config worker/config
+# To resolve local ref to types-catalogs
+COPY types-catalogs types-catalogs
 RUN npm run build-types
 
 # =============================

@@ -108,7 +108,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
       resource,
       error: err instanceof Error ? err.message : String(err)
     })
-    throw err
+    return
   }
   if (!resource) {
     internalError('worker-download-failed', 'Failed to download resource file without error')
@@ -121,13 +121,27 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
   } else {
     await logFunctions.info('Creating new Data Fair dataset', resource)
   }
+
   // Create datafair dataset and upload the file
   // If the import already has a dataFairDataset ID, update the existing dataset
-  const dataset = await createAndUploadDataset(
-    catalog,
-    resource,
-    imp.dataFairDataset?.id
-  )
+  let dataset
+  try {
+    dataset = await createAndUploadDataset(
+      catalog,
+      resource,
+      imp.dataFairDataset?.id
+    )
+  } catch (err) {
+    await logFunctions.error('Failed to upload resource file to Data Fair: ' + (err instanceof Error ? err.message : String(err)), err)
+    await mongo.imports.updateOne({ _id: imp._id }, { $set: { status: 'error' } })
+    await wsEmit(`import/${imp._id}`, { status: 'error' })
+    internalError('worker-upload-failed', 'Failed to upload resource file to Data Fair', {
+      catalogId: catalog._id,
+      resource,
+      error: err instanceof Error ? err.message : String(err)
+    })
+    return
+  }
 
   await logFunctions.info('Resource file uploaded successfully', dataset)
 

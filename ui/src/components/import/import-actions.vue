@@ -5,6 +5,7 @@
     density="compact"
     style="background-color: transparent;"
   >
+    <!-- Link to data-fair dataset -->
     <v-list-item
       v-if="imp.dataFairDataset"
       rounded
@@ -20,6 +21,7 @@
       {{ t('viewDataset') }}
     </v-list-item>
 
+    <!-- Link to remote resource -->
     <v-list-item
       v-if="imp.remoteResource.origin"
       rounded
@@ -35,6 +37,7 @@
       {{ t('viewRemoteResource') }}
     </v-list-item>
 
+    <!-- Re-import action -->
     <v-menu
       v-model="showReImportMenu"
       :close-on-content-click="false"
@@ -43,8 +46,9 @@
       <template #activator="{ props }">
         <v-list-item
           v-bind="props"
+          :title="t('reImport')"
+          :disabled="loading"
           rounded
-          :disabled="deleteImport.loading.value || imp.status === 'running' || imp.status === 'waiting'"
         >
           <template #prepend>
             <v-icon
@@ -52,13 +56,12 @@
               :icon="mdiDownload"
             />
           </template>
-          {{ t('reImport') }}
         </v-list-item>
       </template>
       <v-card
         rounded="lg"
-        :title="t('reImport')"
         variant="elevated"
+        :title="t('reImport')"
         :loading="reImport.loading.value ? 'warning' : undefined"
       >
         <v-card-text class="pb-0">
@@ -92,8 +95,9 @@
       <template #activator="{ props }">
         <v-list-item
           v-bind="props"
+          :title="t('deleteImport')"
+          :disabled="loading"
           rounded
-          :disabled="imp.status === 'waiting'"
         >
           <template #prepend>
             <v-icon
@@ -101,13 +105,12 @@
               :icon="mdiDelete"
             />
           </template>
-          {{ t('deleteImport') }}
         </v-list-item>
       </template>
       <v-card
         rounded="lg"
-        :title="t('deleteImport')"
         variant="elevated"
+        :title="t('deleteImport')"
         :loading="deleteImport.loading.value ? 'warning' : undefined"
       >
         <v-card-text class="pb-0">
@@ -189,6 +192,8 @@ const reImport = useAsyncAction(
     showReImportMenu.value = false
   }
 )
+
+const loading = computed(() => deleteImport.loading.value || reImport.loading.value || imp.status === 'running' || imp.status === 'waiting')
 
 </script>
 
