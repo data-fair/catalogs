@@ -6,6 +6,7 @@ import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
 import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 import axios from '@data-fair/lib-node/axios.js'
+import prepareLog from './logs.ts'
 import config from '#config'
 import mongo from '#mongo'
 
@@ -64,6 +65,7 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
       isResource: pub.action === 'addAsResource'
     },
     publicationSite: pub.publicationSite,
+    log: prepareLog(pub, 'publication')
   })
 
   // 4. Update the publication status
@@ -74,7 +76,6 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
   })
   pub.status = 'done'
   pub.lastPublicationDate = new Date().toISOString()
-  delete pub.error
   const validPublication = (await import('../../../api/types/publication/index.ts')).returnValid(pub)
 
   await mongo.publications.updateOne(
@@ -95,7 +96,8 @@ const deletePublication = async (catalog: Catalog, plugin: CatalogPlugin, pub: P
         catalogConfig: catalog.config,
         secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
         datasetId: pub.remoteDataset.id,
-        resourceId: pub.remoteResource?.id
+        resourceId: pub.remoteResource?.id,
+        log: prepareLog(pub, 'publication')
       })
     } catch (error: any) {
       internalError('worker-delete-publication-error', `Error while deleting publication: ${error.message}`, error)

@@ -6,12 +6,7 @@
     class="h-100 d-flex flex-column"
   >
     <v-card-text>
-      <div
-        v-if="imp.error"
-        class="text-error"
-      >
-        {{ t('error') }}: {{ imp.error }}
-      </div>
+      <!-- TODO: Show the last error if present -->
       <div v-if="imp.lastImportDate">
         {{ t('lastImportDate') }} {{ dayjs(imp.lastImportDate).format('LLL') }}
       </div>

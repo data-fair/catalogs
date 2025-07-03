@@ -30,6 +30,11 @@
       </v-form>
     </v-defaults-provider>
 
+    <import-logs
+      v-if="imp?.logs"
+      :imp="imp"
+    />
+
     <layout-actions>
       <import-actions :imp="importFetch.data.value" />
     </layout-actions>

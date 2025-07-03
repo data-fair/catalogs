@@ -288,9 +288,13 @@ export default {
       description: 'Date of the end of the last publication process',
       format: 'date-time'
     },
-    error: {
-      type: 'string',
-      description: 'Error message if the publication failed'
+    logs: {
+      type: 'array',
+      description: 'Logs of the last publication process',
+      items: {
+        $ref: 'https://github.com/data-fair/types-catalogs/log'
+      },
+      readOnly: true
     }
   },
   // JSON-Schema-to-typescript does not support conditional required properties

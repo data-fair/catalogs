@@ -190,9 +190,12 @@ export default {
         $ref: 'https://github.com/data-fair/catalogs/scheduling'
       }
     },
-    error: {
-      type: 'string',
-      description: 'Error message if the import failed',
+    logs: {
+      type: 'array',
+      description: 'Logs of the last import process',
+      items: {
+        $ref: 'https://github.com/data-fair/types-catalogs/log'
+      },
       readOnly: true
     }
   },

@@ -1,8 +1,24 @@
-import type { Capability, Folder, Metadata, Publication, Resource } from './.type/index.js'
-export * from './.type/index.js'
+// Import types from json schemas
+import type { Capability } from './capability/index.ts'
+import type { Folder } from './folder/index.ts'
+import type { Metadata } from './metadata/index.ts'
+import type { Publication } from './publication/index.ts'
+import type { Resource } from './resource/index.ts'
 
-/** Utility type to check if a type T includes a type U */
-type Includes<T extends any[], U> = U extends T[number] ? true : false
+// Import types from ts files
+import type { Includes } from './utils.ts'
+import type { LogFunctions } from './logs.ts'
+
+// Export types from json schemas
+export type { Capability } from './capability/index.ts'
+export type { Folder } from './folder/index.ts'
+export type { Log } from './log/index.ts'
+export type { Metadata } from './metadata/index.ts'
+export type { Publication } from './publication/index.ts'
+export type { Resource } from './resource/index.ts'
+
+// Export types from ts files
+export type { LogFunctions } from './logs.ts'
 
 /**
  * Generic catalog plugin interface.
@@ -161,7 +177,9 @@ export type GetResourceContext<TCatalogConfig> = {
   /** The ID of the remote resource to download */
   resourceId: string,
   /** The path to the working directory where the resource will be downloaded */
-  tmpDir: string
+  tmpDir: string,
+  /** The log functions to write logs during the processing */
+  log: LogFunctions
 }
 
 /**
@@ -193,7 +211,9 @@ export type PublishDatasetContext<TCatalogConfig> = {
     url: string,
     /** The template for the URL to view the dataset in the publication site, using url-template syntax. */
     datasetUrlTemplate: string
-  }
+  },
+  /** The log functions to write logs during the processing */
+  log: LogFunctions
 }
 
 /**
@@ -213,6 +233,8 @@ export type DeletePublicationContext<TCatalogConfig> = {
   datasetId: string,
   /** The ID of the resource to delete, if applicable */
   resourceId?: string
+  /** The log functions to write logs during the processing */
+  log: LogFunctions
 }
 
 /**
