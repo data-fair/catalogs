@@ -31,7 +31,7 @@ const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, {
     noCatalogs: You have not yet configured any catalog.
 
   fr:
-    noCatalogs: Vous n'avez pas encore configuré de calalogue.
+    noCatalogs: Vous n'avez pas encore configuré de catalogue.
 
 </i18n>
 

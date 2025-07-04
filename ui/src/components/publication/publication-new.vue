@@ -153,7 +153,7 @@ const existingPublication = computed(() => {
 })
 
 // Get the list of publication sites
-const publicationSites = useFetch<object[]>(`${$sitePath}/data-fair/api/v1/settings/${session.state.account.type}/${session.state.account.id}/publication-sites`)
+const publicationSites = useFetch<object[]>(`${$sitePath}/data-fair/api/v1/settings/${session.state.account.type}/${session.state.account.id}:*/publication-sites`)
 const formatedPublicationSites = computed(() => {
   if (!publicationSites.data.value) return {}
 
@@ -209,24 +209,24 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
 
 <i18n lang="yaml">
   en:
+    confirmOverwrite: Confirm overwrite
     createNewPublication: Create a new publication
+    no: No
+    overwriteMessage: This remote dataset is already published by the dataset "{datasetTitle}". Do you really want to overwrite this publication?
     publish: Publish
     tutorialMessage: You can publish your datasets to one or more catalogs. This publication will make your data easier to find and allow the Open Data community to engage with you.
-    confirmOverwrite: Confirm overwrite
-    overwriteMessage: This remote dataset is already published by the dataset "{datasetTitle}". Do you really want to overwrite this publication?
     viewSourceDataset: View source dataset
     yes: Yes
-    no: No
 
   fr:
+    confirmOverwrite: Confirmer l'écrasement
     createNewPublication: Créer une nouvelle publication
+    no: Non
+    overwriteMessage: Ce jeu de données distant est déjà publié par le jeu de données "{datasetTitle}". Souhaitez-vous vraiment écraser cette publication ?
     publish: Publier
     tutorialMessage: Vous pouvez publier vos jeux de données sur un ou plusieurs catalogues. Cette publication rendra vos données plus faciles à trouver et permettra à la communauté Open Data d'échanger avec vous.
-    confirmOverwrite: Confirmer l'écrasement
-    overwriteMessage: Ce jeu de données distant est déjà publié par le jeu de données "{datasetTitle}". Souhaitez-vous vraiment écraser cette publication ?
     viewSourceDataset: Voir le jeu de données source
     yes: Oui
-    no: Non
 </i18n>
 
 <style scoped>

@@ -130,10 +130,6 @@ export default {
       },
       additionalProperties: false,
       layout: {
-        // if: {
-        //   expr: 'rootData.dataFairDataset?.id',
-        //   pure: false
-        // },
         getItems: {
           url: '${context.origin}/data-fair/api/v1/datasets/${rootData.dataFairDataset?.id}',
           itemsResults: 'data.publicationSites ?? []',

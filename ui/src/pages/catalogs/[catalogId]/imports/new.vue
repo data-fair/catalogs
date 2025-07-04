@@ -200,35 +200,35 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
     catalogs: Catalogs
     createNewImport: Create a new import
     frequency:
-      monthly: Every month,
-      weekly: Every week,
       daily: Every day,
       hourly: ''
+      monthly: Every month,
+      weekly: Every week,
     imports: Imports
     previous: Previous
     step1:
-      title: Select Resource
       next: Next
+      title: Select Resource
     step2:
-      title: Import Configuration
       next: Import
+      title: Import Configuration
 
   fr:
     catalogs: Catalogues
     createNewImport: Créer un nouvel import
     frequency:
-      monthly: Tous les mois,
-      weekly: Toutes les semaines,
       daily: Tous les jours,
       hourly: ''
+      monthly: Tous les mois,
+      weekly: Toutes les semaines,
     imports: Imports
     previous: Précédent
     step1:
-      title: Sélection d'une ressource
       next: Suivant
+      title: Sélection d'une ressource
     step2:
-      title: Configuration de l'import
       next: Importer
+      title: Configuration de l'import
 
 </i18n>
 

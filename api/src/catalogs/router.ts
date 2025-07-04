@@ -117,8 +117,21 @@ router.patch('/:id', async (req, res) => {
     .filter(k => sessionState.user.adminMode || !(catalogSchema.properties)[k].readOnly)
   for (const key in req.body) {
     if (!acceptedParts.includes(key)) throw httpError(400, `Unsupported patch part ${key}`)
-    // check if the user has the right to change to this owner
-    if (key === 'owner') assertAccountRole(sessionState, req.body.owner, 'admin', { allAccounts: true })
+    // Check if the user has the right to change to this owner
+    if (key === 'owner') {
+      assertAccountRole(sessionState, req.body.owner, 'admin', { allAccounts: true })
+      // Change also all publications and imports to the new owner
+      const update: Record<string, string> = {
+        'owner.id': req.body.owner.id,
+        'owner.type': req.body.owner.type
+      }
+      if (req.body.owner.department) {
+        update['owner.department'] = req.body.owner.department
+        update['owner.departmentName'] = req.body.owner.departmentName
+      }
+      await mongo.publications.updateMany({ 'catalog.id': req.params.id }, { $set: update })
+      await mongo.imports.updateMany({ 'catalog.id': req.params.id }, { $set: update })
+    }
   }
   req.body.updated = {
     id: sessionState.user.id,

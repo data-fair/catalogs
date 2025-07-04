@@ -121,8 +121,8 @@ fetch('http://localhost:5600/data-fair/api/v1/settings/user/superadmin/publicati
       "type": "back-office",
       "id": "data-fair",
       "title": "Back Office",
-      "url": "http://localhost:5600/data-fair",
-      "datasetUrlTemplate": "http://localhost:5600/data-fair"
+      "url": "http://koumoul.com/data-fair",
+      "datasetUrlTemplate": "http://koumoul.com/data-fair"
     })
 })
 ```

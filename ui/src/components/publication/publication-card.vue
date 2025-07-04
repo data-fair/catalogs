@@ -192,10 +192,10 @@ const rePublish = useAsyncAction(
       running: 'Publication in progress'
       waiting: 'Waiting for publication'
     publicationStatusDelete:
-      done: 'Publication supprimée'
-      error: 'Suppression echouée'
-      running: 'En cour de suppression'
-      waiting: 'En attente suppression'
+      done: 'Publication deleted'
+      error: 'Deletion failed'
+      running: 'Deletion in progress'
+      waiting: 'Waiting for deletion'
     publicationTitle:
       catalog: '{title}'
       dataset: '{title}'

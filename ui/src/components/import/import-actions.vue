@@ -217,7 +217,7 @@ const loading = computed(() => deleteImport.loading.value || reImport.loading.va
     deleteOnlyLink: 'Supprimer uniquement le lien'
     no: 'Non'
     reImport: 'Importer à nouveau'
-    reImportConfirm: 'Êtes-vous sûr de vouloir réimporter cette resource ? Les données déjà importées seront écrasées.'
+    reImportConfirm: 'Êtes-vous sûr de vouloir réimporter cette ressource ? Les données déjà importées seront écrasées.'
     viewDataset: 'Voir le jeu de données importé'
     viewRemoteResource: 'Voir la source des données'
     yes: 'Oui'
