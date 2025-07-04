@@ -51,6 +51,7 @@ export const prepareCatalog = async (catalog: Catalog) => {
     config?: Catalog['config'],
     secrets?: Catalog['secrets'],
     capabilities?: Catalog['capabilities']
+    thumbnailUrl?: Catalog['thumbnailUrl']
   } = {}
 
   const plugin = await getPlugin(catalog.plugin)
@@ -68,5 +69,7 @@ export const prepareCatalog = async (catalog: Catalog) => {
       ret.secrets[key] = cipher(prepareRes.secrets[key], config.cipherPassword)
     }
   }
+  if (prepareRes.thumbnailUrl) ret.thumbnailUrl = prepareRes.thumbnailUrl
+
   return ret
 }

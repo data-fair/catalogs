@@ -48,16 +48,18 @@ type BaseCatalogPlugin<TCatalogConfig, TCapabilities extends Capability[]> = {
    *      If the received configuration already contains ****, the secret should not be copied.
    *      If the field is empty, it should delete the secret.
    * - update the capabilities of the catalog based on the configuration
+   * - provide a thumbnail URL dynamically based on the configuration (only if the 'thumbnailUrl' capability is included in the capabilities array)
    *
    * @param context.catalogConfig The catalog configuration, that can contain secrets to extract
    * @param context.capabilities The actuals capabilities of the catalog
    * @param context.secrets The actuals deciphered secrets of the catalog
-   * @returns A promise that resolves to an object containing the catalog configuration, capabilities, and secrets.
+   * @returns A promise that resolves to an object containing the catalog configuration, capabilities, secrets, and thumbnail URL.
    */
   prepare: (context: PrepareContext<TCatalogConfig, TCapabilities>) => Promise<{
     catalogConfig?: TCatalogConfig,
     capabilities?: TCapabilities,
-    secrets?: Record<string, string>
+    secrets?: Record<string, string>,
+    thumbnailUrl?: string
   }>
 }
 

@@ -64,6 +64,11 @@ export default {
       },
       readOnly: true
     },
+    thumbnailUrl: {
+      type: 'string',
+      description: 'URL of the catalog thumbnail, if available',
+      readOnly: true
+    },
     owner: {
       $ref: 'https://github.com/data-fair/lib/account',
       readOnly: true
