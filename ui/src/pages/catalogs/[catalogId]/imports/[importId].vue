@@ -154,24 +154,24 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
 
 <i18n lang="yaml">
   en:
-    logSection: Execution log of the last import
     catalogs: Catalogs
     errorSavingImport: Error while saving the import
     frequency:
-      monthly: Every month,
-      weekly: Every week,
       daily: Every day,
       hourly: ''
+      monthly: Every month,
+      weekly: Every week,
     imports: Imports
+    logSection: Execution log of the last import
 
   fr:
     catalogs: Catalogues
     errorSavingImport: Erreur lors de la modification de l'import
     frequency:
-      monthly: Tous les mois,
-      weekly: Toutes les semaines,
       daily: Tous les jours,
       hourly: ''
+      monthly: Tous les mois,
+      weekly: Toutes les semaines,
     imports: Imports
     logSection: Journal d'execution
 

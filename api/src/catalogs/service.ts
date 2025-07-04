@@ -1,4 +1,4 @@
-import type { SessionStateAuthenticated } from '@data-fair/lib-express'
+import { httpError, type SessionStateAuthenticated } from '@data-fair/lib-express'
 import type CatalogPlugin from '@data-fair/types-catalogs'
 import type { Catalog } from '#types'
 
@@ -55,11 +55,16 @@ export const prepareCatalog = async (catalog: Catalog) => {
   } = {}
 
   const plugin = await getPlugin(catalog.plugin)
-  const prepareRes = await plugin.prepare({
-    catalogConfig: catalog.config,
-    capabilities: catalog.capabilities,
-    secrets: decipherSecrets(catalog.secrets, config.cipherPassword)
-  })
+  let prepareRes
+  try {
+    prepareRes = await plugin.prepare({
+      catalogConfig: catalog.config,
+      capabilities: catalog.capabilities,
+      secrets: decipherSecrets(catalog.secrets, config.cipherPassword)
+    })
+  } catch (error: any) {
+    throw httpError(400, `Invalid configuration: ${error.message || 'Unknown error'}`)
+  }
 
   if (prepareRes.catalogConfig) ret.config = prepareRes.catalogConfig as Catalog['config']
   if (prepareRes.capabilities) ret.capabilities = prepareRes.capabilities
@@ -69,7 +74,7 @@ export const prepareCatalog = async (catalog: Catalog) => {
       ret.secrets[key] = cipher(prepareRes.secrets[key], config.cipherPassword)
     }
   }
-  if (prepareRes.thumbnailUrl) ret.thumbnailUrl = prepareRes.thumbnailUrl
+  if (prepareRes.thumbnailUrl !== undefined) ret.thumbnailUrl = prepareRes.thumbnailUrl
 
   return ret
 }

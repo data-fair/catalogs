@@ -258,24 +258,24 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
 
 <i18n lang="yaml">
 en:
+  alreadyImported: Already imported
+  format: Format
   import: Import
-  noItemsFound: No items found at this level
+  loading: Loading resources...
   name: Name
+  noItemsFound: No items found at this level
   search: Search...
   size: Size
-  format: Format
-  loading: Loading resources...
-  alreadyImported: Already imported
 
 fr:
+  alreadyImported: Déjà importé
+  format: Format
   import: Importer
-  noItemsFound: Aucun élément trouvé à ce niveau
+  loading: Chargement des ressources...
   name: Nom
+  noItemsFound: Aucun élément trouvé à ce niveau
   search: Rechercher...
   size: Taille
-  format: Format
-  loading: Chargement des ressources...
-  alreadyImported: Déjà importé
 </i18n>
 
 <style scoped>

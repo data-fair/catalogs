@@ -59,7 +59,7 @@
 
     <layout-actions>
       <imports-actions v-if="activeTab === 'imports'" />
-      <publications-actions v-else-if="activeTab === 'publications'" />
+      <!-- <publications-actions v-else-if="activeTab === 'publications'" /> -->
       <catalog-actions v-else-if="activeTab === 'configuration'" />
     </layout-actions>
   </v-container>
@@ -78,12 +78,12 @@ const tabs = computed(() => {
   const capabilities = catalog.value?.capabilities ?? []
   const tabs = []
   if (capabilities.includes('import')) {
-    tabs.push({ id: 'imports', title: t('imports'), icon: mdiDownload })
+    tabs.push({ id: 'imports', title: t('tab.imports'), icon: mdiDownload })
   }
   if (capabilities.includes('publishDataset')) {
-    tabs.push({ id: 'publications', title: t('publications'), icon: mdiUpload })
+    tabs.push({ id: 'publications', title: t('tab.publications'), icon: mdiUpload })
   }
-  tabs.push({ id: 'configuration', title: t('configuration'), icon: mdiCog })
+  tabs.push({ id: 'configuration', title: t('tab.configuration'), icon: mdiCog })
   return tabs
 })
 
@@ -110,7 +110,7 @@ watch(
 )
 
 const assetsUrl = computed(() => {
-  if (catalog.value?.thumbnailUrl) return catalog.value.thumbnailUrl
+  if (catalog.value?.capabilities.includes('thumbnailUrl') && catalog.value?.thumbnailUrl) return catalog.value.thumbnailUrl
   if (catalog.value?.capabilities.includes('thumbnail')) return `${$apiPath}/plugins/${catalog.value.plugin}/thumbnail`
   return new URL('~/assets/www.svg', import.meta.url).href
 })
@@ -118,8 +118,8 @@ const assetsUrl = computed(() => {
 
 <i18n lang="yaml">
   en:
-    catalogs: Catalogs
     catalogDeleted: Catalog deleted!
+    catalogs: Catalogs
     delete: Delete Catalog
     errorDeletingCatalog: Error deleting the catalog.
     errorFetchingCatalogText: The catalog may not exist or you may not have access rights to it (Did you select the wrong active account?).
@@ -130,8 +130,8 @@ const assetsUrl = computed(() => {
       imports: Imports
       publications: Publications
   fr:
-    catalogs: Catalogues
     catalogDeleted: Catalogue supprimé !
+    catalogs: Catalogues
     delete: Supprimer le catalogue
     errorDeletingCatalog: Erreur lors de la suppression du catalogue.
     errorFetchingCatalogText: Il est possible que le catalogue n'existe pas ou que vous n'ayez pas les droits d'accès sur ce dernier (Vous avez peut-être sélectionné le mauvais compte actif ?).
