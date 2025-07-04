@@ -4,6 +4,22 @@
     :to="`/catalogs/${catalog._id}`"
   >
     <v-card-item>
+      <!-- Plugin thumbnail -->
+      <template #prepend>
+        <v-avatar
+          v-if="catalog.capabilities.includes('thumbnailUrl') && catalog.thumbnailUrl"
+          :image="catalog.thumbnailUrl"
+          rounded="0"
+          size="32"
+        />
+        <v-avatar
+          v-else-if="catalog.capabilities.includes('thumbnail')"
+          :image="`${$apiPath}/plugins/${catalog.plugin}/thumbnail`"
+          rounded="0"
+          size="32"
+        />
+      </template>
+
       <!-- Owner -->
       <template #append>
         <owner-avatar
@@ -26,21 +42,8 @@
         />
       </template>
     </v-card-item>
-    <!-- <v-divider /> -->
-    <v-card-text class="pb-0">
-      <v-list-item
-        v-if="catalog.description"
-        class="my-n6 pa-0"
-        density="compact"
-        lines="three"
-        :subtitle="catalog.description"
-      />
-      <!-- <v-list-item class="my-n2 pa-0">
-        <template #prepend>
-          <v-icon :icon="mdiPuzzle" />
-        </template>
-        {{ pluginName }}
-      </v-list-item> -->
+    <v-card-text class="pb-0 text-truncate">
+      {{ catalog.description }}
     </v-card-text>
     <v-card-actions>
       <v-spacer />
