@@ -10,8 +10,8 @@ export default {
   privateEventsUrl: 'http://localhost:8088',
   secretKeys: {
     catalogs: 'secret-catalogs',
-    identities: 'secret-identities',
-    events: 'secret-events'
+    events: 'secret-events',
+    identities: 'secret-identities'
   },
   serveUi: false
 }

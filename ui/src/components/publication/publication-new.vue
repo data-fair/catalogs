@@ -140,7 +140,21 @@ const expandedPanel = ref([])
 const publicationSchema = computed(() => {
   const schema = clone(publicationSchemaBase)
   schema.required = ['catalog', 'action', 'dataFairDataset', 'publicationSite']
-  // TODO: make required remoteDataset if the action is not 'create'
+  // Make required the remoteDataset field only if the action
+  // is 'addAsResource' or 'overwrite'
+  schema.oneOf = [
+    {
+      properties: {
+        action: { enum: ['addAsResource', 'overwrite'] }
+      },
+      required: ['remoteDataset']
+    },
+    {
+      properties: {
+        action: { enum: ['create', 'delete'] }
+      }
+    }
+  ]
   return schema
 })
 
@@ -199,6 +213,11 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   density: 'comfortable',
   initialValidation: 'always',
   locale: session.lang.value,
+  // An error related to 'oneOf' is displayed without much reason.
+  // I am customizing the error message to mask the incorrect display of the error.
+  messages: {
+    errorOneOf: t('missingRemoteDataset'),
+  } as any,
   readOnlyPropertiesMode: 'hide',
   titleDepth: 4,
   validateOn: 'blur',
@@ -211,6 +230,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   en:
     confirmOverwrite: Confirm overwrite
     createNewPublication: Create a new publication
+    missingRemoteDataset: You must select a remote dataset to overwrite.
     no: No
     overwriteMessage: This remote dataset is already published by the dataset "{datasetTitle}". Do you really want to overwrite this publication?
     publish: Publish
@@ -221,6 +241,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   fr:
     confirmOverwrite: Confirmer l'écrasement
     createNewPublication: Créer une nouvelle publication
+    missingRemoteDataset: Vous devez sélectionner un jeu de données distant à écraser.
     no: Non
     overwriteMessage: Ce jeu de données distant est déjà publié par le jeu de données "{datasetTitle}". Souhaitez-vous vraiment écraser cette publication ?
     publish: Publier

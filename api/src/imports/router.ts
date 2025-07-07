@@ -3,13 +3,42 @@ import type { Import } from '#types'
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
-import { assertAccountRole, session, httpError } from '@data-fair/lib-express'
+import eventsQueue from '@data-fair/lib-node/events-queue.js'
+import { assertAccountRole, session, httpError, SessionStateAuthenticated } from '@data-fair/lib-express'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import mongo from '#mongo'
+import config from '#config'
 import findUtils from '#utils/find.ts'
 
 const router = Router()
 export default router
+
+/**
+ * Helper function to send events related to catalogs
+ * @param catalog The catalog object
+ * @param actionText The text describing the action (e.g. "a été créé")
+ * @param topicAction The action part of the topic key (e.g. "create", "delete")
+ * @param sessionState Optional session state for authentication
+ */
+export const sendImportEvent = (
+  imp: Import,
+  actionText: string,
+  topicAction: string,
+  sessionState: SessionStateAuthenticated
+) => {
+  if (!config.privateEventsUrl && !config.secretKeys.events) return
+
+  eventsQueue.pushEvent({
+    title: `L'import de la resource ${imp.remoteResource.title} ${actionText}`,
+    topic: { key: `catalogs:import-${topicAction}:${imp._id}` },
+    sender: imp.owner,
+    resource: {
+      type: 'catalog',
+      id: imp.catalog.id,
+      title: 'Catalogue associé : ' + imp.catalog.title,
+    }
+  }, sessionState)
+}
 
 /**
  * Check that an import object is valid
@@ -63,7 +92,7 @@ router.post('/', async (req, res) => {
   // Create new import if none exists
   const imp: Partial<Import> = { ...body }
   imp._id = nanoid()
-  imp.owner = sessionState.account
+  imp.owner = catalog.owner
   imp.status = 'waiting'
   imp.created = imp.updated = {
     id: sessionState.user.id,
@@ -77,6 +106,7 @@ router.post('/', async (req, res) => {
   const validImport = await validateImport(imp)
   await mongo.imports.insertOne(validImport)
 
+  sendImportEvent(validImport, 'a été créé', 'create', sessionState)
   res.status(201).json(validImport)
 })
 
@@ -133,6 +163,7 @@ router.patch('/:id', async (req, res) => {
   const patchedImport = await validateImport({ ...importDoc, ...req.body })
   await mongo.imports.updateOne({ _id: id }, patch)
 
+  sendImportEvent(patchedImport, 'a été mis à jour', 'update', sessionState)
   await wsEmit(`import/${id}`, patchedImport)
   res.status(200).json(patchedImport)
 })

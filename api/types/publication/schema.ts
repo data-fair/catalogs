@@ -164,10 +164,7 @@ export default {
       },
       layout: {
         cols: 6,
-        if: {
-          expr: '!context.catalog.id',
-          pure: false
-        },
+        if: '!context.catalog.id',
         props: {
           placeholder: 'Search for a catalog',
           'x-i18n-placeholder': {
@@ -202,10 +199,7 @@ export default {
       },
       layout: {
         cols: 6,
-        if: {
-          expr: '!context.dataFairDataset.id',
-          pure: false
-        },
+        if: '!context.dataFairDataset.id',
         props: {
           placeholder: 'Search for a dataset',
           'x-i18n-placeholder': {
@@ -242,10 +236,7 @@ export default {
         }
       },
       layout: {
-        if: {
-          expr: "parent.data.action === 'addAsResource' || parent.data.action === 'overwrite'",
-          pure: false
-        },
+        if: "parent.data.action === 'addAsResource' || parent.data.action === 'overwrite'",
         props: {
           placeholder: 'Search in the remote catalog...',
           'x-i18n-placeholder': {
@@ -293,9 +284,10 @@ export default {
       readOnly: true
     }
   },
-  // JSON-Schema-to-typescript does not support conditional required properties
+  // JSON-Schema-to-typescript does not support conditional required properties,
+  // but VJSF support it partially with `oneOf`, so we add it dynamically in the UI.
   // https://stackoverflow.com/questions/38717933/jsonschema-attribute-conditionally-required
-  // anyOf: [
+  // oneOf: [
   //   {
   //     properties: {
   //       action: { enum: ['addAsResource', 'overwrite'] }

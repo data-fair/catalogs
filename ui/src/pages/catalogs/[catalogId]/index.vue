@@ -57,10 +57,11 @@
       </v-tabs-window-item>
     </v-tabs-window>
 
-    <layout-actions>
-      <imports-actions v-if="activeTab === 'imports'" />
-      <!-- <publications-actions v-else-if="activeTab === 'publications'" /> -->
-      <catalog-actions v-else-if="activeTab === 'configuration'" />
+    <layout-actions v-if="activeTab === 'imports'">
+      <imports-actions />
+    </layout-actions>
+    <layout-actions v-else-if="activeTab === 'configuration'">
+      <catalog-actions />
     </layout-actions>
   </v-container>
 </template>

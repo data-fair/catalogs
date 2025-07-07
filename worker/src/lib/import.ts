@@ -8,6 +8,7 @@ import FormData from 'form-data'
 import tmp from 'tmp-promise'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
+import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 import axios from '@data-fair/lib-node/axios.js'
 import prepareLog from './logs.ts'
@@ -17,6 +18,42 @@ import mongo from '#mongo'
 const baseTmpDir = config.tmpDir || path.join(config.dataDir, 'tmp')
 fs.ensureDirSync(baseTmpDir)
 tmp.setGracefulCleanup()
+
+/**
+ * Handle errors during import operations, logging them and updating the import status.
+ * @param type - The type of import operation ('upload' or 'download').
+ * @param importId - The ID of the import operation.
+ * @param catalogId - The ID of the catalog associated with the import.
+ * @param resource - The resource being imported.
+ * @param err - The error that occurred.
+ * @param errorLog - A function to log the error.
+ */
+const handleImportError = async (type: 'upload' | 'download', imp: Import, catalogId: string, err: any, errorLog: ReturnType<typeof prepareLog>['error'], resource?: Resource) => {
+  await errorLog(`Failed to ${type} resource file: ` + (err instanceof Error ? err.message : String(err)), err)
+  await mongo.imports.updateOne({ _id: imp._id }, { $set: { status: 'error' } })
+  await wsEmit(`import/${imp._id}`, { status: 'error' })
+  internalError('worker-download-failed', 'Failed to download resource file', {
+    catalogId,
+    resource,
+    error: err instanceof Error ? err.message : String(err)
+  })
+  eventsQueue.pushEvent({
+    title: `L'import de la resource ${imp.remoteResource.title} à échoué`,
+    topic: { key: `catalogs:import-error:${imp._id}` },
+    sender: imp.owner,
+    resource: {
+      type: 'catalog',
+      id: imp.catalog.id,
+      title: 'Catalogue associé : ' + imp.catalog.title
+    },
+    originator: {
+      internalProcess: {
+        id: 'catalogs-worker',
+        name: 'Catalogs Worker'
+      }
+    }
+  })
+}
 
 /**
  * Create a Data Fair dataset and upload the resource file to it.
@@ -100,15 +137,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
       log: logFunctions
     })
   } catch (err) {
-    await logFunctions.error('Failed to download resource file')
-    await mongo.imports.updateOne({ _id: imp._id }, { $set: { status: 'error' } })
-    await wsEmit(`import/${imp._id}`, { status: 'error' })
-    internalError('worker-download-failed', 'Failed to download resource file', {
-      catalogId: catalog._id,
-      resource,
-      error: err instanceof Error ? err.message : String(err)
-    })
-    return
+    return await handleImportError('download', imp, catalog._id, err, logFunctions.error, resource)
   }
   if (!resource) {
     internalError('worker-download-failed', 'Failed to download resource file without error')
@@ -132,15 +161,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
       imp.dataFairDataset?.id
     )
   } catch (err) {
-    await logFunctions.error('Failed to upload resource file to Data Fair: ' + (err instanceof Error ? err.message : String(err)), err)
-    await mongo.imports.updateOne({ _id: imp._id }, { $set: { status: 'error' } })
-    await wsEmit(`import/${imp._id}`, { status: 'error' })
-    internalError('worker-upload-failed', 'Failed to upload resource file to Data Fair', {
-      catalogId: catalog._id,
-      resource,
-      error: err instanceof Error ? err.message : String(err)
-    })
-    return
+    return await handleImportError('upload', imp, catalog._id, err, logFunctions.error, resource)
   }
 
   await logFunctions.info('Resource file uploaded successfully', dataset)

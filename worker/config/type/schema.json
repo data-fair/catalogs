@@ -15,9 +15,10 @@
     "dataDir",
     "dataFairAPIKey",
     "host",
-    "privateDataFairUrl",
     "mongoUrl",
     "observer",
+    "privateDataFairUrl",
+    "secretKeys",
     "upgradeRoot",
     "worker"
   ],
@@ -35,10 +36,6 @@
       "type": "string",
       "description": "This is used to define the 'host' header in the requests to the DataFair API."
     },
-    "privateDataFairUrl": {
-      "type": "string",
-      "pattern": "^https?://"
-    },
     "mongoUrl": {
       "type": "string"
     },
@@ -50,6 +47,21 @@
         },
         "port": {
           "type": "number"
+        }
+      }
+    },
+    "privateDataFairUrl": {
+      "type": "string",
+      "pattern": "^https?://"
+    },
+    "privateEventsUrl": {
+      "type": "string"
+    },
+    "secretKeys": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "string"
         }
       }
     },

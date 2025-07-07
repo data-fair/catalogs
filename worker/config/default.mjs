@@ -3,11 +3,15 @@ export default {
   dataDir: '/app/data',
   dataFairAPIKey: undefined,
   host: undefined,
-  privateDataFairUrl: undefined,
   mongoUrl: 'mongodb://localhost:27017/data-fair-catalogs',
   observer: {
     active: true,
     port: 9090
+  },
+  privateDataFairUrl: undefined,
+  privateEventsUrl: undefined,
+  secretKeys: {
+    events: undefined
   },
   tmpDir: null,
   upgradeRoot: '/app/',
