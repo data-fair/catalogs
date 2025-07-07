@@ -5,15 +5,18 @@
   >
     <v-card-item>
       <!-- Plugin thumbnail -->
-      <template #prepend>
+      <template
+        v-if="thumbnailCapability"
+        #prepend
+      >
         <v-avatar
-          v-if="catalog.capabilities.includes('thumbnailUrl') && catalog.thumbnailUrl"
+          v-if="thumbnailCapability === 'url'"
           :image="catalog.thumbnailUrl"
           rounded="0"
           size="32"
         />
         <v-avatar
-          v-else-if="catalog.capabilities.includes('thumbnail')"
+          v-else-if="thumbnailCapability === 'path'"
           :image="`${$apiPath}/plugins/${catalog.plugin}/thumbnail`"
           rounded="0"
           size="32"
@@ -77,6 +80,12 @@ const { catalog, showOwner } = defineProps<{
   pluginName: string
   showOwner?: boolean
 }>()
+
+const thumbnailCapability = computed(() => {
+  if (catalog.capabilities.includes('thumbnail')) return 'path'
+  if (catalog.capabilities.includes('thumbnailUrl')) return 'url'
+  return null
+})
 
 </script>
 

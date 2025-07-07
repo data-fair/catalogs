@@ -32,7 +32,7 @@ const handleImportError = async (type: 'upload' | 'download', imp: Import, catal
   await errorLog(`Failed to ${type} resource file: ` + (err instanceof Error ? err.message : String(err)), err)
   await mongo.imports.updateOne({ _id: imp._id }, { $set: { status: 'error' } })
   await wsEmit(`import/${imp._id}`, { status: 'error' })
-  internalError('worker-download-failed', 'Failed to download resource file', {
+  internalError(`worker-${type}-failed`, 'Failed to download resource file', {
     catalogId,
     resource,
     error: err instanceof Error ? err.message : String(err)
@@ -148,7 +148,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
   if (imp.dataFairDataset?.id) {
     await logFunctions.info(`Updating existing Data Fair dataset ${imp.dataFairDataset.id}`, resource)
   } else {
-    await logFunctions.info('Creating new Data Fair dataset', resource)
+    await logFunctions.info('Creating new dataset', resource)
   }
 
   // Create datafair dataset and upload the file
@@ -171,6 +171,11 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
     dataFairDataset: {
       id: dataset.id,
       title: dataset.title,
+    },
+    remoteResource: {
+      id: imp.remoteResource.id,
+      title: resource.title,
+      origin: resource.origin
     },
     status: 'done' as const,
     lastImportDate: new Date().toISOString()

@@ -1,107 +1,103 @@
 <template>
-  <v-expansion-panels v-model="expandedPanel">
-    <v-expansion-panel
-      color="primary"
-      static
-      :title="t('createNewPublication')"
-      :expand-icon="mdiPlusCircle"
+  <tutorial-alert
+    id="tutorial-publications"
+    :text="t('tutorialMessage')"
+  />
+  <v-card-text class="pb-0">
+    <v-defaults-provider
+      :defaults="{
+        global: {
+          hideDetails: 'auto'
+        }
+      }"
     >
-      <v-expansion-panel-text>
-        <tutorial-alert
-          id="tutorial-publications"
-          :text="t('tutorialMessage')"
+      <v-form v-model="validPublication">
+        <vjsf
+          v-if="!publicationSites.loading.value"
+          v-model="newPublication"
+          :schema="publicationSchema"
+          :options="vjsfOptions"
         />
-        <v-defaults-provider
-          :defaults="{
-            global: {
-              hideDetails: 'auto'
-            }
-          }"
-        >
-          <v-form v-model="validPublication">
-            <vjsf
-              v-if="!publicationSites.loading.value"
-              v-model="newPublication"
-              :schema="publicationSchema"
-              :options="vjsfOptions"
-            />
-          </v-form>
-        </v-defaults-provider>
-        <v-menu
-          v-if="existingPublication"
-          v-model="showPublishConfirm"
-          :close-on-content-click="false"
-          max-width="500"
-        >
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              class="mt-2"
-              color="primary"
-              variant="flat"
-              :disabled="!validPublication"
-              :loading="createPublication.loading.value"
-            >
-              {{ t('publish') }}
-            </v-btn>
-          </template>
-          <v-card
-            rounded="lg"
-            :title="t('confirmOverwrite')"
-            variant="elevated"
-            :loading="createPublication.loading.value ? 'warning' : undefined"
-          >
-            <v-card-text class="pb-0">
-              <p>
-                {{ t('overwriteMessage', { datasetTitle: existingPublication?.dataFairDataset?.title || existingPublication?.dataFairDataset?.id }) }}
-              </p>
-              <p>
-                <a
-                  :href="`${$sitePath}/data-fair/dataset/${existingPublication?.dataFairDataset?.id}`"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {{ t('viewSourceDataset') }}
-                </a>
-              </p>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer />
-              <v-btn
-                :disabled="createPublication.loading.value"
-                @click="showPublishConfirm = false;"
-              >
-                {{ t('no') }}
-              </v-btn>
-              <v-btn
-                color="warning"
-                variant="flat"
-                :loading="createPublication.loading.value"
-                @click="createPublication.execute()"
-              >
-                {{ t('yes') }}
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-menu>
+      </v-form>
+    </v-defaults-provider>
+  </v-card-text>
+
+  <v-card-actions>
+    <v-spacer />
+    <v-menu
+      v-if="existingPublication"
+      v-model="showPublishConfirm"
+      :close-on-content-click="false"
+      max-width="500"
+    >
+      <template #activator="{ props }">
         <v-btn
-          v-else
+          v-bind="props"
           class="mt-2"
           color="primary"
           variant="flat"
           :disabled="!validPublication"
           :loading="createPublication.loading.value"
-          @click="createPublication.execute()"
         >
           {{ t('publish') }}
         </v-btn>
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-  </v-expansion-panels>
+      </template>
+      <v-card
+        rounded="lg"
+        :title="t('confirmOverwrite')"
+        variant="elevated"
+        :loading="createPublication.loading.value ? 'warning' : undefined"
+      >
+        <v-card-text class="pb-0">
+          <p>
+            {{ t('overwriteMessage', { datasetTitle: existingPublication?.dataFairDataset?.title || existingPublication?.dataFairDataset?.id }) }}
+          </p>
+          <p>
+            <a
+              :href="`${$sitePath}/data-fair/dataset/${existingPublication?.dataFairDataset?.id}`"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ t('viewSourceDataset') }}
+            </a>
+          </p>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            :disabled="createPublication.loading.value"
+            @click="showPublishConfirm = false;"
+          >
+            {{ t('no') }}
+          </v-btn>
+          <v-btn
+            color="warning"
+            variant="flat"
+            :loading="createPublication.loading.value"
+            @click="createPublication.execute()"
+          >
+            {{ t('yes') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-menu>
+    <v-btn
+      v-else
+      class="mt-2"
+      color="primary"
+      variant="flat"
+      :disabled="!validPublication"
+      :loading="createPublication.loading.value"
+      @click="createPublication.execute()"
+    >
+      {{ t('publish') }}
+    </v-btn>
+  </v-card-actions>
 </template>
 
 <script setup lang="ts">
 import type { Account } from '@data-fair/lib-common-types/session'
+import type { PublicationsGetRes } from '#api/doc'
 
 import tutorialAlert from '@data-fair/lib-vuetify/tutorial-alert.vue'
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
@@ -110,7 +106,6 @@ import { resolvedSchema as publicationSchemaBase } from '#api/types/publication/
 
 const { t } = useI18n()
 const session = useSessionAuthenticated()
-const publicationsStore = usePublicationsStore()
 
 // Optional default values
 const { catalog, dataFairDataset } = defineProps<{
@@ -125,6 +120,12 @@ const { catalog, dataFairDataset } = defineProps<{
   }
 }>()
 
+const emit = defineEmits<{ (e: 'on-create'): void }>()
+
+const publications = useFetch<PublicationsGetRes>(`${$apiPath}/publications`, {
+  query: { catalogId: catalog?.id, dataFairDatasetId: dataFairDataset?.id },
+})
+
 /** Set / Reset default values for the new publication */
 const initPublication = () => {
   const pub: Record<string, any> = {}
@@ -135,7 +136,6 @@ const initPublication = () => {
 const showPublishConfirm = ref(false)
 const validPublication = ref(false)
 const newPublication = ref<Record<string, any>>(initPublication())
-const expandedPanel = ref([])
 
 const publicationSchema = computed(() => {
   const schema = clone(publicationSchemaBase)
@@ -161,7 +161,7 @@ const publicationSchema = computed(() => {
 // Check if this remote dataset is not already published
 const existingPublication = computed(() => {
   if (newPublication.value?.action !== 'overwrite' || !newPublication.value?.remoteDataset) return undefined
-  return publicationsStore.publications.value.find(pub =>
+  return publications.data.value?.results.find(pub =>
     pub.remoteDataset?.id === newPublication.value.remoteDataset.id
   )
 })
@@ -184,15 +184,13 @@ const formatedPublicationSites = computed(() => {
 const createPublication = useAsyncAction(
   async () => {
     if (!validPublication.value) return
-    const publication = await $fetch('/publications', {
+    await $fetch('/publications', {
       method: 'POST',
       body: newPublication.value,
     })
     newPublication.value = initPublication()
-    await publicationsStore.refresh()
-    usePublicationWatch(publicationsStore, publication._id, 'update')
     showPublishConfirm.value = false
-    expandedPanel.value = []
+    emit('on-create')
   }
 )
 
@@ -229,8 +227,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
 <i18n lang="yaml">
   en:
     confirmOverwrite: Confirm overwrite
-    createNewPublication: Create a new publication
-    missingRemoteDataset: You must select a remote dataset to overwrite.
+    missingRemoteDataset: You must select a remote dataset.
     no: No
     overwriteMessage: This remote dataset is already published by the dataset "{datasetTitle}". Do you really want to overwrite this publication?
     publish: Publish
@@ -240,8 +237,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
 
   fr:
     confirmOverwrite: Confirmer l'écrasement
-    createNewPublication: Créer une nouvelle publication
-    missingRemoteDataset: Vous devez sélectionner un jeu de données distant à écraser.
+    missingRemoteDataset: Vous devez sélectionner un jeu de données distant.
     no: Non
     overwriteMessage: Ce jeu de données distant est déjà publié par le jeu de données "{datasetTitle}". Souhaitez-vous vraiment écraser cette publication ?
     publish: Publier

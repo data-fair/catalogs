@@ -44,11 +44,7 @@
       <v-tabs-window-item value="publications">
         <publication-list
           v-if="catalog.capabilities.includes('publishDataset')"
-          :catalog="{
-            id: catalog._id,
-            title: catalog.title,
-            owner: catalog.owner
-          }"
+          :catalog-id="catalog._id"
         />
       </v-tabs-window-item>
 
@@ -57,10 +53,7 @@
       </v-tabs-window-item>
     </v-tabs-window>
 
-    <layout-actions v-if="activeTab === 'imports'">
-      <imports-actions />
-    </layout-actions>
-    <layout-actions v-else-if="activeTab === 'configuration'">
+    <layout-actions>
       <catalog-actions />
     </layout-actions>
   </v-container>

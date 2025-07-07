@@ -151,7 +151,7 @@ const createImport = useAsyncAction(async () => {
   }
 
   // Create the import via API
-  await $fetch('/imports', {
+  const imp = await $fetch('/imports', {
     method: 'POST',
     body: newImport
   })
@@ -159,7 +159,7 @@ const createImport = useAsyncAction(async () => {
   selectedResource.value = null
   validImportConfig.value = false
   importConfig.value = {}
-  await router.replace({ path: `/catalogs/${catalog.value?._id}` })
+  await router.replace({ path: `/catalogs/${catalog.value?._id}/imports/${imp._id}` })
 })
 
 const handleNext = (next: () => void) => {

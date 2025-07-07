@@ -5,6 +5,34 @@
     density="compact"
     style="background-color: transparent;"
   >
+    <v-list-item
+      v-if="catalog.capabilities.includes('import')"
+      :to="`/catalogs/${catalog._id}/imports/new`"
+      rounded
+    >
+      <template #prepend>
+        <v-icon
+          color="primary"
+          :icon="mdiPlusCircle"
+        />
+      </template>
+      {{ t('createNewImport') }}
+    </v-list-item>
+
+    <v-list-item
+      v-if="catalog.capabilities.includes('publishDataset')"
+      :to="`/catalogs/${catalog._id}/publications/new`"
+      rounded
+    >
+      <template #prepend>
+        <v-icon
+          color="primary"
+          :icon="mdiPlusCircle"
+        />
+      </template>
+      {{ t('createNewPublication') }}
+    </v-list-item>
+
     <v-menu
       v-model="showDuplicateMenu"
       :close-on-content-click="false"
@@ -265,11 +293,13 @@ const duplicateCatalog = useAsyncAction(
     confirm: Confirm
     confirmDeleteCatalog: Do you really want to delete the catalog "{title}"? Deletion is permanent and data cannot be recovered.
     copy: " (copy)"
-    delete: Delete
+    createNewImport: Create new import
+    createNewPublication: Create new publication
+    delete: Delete catalog
     deleteCatalog: Delete catalog
     deletePublication: Delete also all publications of this catalog
     descriptionDuplicateCatalog: You are about to create a copy of the catalog "{title}".
-    duplicate: Duplicate
+    duplicate: Duplicate catalog
     duplicateCatalog: Duplicate catalog
     errorChangingOwner: Error while changing the owner
     errorDeletingCatalog: Error while deleting the catalog
@@ -289,11 +319,13 @@ const duplicateCatalog = useAsyncAction(
     confirm: Confirmer
     confirmDeleteCatalog: Voulez-vous vraiment supprimer le catalogue "{title}" ? La suppression est définitive et les données ne pourront pas être récupérées.
     copy: " (copie)"
-    delete: Supprimer
+    createNewImport: Créer un nouvel import
+    createNewPublication: Créer une nouvelle publication
+    delete: Supprimer le catalogue
     deleteCatalog: Suppression du catalogue
     deletePublication: Supprimer également toutes les publications de ce catalogue
     descriptionDuplicateCatalog: Vous êtes sur le point de créer une copie du catalogue "{title}".
-    duplicate: Dupliquer
+    duplicate: Dupliquer le catalogue
     duplicateCatalog: Duplication du catalogue
     errorChangingOwner: Erreur lors de le changement de propriétaire
     errorDeletingCatalog: Erreur lors de la suppression du catalogue

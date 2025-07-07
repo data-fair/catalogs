@@ -38,7 +38,6 @@ declare global {
   const mdiAlert: typeof import('@mdi/js')['mdiAlert']
   const mdiAlertCircle: typeof import('@mdi/js')['mdiAlertCircle']
   const mdiCheckCircle: typeof import('@mdi/js')['mdiCheckCircle']
-  const mdiChevronDown: typeof import('@mdi/js')['mdiChevronDown']
   const mdiClock: typeof import('@mdi/js')['mdiClock']
   const mdiCodeJson: typeof import('@mdi/js')['mdiCodeJson']
   const mdiCog: typeof import('@mdi/js')['mdiCog']

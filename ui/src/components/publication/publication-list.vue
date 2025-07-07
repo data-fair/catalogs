@@ -1,10 +1,4 @@
 <template data-iframe-height>
-  <publication-new
-    class="mb-4"
-    :catalog="catalog"
-    :data-fair-dataset="dataFairDataset"
-  />
-
   <v-row
     v-if="publicationsStore.publicationsFetch.loading.value"
     class="d-flex align-stretch"
@@ -27,7 +21,7 @@
     v-else-if="!publicationsStore.count.value"
     class="d-flex justify-center text-h6"
   >
-    {{ catalog
+    {{ !!catalogId
       ? t('noPublicationsFromCatalog')
       : t('noPublicationsFromDataset')
     }}
@@ -46,7 +40,7 @@
       >
         <publication-card
           :publication="publication"
-          :from-catalog="!!catalog"
+          :from-catalog="!!catalogId"
         />
       </v-col>
     </v-row>
@@ -54,23 +48,18 @@
 </template>
 
 <script setup lang="ts">
-import type { Account } from '@data-fair/lib-common-types/session'
 
 // Used to filter the publications
-const { catalog, dataFairDataset } = defineProps<{
-  catalog?: {
-    id: string
-    title?: string
-    owner?: Account
-  },
-  dataFairDataset?: {
-    id: string
-    title?: string
-  },
+const { catalogId, dataFairDatasetId } = defineProps<{
+  catalogId?: string,
+  dataFairDatasetId?: string
 }>()
 
+// Expose refresh method to parent component
+defineExpose({ refresh: () => publicationsStore.refresh() })
+
 const { t } = useI18n()
-const publicationsStore = providePublicationsStore(catalog?.id, dataFairDataset?.id)
+const publicationsStore = providePublicationsStore(catalogId, dataFairDatasetId)
 
 </script>
 
