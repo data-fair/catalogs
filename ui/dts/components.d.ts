@@ -18,7 +18,6 @@ declare module 'vue' {
     ImportList: typeof import('./../src/components/import/import-list.vue')['default']
     ImportLog: typeof import('./../src/components/import/import-log.vue')['default']
     ImportLogs: typeof import('./../src/components/import/import-logs.vue')['default']
-    ImportsActions: typeof import('./../src/components/imports-actions.vue')['default']
     ImportSelectResource: typeof import('./../src/components/import/import-select-resource.vue')['default']
     LayoutActions: typeof import('./../src/components/layout/layout-actions.vue')['default']
     LayoutActionsButton: typeof import('./../src/components/layout/layout-actions-button.vue')['default']

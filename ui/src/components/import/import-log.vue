@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex">
+  <div class="d-flex text-break">
     <span
       v-if="['info', 'warning', 'error'].includes(log.type)"
       :class="log.type === 'warning' ? 'text-info' : log.type === 'error' ? 'text-error' : ''"

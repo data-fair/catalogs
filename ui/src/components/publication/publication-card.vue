@@ -2,6 +2,7 @@
   <v-card
     :title="fromCatalog ? t('publicationTitle.catalog', { title: publication.dataFairDataset.title ?? publication.dataFairDataset.id }) : t('publicationTitle.dataset', { title: publication.catalog.title ?? publication.catalog.id })"
     :subtitle="publication.action === 'delete' ? t(`publicationStatusDelete.${publication.status}`) : t(`publicationStatus.${publication.status}`)"
+    class="h-100 d-flex flex-column"
   >
     <v-card-text class="pb-0">
       <div

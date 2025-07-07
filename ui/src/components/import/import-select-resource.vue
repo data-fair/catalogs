@@ -216,6 +216,7 @@ const getResourceIcon = (mimeType?: string | null): string => {
 const navigate = (folderId: string | null) => {
   currentFolderId.value = folderId
   currentPage.value = 1
+  search.value = '' // Clear search when navigating
 }
 
 /** Computed property to get current level data */
