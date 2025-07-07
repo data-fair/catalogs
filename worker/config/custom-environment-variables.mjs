@@ -3,11 +3,15 @@ export default {
   dataDir: 'DATA_DIR',
   dataFairAPIKey: 'DATA_FAIR_API_KEY',
   host: 'HOST',
-  privateDataFairUrl: 'PRIVATE_DATA_FAIR_URL',
   mongoUrl: 'MONGO_URL',
   observer: {
     active: 'OBSERVER_ACTIVE',
     port: 'OBSERVER_PORT'
+  },
+  privateDataFairUrl: 'PRIVATE_DATA_FAIR_URL',
+  privateEventsUrl: 'PRIVATE_EVENTS_URL',
+  secretKeys: {
+    events: 'SECRET_EVENTS'
   },
   tmpDir: 'TMP_DIR',
   worker: {

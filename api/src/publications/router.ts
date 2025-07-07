@@ -3,8 +3,10 @@ import type { Publication } from '#types'
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
+import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { assertAccountRole, session, httpError } from '@data-fair/lib-express'
 import mongo from '#mongo'
+import config from '#config'
 import findUtils from '#utils/find.ts'
 
 const router = Router()
@@ -64,7 +66,7 @@ router.post('/', async (req, res) => {
 
   const pub: Partial<Publication> = { ...body }
   pub._id = nanoid()
-  pub.owner = sessionState.account
+  pub.owner = catalog.owner
   pub.status = 'waiting'
   pub.created = {
     id: sessionState.user.id,
@@ -76,6 +78,18 @@ router.post('/', async (req, res) => {
   await mongo.publications.insertOne(validPublication)
   await wsEmit(`publication/${validPublication._id}`, validPublication)
 
+  // Emit an event for the publication
+  if (!config.privateEventsUrl && !config.secretKeys.events) return
+  eventsQueue.pushEvent({
+    title: `La publication pour le dataset ${validPublication.dataFairDataset.title} a été créée`,
+    topic: { key: `catalogs:publication-create:${validPublication._id}` },
+    sender: validPublication.owner,
+    resource: {
+      type: 'catalog',
+      id: validPublication.catalog.id,
+      title: 'Catalogue associé : ' + validPublication.catalog.title,
+    }
+  }, sessionState)
   res.status(201).json(validPublication)
 })
 

@@ -7,6 +7,7 @@ import resolvePath from 'resolve-path'
 import path from 'path'
 import { emit as wsEmit, init as wsInit } from '@data-fair/lib-node/ws-emitter.js'
 import { startObserver, stopObserver, internalError } from '@data-fair/lib-node/observer.js'
+import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import importTask from './lib/import.ts'
@@ -36,6 +37,15 @@ export const start = async () => {
   await upgradeScripts(db, locks, config.upgradeRoot)
   await wsInit(db)
   if (config.observer.active) await startObserver(config.observer.port)
+
+  // Configure events queue
+  if (config.privateEventsUrl) {
+    if (!config.secretKeys?.events) {
+      internalError('catalogs', 'Missing secretKeys.events in config')
+    } else {
+      await eventsQueue.start({ eventsUrl: config.privateEventsUrl, eventsSecret: config.secretKeys.events })
+    }
+  }
 
   mainLoopPromise = mainLoop()
 }
@@ -138,6 +148,23 @@ async function iter (task: Task, type: typeof types[number]) {
     internalError('worker-task-failed', `Failed to process ${type} task : ${task._id}`)
     await collection.updateOne({ _id: task._id }, { $set: { status: 'error' } })
     await wsEmit(`${type}/${task._id}`, { status: 'error' })
+    // Push an event to the queue
+    eventsQueue.pushEvent({
+      title: `${type === 'import' ? "L'import de la resource" : 'La publication du jeu de données'} ${type === 'import' ? (task as Import).remoteResource?.title : (task as Publication).dataFairDataset?.title} a échoué`,
+      topic: { key: `catalogs:${type}-error:${task._id}` },
+      sender: task.owner,
+      resource: {
+        type: 'catalog',
+        id: task.catalog.id,
+        title: 'Catalogue associé : ' + task.catalog.title
+      },
+      originator: {
+        internalProcess: {
+          id: 'catalogs-worker',
+          name: 'Catalogs Worker'
+        }
+      }
+    })
   } finally {
     await locks.release(`${type}:${task._id}`)
   }

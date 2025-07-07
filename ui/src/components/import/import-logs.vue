@@ -137,14 +137,14 @@ en:
     waiting: Waiting for import
     running: Import in progress
     done: Last import completed - {statusDate}
-    error: Last import failed - {statusDate}
+    error: Last import failed
 
 fr:
   status:
     waiting: En attente d'import
     running: En cours d'import
     done: Dernier import terminé - {statusDate}
-    error: Dernier import en erreur - {statusDate}
+    error: Dernier import en erreur
 </i18n>
 
 <style scoped>

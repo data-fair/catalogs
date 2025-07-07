@@ -4,6 +4,7 @@ import type { AxiosRequestConfig } from 'axios'
 
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
+import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 import axios from '@data-fair/lib-node/axios.js'
 import prepareLog from './logs.ts'
@@ -41,6 +42,23 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
   ) {
     const errorMsg = 'You do not have permission to publish this dataset in this catalog'
     await mongo.publications.updateOne({ _id: pub._id }, { $set: { status: 'error', error: errorMsg } })
+    await wsEmit(`publication/${pub._id}`, { status: 'error', error: errorMsg })
+    eventsQueue.pushEvent({
+      title: `La publication du jeu de données ${dataFairDataset.title} a échoué`,
+      topic: { key: `catalogs:publication-error:${pub._id}` },
+      sender: pub.owner,
+      resource: {
+        type: 'catalog',
+        id: pub.catalog.id,
+        title: 'Catalogue associé : ' + pub.catalog.title
+      },
+      originator: {
+        internalProcess: {
+          id: 'catalogs-worker',
+          name: 'Catalogs Worker'
+        }
+      }
+    })
     return internalError('worker-missing-permissions', errorMsg)
   }
 

@@ -5,6 +5,10 @@ export default {
   observer: {
     active: false
   },
+  privateEventsUrl: 'http://localhost:8088',
+  secretKeys: {
+    events: 'secret-events'
+  },
   worker: {
     interval: 100,
     killInterval: 2000,

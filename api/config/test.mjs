@@ -7,10 +7,11 @@ export default {
   },
   port: 8082,
   privateDirectoryUrl: 'http://localhost:8080',
+  privateEventsUrl: 'http://localhost:8088',
   secretKeys: {
     catalogs: 'secret-catalogs',
-    identities: 'secret-identities',
-    events: 'secret-events'
+    events: 'secret-events',
+    identities: 'secret-identities'
   },
   serveUi: false
 }
