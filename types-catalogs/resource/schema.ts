@@ -67,9 +67,12 @@ export default {
       description: 'The URL where the original data can be found'
     },
     schema: {
-      type: 'object',
-      additionalProperties: true,
-      description: 'The schema of the resource, if available'
+      type: 'array',
+      description: 'JSON schema properties of the fields in the file',
+      items: {
+        type: 'object',
+        additionalProperties: true,
+      }
     },
     size: {
       type: 'number',
