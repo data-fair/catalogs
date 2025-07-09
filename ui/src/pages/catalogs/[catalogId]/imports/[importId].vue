@@ -125,12 +125,13 @@ watch(importFetch.data, async (imp) => {
 })
 
 const importSchema = computed(() => {
-  const schema = jsonSchema(importSchemaBase)
-  if (catalog.value?.capabilities.includes('importConfig')) {
-    schema.addProperty('config', { ...plugin.value?.importConfigSchema })
-  }
+  const base = jsonSchema(importSchemaBase)
+    .pickProperties(['config', 'scheduling'])
 
-  return schema.makePatchSchema().schema
+  if (catalog.value?.capabilities.includes('importConfig')) {
+    base.addProperty('config', { ...plugin.value?.importConfigSchema })
+  }
+  return base.makePatchSchema().schema
 })
 
 const vjsfOptions = computed<VjsfOptions>(() => ({
@@ -142,7 +143,6 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   density: 'comfortable',
   initialValidation: 'always',
   locale: session.lang.value,
-  readOnlyPropertiesMode: 'hide',
   removeAdditional: true,
   titleDepth: 4,
   updateOn: 'blur',
