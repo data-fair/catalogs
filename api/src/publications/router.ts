@@ -81,7 +81,7 @@ router.post('/', async (req, res) => {
   // Emit an event for the publication
   if (!config.privateEventsUrl && !config.secretKeys.events) return
   eventsQueue.pushEvent({
-    title: `La publication pour le dataset ${validPublication.dataFairDataset.title} a été créée`,
+    title: `La publication pour le jeu de données ${validPublication.dataFairDataset.title || validPublication.dataFairDataset.id} a été créée`,
     topic: { key: `catalogs:publication-create:${validPublication._id}` },
     sender: validPublication.owner,
     resource: {

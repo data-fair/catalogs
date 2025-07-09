@@ -25,7 +25,7 @@
     "@data-fair/types-catalogs": "^0.2.0",
     "@intlify/unplugin-vue-i18n": "^6.0.5",
     "@koumoul/v-iframe": "^2.4.5",
-    "@koumoul/vjsf": "^3.15.1",
+    "@koumoul/vjsf": "^3.15.8",
     "@mdi/js": "^7.4.47",
     "@types/config": "^3.3.5",
     "@types/semver": "^7.7.0",
