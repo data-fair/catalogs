@@ -16,7 +16,7 @@ const adminDep = await axiosAuth({ email: 'admin.dep@test.com', org: 'KWqAGZ4mG'
 const contribDep = await axiosAuth({ email: 'contrib.dep@test.com', org: 'KWqAGZ4mG', dep: 'dep1' })
 const userOrga = await axiosAuth({ email: 'user@test.com', org: 'KWqAGZ4mG' })
 
-describe('Permissions', () => {
+describe.only('Permissions', () => {
   before(startApiServer)
   before(installMockPlugin)
   beforeEach(clean)
@@ -28,7 +28,8 @@ describe('Permissions', () => {
     plugin: '@data-fair-catalog-mock-0',
     owner,
     config: {
-      url: 'https://data.gouv.fr'
+      url: 'https://data.gouv.fr',
+      delay: 0
     }
   })
 

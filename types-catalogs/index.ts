@@ -7,7 +7,15 @@ import type { Resource } from './resource/index.ts'
 
 // Import types from ts files
 import type { Includes } from './utils.ts'
-import type { LogFunctions } from './logs.ts'
+import type {
+  PrepareContext,
+  ListContext,
+  ListResourcesContext,
+  GetResourceContext,
+  ListDatasetsContext,
+  PublishDatasetContext,
+  DeleteDatasetContext
+} from './contextes.ts'
 
 // Export types from json schemas
 export type { Capability } from './capability/index.ts'
@@ -19,6 +27,15 @@ export type { Resource } from './resource/index.ts'
 
 // Export types from ts files
 export type { LogFunctions } from './logs.ts'
+export type {
+  PrepareContext,
+  ListContext,
+  ListResourcesContext,
+  GetResourceContext,
+  ListDatasetsContext,
+  PublishDatasetContext,
+  DeleteDatasetContext
+} from './contextes.ts'
 
 /**
  * Generic catalog plugin interface.
@@ -28,8 +45,7 @@ export type { LogFunctions } from './logs.ts'
 export type CatalogPlugin<TCatalogConfig = object, TCapabilities extends Capability[] = Capability[]> =
   BaseCatalogPlugin<TCatalogConfig, TCapabilities> &
   (Includes<TCapabilities, 'import'> extends true ? WithImport<TCatalogConfig, TCapabilities> : {}) &
-  (Includes<TCapabilities, 'publishDataset'> extends true ? WithPublishDataset<TCatalogConfig> : {}) &
-  (Includes<TCapabilities, 'deletePublication'> extends true ? WithDeletePublication<TCatalogConfig> : {})
+  (Includes<TCapabilities, 'publication'> extends true ? WithPublication<TCatalogConfig> : {})
 
 type BaseCatalogPlugin<TCatalogConfig, TCapabilities extends Capability[]> = {
   metadata: CatalogMetadata<TCapabilities>
@@ -71,26 +87,48 @@ type BaseCatalogPlugin<TCatalogConfig, TCapabilities extends Capability[]> = {
  * @template TCapabilities - Array of capability types that the catalog supports
  */
 type WithImport<TCatalogConfig, TCapabilities extends Capability[]> = {
-  /** List available folders and resources in the catalog. */
-  list: (context: ListContext<TCatalogConfig, TCapabilities>) => Promise<{
+  /**
+   * List available folders and resources in the catalog.
+   *
+   * @deprecated Use `listResources` instead.
+   */
+  list?: (context: ListContext<TCatalogConfig, TCapabilities>) => Promise<{
     /** The total number of items in the current folder */
-    count: number;
+    count: number
     /** The list of folders and resources in the current folder, filtered with the search and pagination parameters */
     results: (Folder | Pick<Resource, 'id' | 'title' | 'description' | 'format' | 'mimeType' | 'origin' | 'size'> & { type: 'resource' })[],
     /** The path to the current folder, including the current folder itself, used to navigate back */
     path: Folder[]
-  }>;
+  }>
+
+  /**
+   * List available folders and resources in the catalog
+   */
+  listResources: (context: ListResourcesContext<TCatalogConfig, TCapabilities>) => Promise<{
+    /** The total number of items in the current folder */
+    count: number
+    /** The list of folders and resources in the current folder, filtered with the search and pagination parameters */
+    results: (Folder | Pick<Resource, 'id' | 'title' | 'description' | 'format' | 'mimeType' | 'origin' | 'size'> & { type: 'resource' })[],
+    /** The path to the current folder, including the current folder itself, used to navigate back */
+    path: Folder[]
+  }>
 
   /**
    * Download the resource to a temporary file and return the metadata of the resource.
    * @returns A promise that resolves to the metadata of the resource, including the path to the downloaded file.
    */
-  getResource: (context: GetResourceContext<TCatalogConfig>) => Promise<Resource | undefined>;
+  getResource: (context: GetResourceContext<TCatalogConfig>) => Promise<Resource | undefined>
 }
   & (Includes<TCapabilities, 'additionalFilters'> extends true ? { listFiltersSchema: Record<string, any> } : {})
   & (Includes<TCapabilities, 'importConfig'> extends true ? { importConfigSchema: Record<string, any> } : {})
 
-type WithPublishDataset<TCatalogConfig> = {
+type WithPublication<TCatalogConfig> = {
+  /** List available datasets in the catalog. */
+  listDatasets: (context: ListDatasetsContext<TCatalogConfig>) => Promise<{
+    /** The list of datasets in the current folder, filtered with the search and mode parameters */
+    results: { id: string, title: string }[]
+  }>
+
   /**
    * Publish/Update a dataset or add/update a resource to a dataset
    * @param catalogConfig The configuration of the catalog
@@ -100,143 +138,14 @@ type WithPublishDataset<TCatalogConfig> = {
    * @returns A promise that is resolved when the dataset is published
    */
   publishDataset: (context: PublishDatasetContext<TCatalogConfig>) => Promise<Publication>
-}
 
-type WithDeletePublication<TCatalogConfig> = {
   /**
    * Delete a dataset or remove a resource from a dataset
    * @param catalogConfig The configuration of the catalog
    * @param datasetId The id of the remoteDataset to delete, or the dataset where the resource to delete is
    * @param resourceId The id of the resource to delete
    */
-  deleteDataset: (context: DeletePublicationContext<TCatalogConfig>) => Promise<void>
-}
-
-/**
- * Context for preparing a catalog configuration.
- * @template TCatalogConfig - The type of the catalog configuration.
- * @template TCapabilities - The capabilities of the catalog.
- * @property catalogConfig - The catalog configuration, that can contain secrets to extract.
- * @property capabilities - The actuals capabilities of the catalog.
- * @property secrets - The actuals deciphered secrets of the catalog, if any.
- */
-export type PrepareContext<TCatalogConfig, TCapabilities extends Capability[]> = {
-  /** The catalog configuration, that can contain secrets to extract */
-  catalogConfig: TCatalogConfig,
-  /** The actuals capabilities of the catalog */
-  capabilities: TCapabilities,
-  /** The actuals deciphered secrets of the catalog */
-  secrets: Record<string, string>,
-}
-
-export type ListContext<TCatalogConfig, TCapabilities extends Capability[]> = {
-  /** The catalog configuration */
-  catalogConfig: TCatalogConfig,
-  /** The deciphered secrets of the catalog */
-  secrets: Record<string, string>,
-  /** The specific import configuration, if applicable */
-  params: ListParams<TCapabilities>
-}
-
-/**
- * Parameters for listing resources in a catalog.
- * @template TCapabilities - The capabilities of the catalog.
- * @property currentFolderId - The ID of the current folder used to list subfolders and resources.
- * @property q - The search field to filter resources when the 'search' capability is included.
- * @property page - The page number for pagination when the 'pagination' capability is included.
- * @property size - The number of items per page for pagination when the 'pagination' capability is included.
- * @property others - Additional filters for the list method when the 'additionalFilters' capability is included.
- */
-type ListParams<TCapabilities extends Capability[]> = {
-  /** The current level folder is used to list subfolders and resources. */
-  currentFolderId?: string
-} &
-  (Includes<TCapabilities, 'search'> extends true ? SearchParams : {}) &
-  (Includes<TCapabilities, 'pagination'> extends true ? PaginationParams : {}) &
-  (Includes<TCapabilities, 'additionalFilters'> extends true ? Record<string, string | number> : {})
-
-/** The params q is used to search resources */
-type SearchParams = { q?: string }
-/** The params page and size are used for pagination */
-type PaginationParams = { page?: number; size?: number }
-
-/**
- * Context for get and downloading a resource.
- * @template TCatalogConfig - The type of the catalog configuration.
- * @property catalogConfig - The catalog configuration.
- * @property secrets - The deciphered secrets of the catalog.
- * @property importConfig - The specific import configuration, if applicable.
- * @property resourceId - The ID of the remote resource to download.
- * @property tmpDir - The path to the working directory where the resource will be downloaded.
- */
-export type GetResourceContext<TCatalogConfig> = {
-  /** The catalog configuration */
-  catalogConfig: TCatalogConfig,
-  /** The deciphered secrets of the catalog */
-  secrets: Record<string, string>,
-  /** The specific import configuration, if applicable */
-  importConfig: Record<string, any>
-  /** The ID of the remote resource to download */
-  resourceId: string,
-  /** The path to the working directory where the resource will be downloaded */
-  tmpDir: string,
-  /** The log functions to write logs during the processing */
-  log: LogFunctions
-}
-
-/**
- * Context for publishing a dataset.
- * @template TCatalogConfig - The type of the catalog configuration.
- * @property catalogConfig - The catalog configuration.
- * @property secrets - The deciphered secrets of the catalog.
- * @property dataset - The datafair dataset to publish.
- * @property publication - The publication to process.
- * @property publicationSite - The site where the user will be redirected from the remote dataset.
- * @property publicationSite.title - The title of the publication site.
- * @property publicationSite.url - The URL of the publication site.
- * @property publicationSite.datasetUrlTemplate - The template for the URL to view the dataset in the publication site, using url-template syntax.
- */
-export type PublishDatasetContext<TCatalogConfig> = {
-  /** The catalog configuration */
-  catalogConfig: TCatalogConfig,
-  /** The deciphered secrets of the catalog */
-  secrets: Record<string, string>,
-  /** The datafair dataset to publish */
-  dataset: Record<string, any>,
-  /** The publication to process */
-  publication: Publication
-  /** The site where the user will be redirected from the remote dataset. */
-  publicationSite: {
-    /** The title of the publication site */
-    title: string,
-    /** The URL of the publication site */
-    url: string,
-    /** The template for the URL to view the dataset in the publication site, using url-template syntax. */
-    datasetUrlTemplate: string
-  },
-  /** The log functions to write logs during the processing */
-  log: LogFunctions
-}
-
-/**
- * Context for deleting a publication.
- * @template TCatalogConfig - The type of the catalog configuration.
- * @property catalogConfig - The catalog configuration.
- * @property secrets - The deciphered secrets of the catalog.
- * @property datasetId - The ID of the remote dataset to delete, or the dataset where the resource to delete is.
- * @property resourceId - The ID of the resource to delete, if applicable.
- */
-export type DeletePublicationContext<TCatalogConfig> = {
-  /** The catalog configuration */
-  catalogConfig: TCatalogConfig,
-  /** The deciphered secrets of the catalog */
-  secrets: Record<string, string>,
-  /** The ID of the remote dataset to delete, or the dataset where the resource to delete is */
-  datasetId: string,
-  /** The ID of the resource to delete, if applicable */
-  resourceId?: string
-  /** The log functions to write logs during the processing */
-  log: LogFunctions
+  deleteDataset: (context: DeleteDatasetContext<TCatalogConfig>) => Promise<void>
 }
 
 /**

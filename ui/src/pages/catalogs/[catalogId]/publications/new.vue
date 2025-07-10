@@ -1,7 +1,7 @@
 <template>
   <v-container
     data-iframe-height
-    style="min-height:500px"
+    style="min-height:800px"
   >
     <publication-new
       v-if="catalog"

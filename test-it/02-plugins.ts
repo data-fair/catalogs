@@ -13,7 +13,7 @@ const userOrga = await axiosAuth({ email: 'user@test.com', org: 'KWqAGZ4mG' })
 // Mock project : https://github.com/data-fair/catalog-mock
 const plugin = {
   name: '@data-fair/catalog-mock',
-  version: '0.2.1'
+  version: '0.4.0'
 }
 const pluginId = '@data-fair-catalog-mock-0'
 
@@ -50,7 +50,7 @@ describe('plugin', () => {
 
     assert.equal(res.data.name, '@data-fair/catalog-mock', 'Plugin name should match')
     assert.equal(pluginId, res.data.id, 'Plugin ID should match')
-    assert.equal(res.data.version, '0.2.1', 'Plugin version should match tarball version')
+    assert.equal(res.data.version, '0.4.0', 'Plugin version should match tarball version')
 
     // Only superadmin can install plugins
     await assert.rejects(

@@ -24,7 +24,7 @@ const getAxiosOptions = (catalog: Catalog): AxiosRequestConfig => {
 }
 
 export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication) => {
-  if (pub.action === 'delete') return await deletePublication(catalog, plugin, pub)
+  if (pub.action === 'delete') return await deleteDataset(catalog, plugin, pub)
 
   // 1. Get the Data Fair Dataset
   const dataFairDataset = (await axios.get(`/api/v1/datasets/${pub.dataFairDataset.id}`, getAxiosOptions(catalog))).data
@@ -63,7 +63,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
   }
 
   // Check if the plugin has the capability to publish (and delete) datasets
-  if (!plugin.metadata.capabilities.includes('publishDataset')) {
+  if (!plugin.metadata.capabilities.includes('publication')) {
     await mongo.publications.deleteOne({ _id: pub._id })
     return internalError('worker-missing-capabilities', 'found a publication without the capability to publish datasets, weird')
   }
@@ -96,16 +96,11 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
   pub.lastPublicationDate = new Date().toISOString()
   const validPublication = (await import('../../../api/types/publication/index.ts')).returnValid(pub)
 
-  await mongo.publications.updateOne(
-    { _id: pub._id },
-    {
-      $set: validPublication,
-      $unset: { error: 1 }
-    })
-  await wsEmit(`publication/${pub._id}`, { ...validPublication, error: undefined })
+  await mongo.publications.updateOne({ _id: pub._id }, { $set: validPublication })
+  await wsEmit(`publication/${pub._id}`, validPublication)
 }
 
-const deletePublication = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication) => {
+const deleteDataset = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication) => {
   if (!pub.remoteDataset) {
     internalError('worker-missing-remote-data', 'try do delete a publication without remote dataset, weird')
   } else {

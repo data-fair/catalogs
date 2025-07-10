@@ -147,7 +147,7 @@ const supportsPagination = computed(() => catalog.capabilities.includes('paginat
 const tableComponent = computed(() => supportsPagination.value ? VDataTableServer : VDataTable)
 
 // Fetch folder data based on current folder ID
-const fetchFolders = useFetch<Awaited<ReturnType<CatalogPlugin['list']>>>(
+const fetchFolders = useFetch<Awaited<ReturnType<CatalogPlugin['listResources']>>>(
   `${$apiPath}/catalogs/${catalog._id}/resources`, {
     query: computed(() => ({
       ...(currentFolderId.value && { currentFolderId: currentFolderId.value }),

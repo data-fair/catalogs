@@ -37,7 +37,7 @@ const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, {
   query: {
     sort: 'updated.date:-1',
     select: '_id,title,plugin,capabilities',
-    capabilities: 'publishDataset'
+    capabilities: 'publication'
   }
 })
 
