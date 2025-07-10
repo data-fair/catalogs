@@ -123,7 +123,12 @@ export const getPlugin = async (pluginId: string): Promise<CatalogPlugin> => {
     const pluginJson = JSON.parse(fs.readFileSync(pluginJsonPath, 'utf8'))
     const pluginPath = path.join(pluginsDir, pluginId, pluginJson.version, 'index.ts')
     if (!pluginPath) throw httpError(404, `No version found in plugin ${pluginId}`)
-    return (await import(pluginPath)).default
+    const plugin = (await import(pluginPath)).default
+
+    // For compatibility
+    if (plugin.list && !plugin.listResources) plugin.listResources = plugin.list
+
+    return plugin
   } catch (e: any) {
     if (e.message.includes('Cannot find module')) throw httpError(404, `Plugin ${pluginId} not found (or error in plugin : ${e.message})`)
     throw e // Rethrow other errors

@@ -172,7 +172,7 @@ export default {
           }
         },
         getItems: {
-          url: '${context.origin}/catalogs/api/catalogs?sort=updated.date:-1&select=_id,title&capabilities=publishDataset',
+          url: '${context.origin}/catalogs/api/catalogs?sort=updated.date:-1&select=_id,title&capabilities=publication',
           itemsResults: 'data.results',
           itemTitle: 'item.title',
           itemValue: '{ id: item._id, title: item.title }',
@@ -244,7 +244,7 @@ export default {
           }
         },
         getItems: {
-          url: '${context.origin}/catalogs/api/catalogs/${rootData.catalog.id}/resources',
+          url: '${context.origin}/catalogs/api/catalogs/${rootData.catalog.id}/datasets?mode=${rootData.action}',
           itemsResults: 'data.results',
           itemTitle: '`${item.title} (${item.id})`',
           itemValue: '{ id: item.id, title: item.title }',

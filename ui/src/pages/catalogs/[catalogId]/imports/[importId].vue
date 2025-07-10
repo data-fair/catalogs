@@ -1,7 +1,7 @@
 <template>
   <v-container
     v-if="imp"
-    style="min-height:500px"
+    style="min-height:800px"
     data-iframe-height
   >
     <h2 class="text-h5 mb-2">

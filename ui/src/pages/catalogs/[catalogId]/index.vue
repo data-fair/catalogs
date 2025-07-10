@@ -43,7 +43,7 @@
 
       <v-tabs-window-item value="publications">
         <publication-list
-          v-if="catalog.capabilities.includes('publishDataset')"
+          v-if="catalog.capabilities.includes('publication')"
           :catalog-id="catalog._id"
         />
       </v-tabs-window-item>
@@ -74,7 +74,7 @@ const tabs = computed(() => {
   if (capabilities.includes('import')) {
     tabs.push({ id: 'imports', title: t('tab.imports'), icon: mdiDownload })
   }
-  if (capabilities.includes('publishDataset')) {
+  if (capabilities.includes('publication')) {
     tabs.push({ id: 'publications', title: t('tab.publications'), icon: mdiUpload })
   }
   tabs.push({ id: 'configuration', title: t('tab.configuration'), icon: mdiCog })

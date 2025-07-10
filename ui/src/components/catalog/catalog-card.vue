@@ -57,8 +57,8 @@
         />
         {{ t('imports', catalog.importsCount || 0 ) }}
       </template>
-      <v-spacer v-if="catalog.capabilities.includes('import') && catalog.capabilities.includes('publishDataset')" />
-      <template v-if="catalog.capabilities.includes('publishDataset')">
+      <v-spacer v-if="catalog.capabilities.includes('import') && catalog.capabilities.includes('publication')" />
+      <template v-if="catalog.capabilities.includes('publication')">
         <v-icon
           color="primary"
           :icon="mdiUpload"
@@ -82,8 +82,8 @@ const { catalog, showOwner } = defineProps<{
 }>()
 
 const thumbnailCapability = computed(() => {
-  if (catalog.capabilities.includes('thumbnail')) return 'path'
   if (catalog.capabilities.includes('thumbnailUrl')) return 'url'
+  if (catalog.capabilities.includes('thumbnail')) return 'path'
   return null
 })
 
