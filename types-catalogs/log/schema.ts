@@ -21,7 +21,7 @@ export default {
       description: 'The message to log.'
     },
     extra: {
-      type: 'object',
+      // no type defined, can be any additional information
       description: 'Additional information about the log entry.',
     },
     key: {
