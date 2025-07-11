@@ -94,6 +94,7 @@ router.post('/', async (req, res) => {
   imp._id = nanoid()
   imp.owner = catalog.owner
   imp.status = 'waiting'
+  imp.waitingAt = new Date().toISOString()
   imp.created = imp.updated = {
     id: sessionState.user.id,
     name: sessionState.user.name,
@@ -112,12 +113,9 @@ router.post('/', async (req, res) => {
 
 router.patch('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  assertAccountRole(sessionState, sessionState.account, 'admin')
+  if (!req.params.id) throw httpError(400, 'Import ID is required')
 
-  const { id } = req.params
-  if (!id) throw httpError(400, 'Import ID is required')
-
-  const importDoc = await mongo.imports.findOne({ _id: id })
+  const importDoc = await mongo.imports.findOne({ _id: req.params.id })
   if (!importDoc) throw httpError(404, 'Import not found')
   assertAccountRole(sessionState, importDoc.owner, 'admin')
 
@@ -134,19 +132,31 @@ router.patch('/:id', async (req, res) => {
     if (key === 'owner') assertAccountRole(sessionState, req.body.owner, 'admin', { allAccounts: true })
   }
 
-  req.body.updated = {
-    id: sessionState.user.id,
-    name: sessionState.user.name,
-    date: new Date().toISOString()
+  // Only allow changing status to 'waiting' if not currently running
+  if (req.body.status) {
+    if (req.body.status !== 'waiting') {
+      throw httpError(400, 'Only changing status to waiting is allowed')
+    } else {
+      req.body.waitingAt = new Date().toISOString()
+    }
+    if (importDoc.status === 'running') {
+      throw httpError(400, 'The import is currently running, you cannot change its status')
+    }
   }
 
   // Set the next import date based on scheduling if scheduling was updated
   if (req.body.scheduling !== undefined) {
     if (Array.isArray(req.body.scheduling) && req.body.scheduling.length === 0) {
       req.body.nextImportDate = null
-    } else if (req.body.scheduling) {
+    } else {
       req.body.nextImportDate = getNextImportDate(req.body.scheduling)
     }
+  }
+
+  req.body.updated = {
+    id: sessionState.user.id,
+    name: sessionState.user.name,
+    date: new Date().toISOString()
   }
 
   const patch: Record<string, any> = { }
@@ -161,10 +171,10 @@ router.patch('/:id', async (req, res) => {
     }
   }
   const patchedImport = await validateImport({ ...importDoc, ...req.body })
-  await mongo.imports.updateOne({ _id: id }, patch)
+  await mongo.imports.updateOne({ _id: req.params.id }, patch)
 
-  sendImportEvent(patchedImport, 'a été mis à jour', 'update', sessionState)
-  await wsEmit(`import/${id}`, patchedImport)
+  sendImportEvent(patchedImport, 'a été modifié', 'update', sessionState)
+  await wsEmit(`import/${req.params.id}`, patchedImport)
   res.status(200).json(patchedImport)
 })
 

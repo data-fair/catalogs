@@ -159,15 +159,33 @@ export default {
         }
       }
     },
-    lastImportDate: {
+    nextImportDate: {
       type: 'string',
-      description: 'Date of the end of the last import process',
+      description: 'The scheduling date of its next import (transition to the "waiting" status)',
       format: 'date-time',
       readOnly: true
     },
-    nextImportDate: {
+    waitingAt: {
       type: 'string',
-      description: 'Date of the next scheduled import',
+      description: 'The date of its transition to the "waiting" status',
+      format: 'date-time',
+      readOnly: true
+    },
+    startedAt: {
+      type: 'string',
+      description: 'The date of its transition to the "running" status',
+      format: 'date-time',
+      readOnly: true
+    },
+    finishedAt: {
+      type: 'string',
+      description: 'The date of its transition to the "error" or "done" status',
+      format: 'date-time',
+      readOnly: true
+    },
+    lastImportDate: {
+      type: 'string',
+      description: 'The date of its last successful import (transition to the "done" status)',
       format: 'date-time',
       readOnly: true
     },

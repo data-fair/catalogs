@@ -28,15 +28,11 @@ tmp.setGracefulCleanup()
  * @param err - The error that occurred.
  * @param errorLog - A function to log the error.
  */
-const handleImportError = async (type: 'upload' | 'download', imp: Import, catalogId: string, err: any, errorLog: ReturnType<typeof prepareLog>['error'], resource?: Resource) => {
+const handleImportError = async (type: 'upload' | 'download', imp: Import, err: any, errorLog: ReturnType<typeof prepareLog>['error']) => {
   await errorLog(`Failed to ${type} resource file: ` + (err instanceof Error ? err.message : String(err)), err)
-  await mongo.imports.updateOne({ _id: imp._id }, { $set: { status: 'error' } })
-  await wsEmit(`import/${imp._id}`, { status: 'error' })
-  internalError(`worker-${type}-failed`, 'Failed to download resource file', {
-    catalogId,
-    resource,
-    error: err instanceof Error ? err.message : String(err)
-  })
+  await mongo.imports.updateOne({ _id: imp._id }, { $set: { status: 'error', finishedAt: new Date().toISOString() } })
+  await wsEmit(`import/${imp._id}`, { status: 'error', finishedAt: new Date().toISOString() })
+  internalError(`worker-${type}-failed`, `Failed to ${type} resource file`, imp)
   eventsQueue.pushEvent({
     title: `L'import de la resource ${imp.remoteResource.title} à échoué`,
     topic: { key: `catalogs:import-error:${imp._id}` },
@@ -58,14 +54,19 @@ const handleImportError = async (type: 'upload' | 'download', imp: Import, catal
 /**
  * Create a Data Fair dataset and upload the resource file to it.
  * If datasetId is provided, update the existing dataset instead of creating a new one.
+ * @param log - The logging functions for the import operation.
+ * @param catalog - The catalog to which the dataset belongs.
+ * @param resource - The resource to upload.
+ * @param datasetId - Optional ID of an existing dataset to update.
+ * @returns The dataset ID and title.
+ * @throws Will throw an error if the upload fails.
  */
-const createAndUploadDataset = async (
-  catalog: Catalog,
-  resource: Resource,
-  datasetId?: string
-): Promise<any> => {
+const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalog, resource: Resource, datasetId?: string) => {
+  await log.step('Upload resource to Data Fair')
+
   const formData = new FormData()
   if (!datasetId) {
+    await log.info('Creating new dataset')
     const datasetResource = {
       title: resource.title,
       description: resource.description,
@@ -77,6 +78,8 @@ const createAndUploadDataset = async (
       schema: resource.schema
     }
     formData.append('body', JSON.stringify(datasetResource))
+  } else {
+    await log.info(`Updating existing Data Fair dataset ${datasetId}`)
   }
   formData.append('dataset', fs.createReadStream(resource.filePath))
 
@@ -119,13 +122,14 @@ const createAndUploadDataset = async (
     })
   }
 
-  return dataset.data
+  await log.info(`Resource file uploaded successfully to ${dataset.data.title} (${dataset.data.id})`, dataset)
+  return { id: dataset.data.id, title: dataset.data.title }
 }
 
 export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Import) => {
   const tmpDir = await tmp.dir({ unsafeCleanup: true, tmpdir: baseTmpDir, prefix: `catalog-import-${catalog._id}-${imp._id}` })
 
-  let resource: Resource | undefined
+  let resource: Resource
   const logFunctions = prepareLog(imp, 'import')
   try {
     resource = await plugin.getResource({
@@ -137,34 +141,22 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
       log: logFunctions
     })
   } catch (err) {
-    return await handleImportError('download', imp, catalog._id, err, logFunctions.error, resource)
-  }
-  if (!resource) {
-    internalError('worker-download-failed', 'Failed to download resource file without error')
-    throw new Error('Failed to download resource file without error')
-  }
-
-  await logFunctions.step('Upload resource to Data Fair')
-  if (imp.dataFairDataset?.id) {
-    await logFunctions.info(`Updating existing Data Fair dataset ${imp.dataFairDataset.id}`, resource)
-  } else {
-    await logFunctions.info('Creating new dataset', resource)
+    return await handleImportError('download', imp, err, logFunctions.error)
   }
 
   // Create datafair dataset and upload the file
   // If the import already has a dataFairDataset ID, update the existing dataset
-  let dataset
+  let dataset: { id: string; title: string }
   try {
-    dataset = await createAndUploadDataset(
+    dataset = await uploadDataset(
+      logFunctions,
       catalog,
       resource,
       imp.dataFairDataset?.id
     )
   } catch (err) {
-    return await handleImportError('upload', imp, catalog._id, err, logFunctions.error, resource)
+    return await handleImportError('upload', imp, err, logFunctions.error)
   }
-
-  await logFunctions.info('Resource file uploaded successfully', dataset)
 
   // Update import document
   const newValues = {
@@ -178,6 +170,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
       origin: resource.origin
     },
     status: 'done' as const,
+    finishedAt: new Date().toISOString(),
     lastImportDate: new Date().toISOString()
   }
 

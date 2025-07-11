@@ -120,33 +120,45 @@ async function iter (task: Task, type: typeof types[number]) {
   const collection = type === 'import' ? mongo.imports : mongo.publications
 
   const catalog = await mongo.catalogs.findOne({ _id: task.catalog.id })
-  if (!catalog) {
+  if (!catalog) { // A task without catalog should not exist, log an error and delete the task
     await collection.deleteOne({ _id: task._id })
     return internalError('worker-missing-catalog', 'found a task without associated catalog, weird')
   }
-  debug(`Catalog ${catalog.title}`)
+  debug(`From catalog ${catalog.title} (${catalog._id})`)
 
   const pluginJsonPath = path.resolve(config.dataDir, 'plugins', catalog.plugin, 'plugin.json')
   const pluginJson = JSON.parse(fs.readFileSync(pluginJsonPath, 'utf8'))
   const pluginPath = path.resolve(config.dataDir, 'plugins', catalog.plugin, pluginJson.version, 'index.ts')
-
   const plugin: CatalogPlugin = (await import(pluginPath)).default
   if (!plugin) {
-    await collection.deleteOne({ _id: task._id })
-    return internalError('worker-missing-plugin', 'found a task without associated plugin, weird')
+    await collection.updateOne(
+      { _id: task._id },
+      { $set: { status: 'error', logs: [{ type: 'error', msg: 'Plugin not found', date: new Date().toISOString() }] } }
+    )
+    return internalError('worker-missing-plugin', `found a task using the missing plugin ${catalog.plugin} (${pluginJson.version}), weird`)
   }
+  debug(`Using plugin ${pluginJson.name} (${pluginJson.version})`)
 
   try {
     if (type === 'import') {
       await importTask.process(catalog, plugin, task as Import)
-    } else {
+    } else if (type === 'publication') {
       await publicationTask.process(catalog, plugin, task as Publication)
     }
   } catch (e: any) {
     // Normally we should not have errors here, they should be caught before
-    debug('Error while process', type, task._id, e)
-    internalError('worker-task-failed', `Failed to process ${type} task : ${task._id}`)
-    await collection.updateOne({ _id: task._id }, { $set: { status: 'error' } })
+    internalError('worker-task-failed', `Failed to process ${type} task : ${task._id}`, e)
+    await collection.updateOne({ _id: task._id }, {
+      $set: { status: 'error' },
+      $push: {
+        logs: {
+          type: 'error',
+          msg: 'An error occurred while processing the task',
+          extra: { error: e.message },
+          date: new Date().toISOString()
+        }
+      }
+    })
     await wsEmit(`${type}/${task._id}`, { status: 'error' })
     // Push an event to the queue
     eventsQueue.pushEvent({
@@ -221,6 +233,7 @@ async function scheduleImport () {
       {
         $set: {
           status: 'waiting',
+          waitingAt: new Date().toISOString(),
           nextImportDate: getNextImportDate(task.scheduling)
         }
       }
