@@ -117,7 +117,7 @@ type WithImport<TCatalogConfig, TCapabilities extends Capability[]> = {
    * Download the resource to a temporary file and return the metadata of the resource.
    * @returns A promise that resolves to the metadata of the resource, including the path to the downloaded file.
    */
-  getResource: (context: GetResourceContext<TCatalogConfig>) => Promise<Resource | undefined>
+  getResource: (context: GetResourceContext<TCatalogConfig>) => Promise<Resource>
 }
   & (Includes<TCapabilities, 'additionalFilters'> extends true ? { listFiltersSchema: Record<string, any> } : {})
   & (Includes<TCapabilities, 'importConfig'> extends true ? { importConfigSchema: Record<string, any> } : {})

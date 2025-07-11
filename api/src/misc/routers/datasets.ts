@@ -25,15 +25,11 @@ router.post('/', async (req, res) => {
     { $set: { status: 'waiting' } }
   )
 
-  // If the dataset is deleted, it will no longer be accessible in the catalog, so it must also be deleted from the catalog.
+  // If the dataset is deleted, it will no longer be accessible in the catalog,
+  // so it must also be deleted from the catalog.
   await mongo.publications.updateMany(
     { 'dataFairDataset.id': { $in: req.body.delete || [] } },
-    {
-      $set: {
-        action: 'delete',
-        status: 'waiting'
-      }
-    }
+    { $set: { action: 'delete', status: 'waiting' } }
   )
 
   // Delete import link if the dataset is deleted

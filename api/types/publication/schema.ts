@@ -270,10 +270,17 @@ export default {
         }
       }
     },
+    startedAt: {
+      type: 'string',
+      description: 'The date of its transition to the "running" status',
+      format: 'date-time',
+      readOnly: true
+    },
     lastPublicationDate: {
       type: 'string',
-      description: 'Date of the end of the last publication process',
-      format: 'date-time'
+      description: 'The date of its last successful publication (transition to the "done" status)',
+      format: 'date-time',
+      readOnly: true
     },
     logs: {
       type: 'array',

@@ -156,9 +156,7 @@ router.patch('/:id', async (req, res) => {
   Object.assign(patchedCatalog, preparedCatalog)
 
   await mongo.catalogs.updateOne({ _id: req.params.id }, patch)
-  if (config.privateEventsUrl && config.secretKeys.events) {
-    sendCatalogEvent(patchedCatalog, 'a été modifié', 'patch', sessionState)
-  }
+  sendCatalogEvent(patchedCatalog, 'a été modifié', 'patch', sessionState)
   delete patchedCatalog.secrets // Do not return secrets in the response
   res.status(200).json(patchedCatalog)
 })
@@ -193,13 +191,11 @@ router.delete('/:id', async (req, res) => {
     await mongo.publications.deleteMany({ 'catalog.id': req.params.id })
     await mongo.catalogs.deleteOne({ _id: req.params.id })
   }
-  // Delete all imports for this catalog
+  // Delete all imports for this catalog but not the imported datasets
   await mongo.imports.deleteMany({ 'catalog.id': req.params.id })
 
-  if (config.privateEventsUrl && config.secretKeys.events) {
-    const msg = req.query.deletePublications ? 'a été supprimé avec ses publications' : 'a été supprimé'
-    sendCatalogEvent(catalog, msg, 'delete', sessionState)
-  }
+  const msg = req.query.deletePublications ? 'a été supprimé avec ses publications' : 'a été supprimé'
+  sendCatalogEvent(catalog, msg, 'delete', sessionState)
   res.status(204).send()
 })
 
