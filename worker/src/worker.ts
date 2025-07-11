@@ -108,7 +108,7 @@ const mainLoop = async () => {
     promisePool[freeSlot] = iterPromise
     // empty the slot after the promise is finished
     // do not catch failure, they should trigger a restart of the loop
-    iterPromise.then(promisePool[freeSlot] = null)
+    iterPromise.then(() => { promisePool[freeSlot] = null })
   }
 }
 
@@ -179,22 +179,40 @@ async function acquireNext (type: typeof types[number]): Promise<Task | undefine
   if (type === 'import') scheduleImport()
 
   const cursor = collection.aggregate<Task>([
-    { $match: { status: 'waiting' } }, { $sample: { size: 10 } }
+    { $match: { status: { $in: ['waiting', 'running'] } } }, { $sample: { size: 10 } }
   ])
 
   while (await cursor?.hasNext()) {
     const task = (await cursor!.next())!
     const ack = await locks.acquire(`${type}:${task._id}`, 'worker-loop-iter')
-    await collection.updateOne({ _id: task._id }, { $set: { status: 'running', logs: [] } })
-    await wsEmit(`${type}/${task._id}`, { status: 'running', logs: [] })
     if (!ack) continue
+
+    // If the task is already running, and we can acquire the lock,
+    // it means the task was brutally interrupted
+    if (task.status === 'running') {
+      await collection.updateOne({ _id: task._id }, {
+        $set: { status: 'error' },
+        $push: {
+          logs: {
+            type: 'warning',
+            msg: 'The task was interrupted due to a maintenance operation',
+            date: new Date().toISOString()
+          }
+        }
+      })
+      await wsEmit(`${type}/${task._id}`, { status: 'error' })
+      continue
+    }
+
+    await collection.updateOne({ _id: task._id }, { $set: { status: 'running', startedAt: new Date().toISOString(), logs: [] } })
+    await wsEmit(`${type}/${task._id}`, { status: 'running', startedAt: new Date().toISOString(), logs: [] })
     return task
   }
 }
 
 async function scheduleImport () {
   const tasksToUpdate = await mongo.imports.find(
-    { status: { $ne: 'waiting' }, nextImportDate: { $lte: new Date().toISOString() } }
+    { status: { $nin: ['waiting', 'running'] }, nextImportDate: { $lte: new Date().toISOString() } }
   ).toArray()
 
   for (const task of tasksToUpdate) {
