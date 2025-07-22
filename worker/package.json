@@ -21,7 +21,7 @@
     "@data-fair/lib-node": "^2.8.1",
     "config": "^4.0.0",
     "debug": "^4.4.1",
-    "form-data": "^4.0.0",
+    "form-data": "^4.0.4",
     "fs-extra": "^11.3.0",
     "mongodb": "^6.16.0",
     "prom-client": "^15.1.3",
