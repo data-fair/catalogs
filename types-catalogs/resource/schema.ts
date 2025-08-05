@@ -77,6 +77,20 @@ export default {
     size: {
       type: 'number',
       description: 'The size of the resource in bytes, if available. It is displayed in the UI of catalogs.'
+    },
+    topics: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['title'],
+        additionalProperties: false,
+        properties: {
+          id: { type: 'string' },
+          title: { type: 'string' },
+          color: { type: 'string' },
+          icon: { type: 'object' }
+        }
+      }
     }
   }
 }
