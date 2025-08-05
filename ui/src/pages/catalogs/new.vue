@@ -201,6 +201,9 @@ setBreadcrumbs([{
 }])
 
 const vjsfOptions: VjsfOptions = {
+  context: {
+    owner: newOwner.value
+  },
   density: 'comfortable',
   initialValidation: 'always',
   locale: session.lang.value,

@@ -65,7 +65,7 @@ const patch = useAsyncAction(
 
 const vjsfOptions = computed<VjsfOptions>(() => ({
   context: {
-    owner: catalog.value?.owner || {}
+    owner: catalog.value?.owner
   },
   density: 'comfortable',
   initialValidation: 'always',
