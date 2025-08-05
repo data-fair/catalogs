@@ -75,7 +75,8 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
       license: resource.license,
       keywords: resource.keywords,
       origin: resource.origin,
-      schema: resource.schema
+      schema: resource.schema,
+      topics: resource.topics
     }
     formData.append('body', JSON.stringify(datasetResource))
   } else {
