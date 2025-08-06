@@ -123,7 +123,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
     })
   }
 
-  await log.info(`Resource file uploaded successfully to ${dataset.data.title} (${dataset.data.id})`, dataset)
+  await log.info(`Resource file uploaded successfully to ${dataset.data.title} (${dataset.data.id})`)
   return { id: dataset.data.id, title: dataset.data.title }
 }
 
