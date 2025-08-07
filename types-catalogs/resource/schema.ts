@@ -91,6 +91,54 @@ export default {
           icon: { type: 'object' }
         }
       }
+    },
+    attachments: {
+      type: 'array',
+      description: 'The list of files attached to the resource, if available',
+      items: {
+        type: 'object',
+        allOf: [
+          {
+            additionalProperties: false,
+            required: ['title'],
+            properties: {
+              title: {
+                type: 'string',
+                description: 'The title of the attachment'
+              },
+              description: {
+                type: 'string',
+                description: 'The description of the attachment'
+              }
+            }
+          }, {
+            oneOf: [
+              {
+                type: 'object',
+                required: ['filePath'],
+                additionalProperties: false,
+                properties: {
+                  filePath: {
+                    type: 'string',
+                    description: 'The path to the downloaded attachment file.'
+                  }
+                }
+              },
+              {
+                type: 'object',
+                required: ['url'],
+                additionalProperties: false,
+                properties: {
+                  url: {
+                    type: 'string',
+                    description: 'The URL where the attachment can be accessed.'
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
     }
   }
 }
