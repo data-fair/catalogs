@@ -62,7 +62,7 @@ const handleImportError = async (type: 'upload' | 'download', imp: Import, err: 
  * @throws Will throw an error if the upload fails.
  */
 const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalog, resource: Resource, datasetId?: string) => {
-  await log.step('Upload resource to Data Fair')
+  await log.step(`${datasetId ? 'Update existing dataset' : 'Create new dataset'}`)
 
   const formData = new FormData()
   if (!datasetId) {
@@ -80,7 +80,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
     }
     formData.append('body', JSON.stringify(datasetResource))
   } else {
-    await log.info(`Updating existing Data Fair dataset ${datasetId}`)
+    await log.info('Updating existing dataset')
   }
   formData.append('dataset', fs.createReadStream(resource.filePath))
 
@@ -91,7 +91,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
   const url = datasetId ? `/api/v1/datasets/${datasetId}` : '/api/v1/datasets'
 
   const dataset = await axios({
-    method: 'post',
+    method: 'POST',
     url,
     baseURL: config.privateDataFairUrl,
     data: formData,
@@ -109,8 +109,9 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
 
   // Convert to a simple file dataset if it's a remote file
   if (datasetId && dataset.data.remoteFile) {
+    await log.info(`Converting remote dataset ${dataset.data.id} to a simple file dataset`)
     await axios({
-      method: 'patch',
+      method: 'PATCH',
       url: `/api/v1/datasets/${dataset.data.id}`,
       baseURL: config.privateDataFairUrl,
       data: { remoteFile: null },
@@ -123,7 +124,59 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
     })
   }
 
-  await log.info(`Resource file uploaded successfully to ${dataset.data.title} (${dataset.data.id})`)
+  await log.info('Resource file uploaded successfully')
+
+  const attachments = []
+  if (resource.attachments && resource.attachments.length > 0 && !datasetId) {
+    await log.task('attachments', 'Uploading attachments to the dataset', resource.attachments.length)
+    for (const [index, attachment] of resource.attachments.entries()) {
+      if ('filePath' in attachment) {
+        const attachmentFormData = new FormData()
+        attachmentFormData.append('attachment', fs.createReadStream(attachment.filePath))
+        const newAttachment = await axios({
+          method: 'POST',
+          url: `/api/v1/datasets/${dataset.data.id}/metadata-attachments`,
+          baseURL: config.privateDataFairUrl,
+          data: attachmentFormData,
+          headers: {
+            ...attachmentFormData.getHeaders(),
+            'x-apiKey': config.dataFairAPIKey,
+            'x-account': JSON.stringify(catalog.owner),
+            'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
+            host: config.host
+          }
+        })
+        attachments.push({
+          type: 'file',
+          title: attachment.title,
+          description: attachment.description,
+          ...newAttachment.data
+        })
+      } else {
+        attachments.push({
+          type: 'url',
+          title: attachment.title,
+          description: attachment.description,
+          url: attachment.url
+        })
+      }
+      await log.progress('attachments', index + 1)
+    }
+    await axios({
+      method: 'PATCH',
+      url: `/api/v1/datasets/${dataset.data.id}`,
+      baseURL: config.privateDataFairUrl,
+      data: { attachments },
+      headers: {
+        'x-apiKey': config.dataFairAPIKey,
+        'x-account': JSON.stringify(catalog.owner),
+        'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
+        host: config.host
+      }
+    })
+  }
+
+  await log.info(`Import ${datasetId ? 'updated' : 'created'} successfully - Dataset "${dataset.data.title}" (${dataset.data.id})`)
   return { id: dataset.data.id, title: dataset.data.title }
 }
 
