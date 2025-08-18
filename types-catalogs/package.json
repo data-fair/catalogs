@@ -1,6 +1,6 @@
 {
   "name": "@data-fair/types-catalogs",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Shared schemas and built-in type definitions between the Catalogs service and its plugins.",
   "type": "module",
   "main": "index.ts",

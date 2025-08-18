@@ -68,6 +68,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
   if (!datasetId) {
     await log.info('Creating new dataset')
     const datasetResource = {
+      slug: resource.slug,
       title: resource.title,
       description: resource.description,
       frequency: resource.frequency,

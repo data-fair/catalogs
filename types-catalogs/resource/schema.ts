@@ -11,6 +11,10 @@ export default {
       type: 'string',
       description: 'The unique identifier of the resource, independent of the folder it is in'
     },
+    slug: {
+      type: 'string',
+      description: 'The URL-friendly identifier of the resource, usually a lowercase version of the title with hyphens instead of spaces'
+    },
     title: {
       type: 'string',
       description: 'The title of the resource'

@@ -121,7 +121,7 @@ const importConfig = ref<Partial<Import>>({})
 
 const importSchema = computed(() => {
   const base = jsonSchema(importSchemaBase)
-    .pickProperties(['config', 'scheduling'])
+    .pickProperties(['dataFairDataset', 'config', 'scheduling'])
 
   if (catalog.value?.capabilities.includes('importConfig')) {
     base.addProperty('config', { ...plugin.value?.importConfigSchema })
