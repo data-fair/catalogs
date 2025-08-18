@@ -245,7 +245,7 @@ const headers = computed(() => [
 
 const vjsfOptions = computed<VjsfOptions>(() => ({
   context: {
-    catalogConfig: catalog.config || {}, // Provide catalog configuration to Vjsf
+    catalogConfig: catalog.config, // Provide catalog configuration to Vjsf
   },
   density: 'comfortable',
   initialValidation: 'always',

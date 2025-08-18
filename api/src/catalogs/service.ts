@@ -47,12 +47,7 @@ export const validateCatalog = async (catalog: Partial<Catalog>) => {
 }
 
 export const prepareCatalog = async (catalog: Catalog) => {
-  const ret: {
-    config?: Catalog['config'],
-    secrets?: Catalog['secrets'],
-    capabilities?: Catalog['capabilities']
-    thumbnailUrl?: Catalog['thumbnailUrl']
-  } = {}
+  const ret: Partial<Pick<Catalog, 'config' | 'secrets' | 'capabilities' | 'thumbnailUrl'>> = {}
 
   const plugin = await getPlugin(catalog.plugin)
   let prepareRes
