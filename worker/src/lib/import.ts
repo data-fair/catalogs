@@ -89,6 +89,9 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
 
   // Use existing dataset ID if provided, otherwise create a new dataset
   const url = datasetId ? `/api/v1/datasets/${datasetId}` : '/api/v1/datasets'
+  const account = { ...catalog.owner }
+  if (account.name) account.name = encodeURIComponent(account.name)
+  if (account.departmentName) account.departmentName = encodeURIComponent(account.departmentName)
 
   const dataset = await axios({
     method: 'POST',
@@ -101,7 +104,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
       ...formData.getHeaders(),
       'content-length': contentLength.toString(),
       'x-apiKey': config.dataFairAPIKey,
-      'x-account': JSON.stringify(catalog.owner),
+      'x-account': JSON.stringify(account),
       'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
       host: config.host
     }
