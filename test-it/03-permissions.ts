@@ -237,6 +237,7 @@ describe.only('Permissions', () => {
 
     const createImportPayload = (catalogId: string) => ({
       catalog: { id: catalogId },
+      config: {},
       remoteResource: { id: 'test-resource' },
       scheduling: []
     })
