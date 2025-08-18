@@ -120,12 +120,13 @@ const validImportConfig = ref(false)
 const importConfig = ref<Partial<Import>>({})
 
 const importSchema = computed(() => {
-  const schema = jsonSchema(importSchemaBase)
+  const base = jsonSchema(importSchemaBase)
+    .pickProperties(['config', 'scheduling'])
 
   if (catalog.value?.capabilities.includes('importConfig')) {
-    schema.addProperty('config', { ...plugin.value?.importConfigSchema })
+    base.addProperty('config', { ...plugin.value?.importConfigSchema })
   }
-  return schema.makePatchSchema().schema
+  return base.schema
 })
 
 const createImport = useAsyncAction(async () => {

@@ -189,7 +189,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
     resource = await plugin.getResource({
       catalogConfig: catalog.config,
       secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
-      importConfig: imp.config || {},
+      importConfig: imp.config,
       resourceId: imp.remoteResource.id,
       tmpDir: tmpDir.path,
       log: logFunctions

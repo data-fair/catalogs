@@ -82,7 +82,7 @@ ws?.subscribe<Log>(`import/${route.params.importId}/logs`, (log) => {
 
 const patch = useAsyncAction(
   async () => {
-    // In VJSF, when we add a new item in an array, here like a scheduling,
+    // TODO: In VJSF, when we add a new item in an array, here like a scheduling,
     // valid stay true but the item added in the array is null (witout defaults values)
     // So we need to wait a bit to ensure the item is filled with defaults values
     await new Promise(resolve => setTimeout(resolve, 1))
@@ -128,7 +128,7 @@ const importSchema = computed(() => {
   if (catalog.value?.capabilities.includes('importConfig')) {
     base.addProperty('config', { ...plugin.value?.importConfigSchema })
   }
-  return base.makePatchSchema().schema
+  return base.schema
 })
 
 const vjsfOptions = computed<VjsfOptions>(() => ({

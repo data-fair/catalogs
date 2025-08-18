@@ -9,6 +9,7 @@
   >
     <v-form v-model="valid">
       <vjsf
+        v-if="editCatalog"
         v-model="editCatalog"
         :schema="catalogSchema"
         :options="vjsfOptions"
@@ -34,16 +35,17 @@ const session = useSessionAuthenticated()
 const { catalog, plugin } = useCatalogStore()
 
 const valid = ref(false)
-const editCatalog: Ref<Partial<Catalog>> = ref({
+const editCatalog: Ref<Partial<Catalog> | null> = ref(null)
+editCatalog.value = {
   title: catalog.value?.title,
   description: catalog.value?.description,
   config: catalog.value?.config
-})
+}
 
 const catalogSchema = computed(() => {
   const schema = jsonSchema(catalogSchemaBase)
+    .removeReadonlyProperties()
     .addProperty('config', { ...plugin.value?.configSchema, title: t('configuration') })
-    .makePatchSchema()
     .schema
   return schema
 })
@@ -53,7 +55,7 @@ const patch = useAsyncAction(
     if (!valid.value) return
     const res = await $fetch(`/catalogs/${catalog.value?._id}`, {
       method: 'PATCH',
-      body: JSON.stringify(editCatalog.value),
+      body: editCatalog.value,
     })
 
     if (catalog.value) Object.assign(catalog.value, res)

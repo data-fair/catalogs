@@ -14,6 +14,7 @@ export default {
     'owner',
     'created',
     'updated',
+    'config',
     'status',
     'catalog',
     'remoteResource',
