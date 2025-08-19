@@ -61,12 +61,15 @@ const handleImportError = async (type: 'upload' | 'download', imp: Import, err: 
  * @returns The dataset ID and title.
  * @throws Will throw an error if the upload fails.
  */
-const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalog, resource: Resource, datasetId?: string) => {
+const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalog, resource: Resource, imp: Import) => {
+  const datasetId = imp.dataFairDataset?.id
   await log.step(`${datasetId ? 'Update existing dataset' : 'Create new dataset'}`)
 
   const formData = new FormData()
-  if (!datasetId) {
-    await log.info('Creating new dataset')
+  if (!datasetId) await log.info('Creating new dataset')
+  else await log.info('Updating existing dataset')
+
+  if (!datasetId || imp.shouldUpdateMetadata) {
     const datasetResource = {
       slug: resource.slug,
       title: resource.title,
@@ -79,9 +82,9 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
       schema: resource.schema,
       topics: resource.topics
     }
+    if (datasetId) delete datasetResource.slug // never updating slug when updating
+    if (!imp.shouldUpdateSchema) delete datasetResource.schema
     formData.append('body', JSON.stringify(datasetResource))
-  } else {
-    await log.info('Updating existing dataset')
   }
   formData.append('dataset', fs.createReadStream(resource.filePath))
 
@@ -131,7 +134,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
   await log.info('Resource file uploaded successfully')
 
   const attachments = []
-  if (resource.attachments && resource.attachments.length > 0 && !datasetId) {
+  if (resource.attachments && resource.attachments.length > 0 && (!datasetId || imp.shouldUpdateMetadata)) {
     await log.task('attachments', 'Uploading attachments to the dataset', resource.attachments.length)
     for (const [index, attachment] of resource.attachments.entries()) {
       if ('filePath' in attachment) {
@@ -210,7 +213,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
       logFunctions,
       catalog,
       resource,
-      imp.dataFairDataset?.id
+      imp
     )
   } catch (err) {
     return await handleImportError('upload', imp, err, logFunctions.error)

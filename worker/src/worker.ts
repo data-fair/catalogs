@@ -224,7 +224,7 @@ async function acquireNext (type: typeof types[number]): Promise<Task | undefine
 
 async function scheduleImport () {
   const tasksToUpdate = await mongo.imports.find(
-    { status: { $nin: ['waiting', 'running'] }, nextImportDate: { $lte: new Date().toISOString() } }
+    { status: { $nin: ['waiting', 'running'] }, nextImportDate: { $lte: new Date().toISOString() }, isSchedulingActive: true }
   ).toArray()
 
   for (const task of tasksToUpdate) {

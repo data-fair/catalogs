@@ -105,7 +105,10 @@ watch(imp, (newImp) => {
     editImport.value = {
       config: newImp.config,
       dataFairDataset: newImp.dataFairDataset,
-      scheduling: newImp.scheduling
+      scheduling: newImp.scheduling,
+      isSchedulingActive: newImp.isSchedulingActive,
+      shouldUpdateMetadata: newImp.shouldUpdateMetadata,
+      shouldUpdateSchema: newImp.shouldUpdateSchema
     }
   }
 }, { immediate: true })
@@ -123,7 +126,7 @@ watch(importFetch.data, async (imp) => {
 
 const importSchema = computed(() => {
   const base = jsonSchema(importSchemaBase)
-    .pickProperties(['config', 'scheduling'])
+    .pickProperties(['config', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema', 'scheduling'])
 
   if (catalog.value?.capabilities.includes('importConfig')) {
     base.addProperty('config', { ...plugin.value?.importConfigSchema })

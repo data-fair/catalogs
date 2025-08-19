@@ -145,7 +145,7 @@ const existingImports = useFetch<{ results: Import[], count: number }>(
 
 const importSchema = computed(() => {
   const base = jsonSchema(importSchemaBase)
-    .pickProperties(['dataFairDataset', 'config', 'scheduling'])
+    .pickProperties(['dataFairDataset', 'config', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema', 'scheduling'])
 
   if (catalog.value?.capabilities.includes('importConfig')) {
     base.addProperty('config', { ...plugin.value?.importConfigSchema })
@@ -166,7 +166,10 @@ const createImport = useAsyncAction(async () => {
       title: selectedResource.value.title
     },
     scheduling: importConfig.value.scheduling,
-    config: importConfig.value.config || {}
+    config: importConfig.value.config || {},
+    isSchedulingActive: importConfig.value.isSchedulingActive,
+    shouldUpdateMetadata: importConfig.value.shouldUpdateMetadata,
+    shouldUpdateSchema: importConfig.value.shouldUpdateSchema
   }
   if (importConfig.value.dataFairDataset) {
     newImport.dataFairDataset = importConfig.value.dataFairDataset
@@ -245,7 +248,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   fr:
     catalogs: Catalogues
     createNewImport: Créer un nouvel import
-datasetFromImport:
+    datasetFromImport:
       text: Ce jeu de données à été créé depuis
       link: cet import
       textEnd: ". Si vous écrasez ce jeu de données, l'import existant sera supprimé."
