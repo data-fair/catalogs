@@ -54,10 +54,10 @@ router.get('/', async (req, res) => {
 
   const params = (await import('../../doc/imports/get-req/index.ts')).returnValid(req.query)
   const sort = findUtils.sort(params.sort || 'lastImportDate:-1,created.date:-1')
-  const { skip, size } = findUtils.pagination(params)
+  const { skip, size } = findUtils.pagination(params, 1000)
   const project = { logs: 0 } // Users cannot perform custom projections, and logs aren't returned when listing imports.
   const query = findUtils.filterPermissions(params, sessionState)
-  const queryWithFilters = Object.assign(findUtils.query(params, { catalogId: 'catalog.id' }), query)
+  const queryWithFilters = Object.assign(findUtils.query(params, { catalogId: 'catalog.id', dataFairDatasetId: 'dataFairDataset.id' }), query)
 
   const [results, count] = await Promise.all([
     size > 0 ? mongo.imports.find(queryWithFilters).limit(size).skip(skip).sort(sort).project(project).toArray() : Promise.resolve([]),
@@ -88,6 +88,17 @@ router.post('/', async (req, res) => {
   const catalog = await mongo.catalogs.findOne({ _id: body.catalog.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
   assertAccountRole(sessionState, catalog.owner, 'admin')
+
+  // Check if an import already exists for this DataFair dataset ID and delete it
+  if (body.dataFairDataset?.id) {
+    const existingImport = await mongo.imports.findOne({
+      'dataFairDataset.id': body.dataFairDataset.id
+    })
+    if (existingImport) {
+      await mongo.imports.deleteOne({ _id: existingImport._id })
+      sendImportEvent(existingImport, 'a été supprimé (remplacé par un nouvel import)', 'delete', sessionState)
+    }
+  }
 
   // Create new import if none exists
   const imp: Partial<Import> = { ...body }

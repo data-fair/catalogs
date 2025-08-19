@@ -25,6 +25,9 @@ export default {
     },
     catalogId: {
       type: 'string'
+    },
+    dataFairDatasetId: {
+      type: 'string'
     }
   }
 }

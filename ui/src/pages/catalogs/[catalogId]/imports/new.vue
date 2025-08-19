@@ -61,6 +61,25 @@
               </vjsf>
             </v-form>
           </v-defaults-provider>
+          <v-alert
+            v-if="existingImports.data.value?.count && importConfig.dataFairDataset?.id"
+            type="warning"
+            variant="outlined"
+            class="mt-4"
+          >
+            <template #text>
+              {{ t('datasetFromImport.text') }}
+              <a
+                v-if="existingImports.data.value?.results[0]?._id"
+                :href="`${$sitePath}/catalogs/catalogs/${catalog?._id}/imports/${existingImports.data.value.results[0]._id}`"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {{ t('datasetFromImport.link') }}
+              </a>
+              {{ t('datasetFromImport.textEnd') }}
+            </template>
+          </v-alert>
         </v-stepper-window-item>
       </v-stepper-window>
 
@@ -118,6 +137,11 @@ const step = ref('1')
 const selectedResource = ref<{ id: string, title: string, origin?: string } | null>(null)
 const validImportConfig = ref(false)
 const importConfig = ref<Partial<Import>>({})
+
+const existingImports = useFetch<{ results: Import[], count: number }>(
+  `${$apiPath}/imports`,
+  { query: computed(() => ({ dataFairDatasetId: importConfig.value.dataFairDataset?.id })) }
+)
 
 const importSchema = computed(() => {
   const base = jsonSchema(importSchemaBase)
@@ -200,6 +224,10 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   en:
     catalogs: Catalogs
     createNewImport: Create a new import
+    datasetFromImport:
+      text: This dataset was created from
+      link: this import
+      textEnd: ". If you overwrite this dataset, the existing import will be deleted."
     frequency:
       daily: Every day,
       hourly: ''
@@ -217,6 +245,10 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
   fr:
     catalogs: Catalogues
     createNewImport: Créer un nouvel import
+datasetFromImport:
+      text: Ce jeu de données à été créé depuis
+      link: cet import
+      textEnd: ". Si vous écrasez ce jeu de données, l'import existant sera supprimé."
     frequency:
       daily: Tous les jours,
       hourly: ''
