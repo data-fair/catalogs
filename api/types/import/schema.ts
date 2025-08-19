@@ -160,6 +160,48 @@ export default {
         }
       }
     },
+    isSchedulingActive: {
+      type: 'boolean',
+      title: 'Enable scheduling',
+      'x-i18n-title': {
+        fr: 'Activer la planification'
+      },
+      default: true,
+      layout: {
+        comp: 'switch',
+        cols: 4
+      }
+    },
+    shouldUpdateMetadata: {
+      type: 'boolean',
+      title: 'Force metadata update',
+      'x-i18n-title': {
+        fr: 'Forcer la mise à jour des métadonnées',
+      },
+      description: 'Overwrite dataset metadata (title, description, attachments, etc.) with values from the import, even if you have modified them.',
+      'x-i18n-description': {
+        fr: 'Écrase les métadonnées du jeu de données (titre, description, pièces jointes, etc.) par celles issues de l\'import, même si vous les avez modifiées.'
+      },
+      default: false,
+      layout: {
+        cols: 4
+      }
+    },
+    shouldUpdateSchema: {
+      type: 'boolean',
+      title: 'Force schema update',
+      'x-i18n-title': {
+        fr: 'Forcer la mise à jour du schéma',
+      },
+      description: 'Overwrite dataset schema with values from the import, even if you have modified them.',
+      'x-i18n-description': {
+        fr: 'Écrase le schéma du jeu de données par celui issu de l\'import, même si vous l\'avez modifié.'
+      },
+      default: false,
+      layout: {
+        cols: 4
+      }
+    },
     nextImportDate: {
       type: 'string',
       description: 'The scheduling date of its next import (transition to the "waiting" status)',
@@ -192,13 +234,13 @@ export default {
     },
     scheduling: {
       type: 'array',
-      title: 'Scheduling Rules',
+      title: 'Import scheduling',
       'x-i18n-title': {
         fr: 'Planification de l\'import'
       },
       layout: {
         messages: {
-          addItem: 'Add a scheduling rule',
+          addItem: 'Add scheduling rule',
           'x-i18n-addItem': {
             fr: 'Ajouter une règle de planification'
           }
