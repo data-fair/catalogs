@@ -21,12 +21,32 @@ export default {
         dayOfMonth: {
           title: 'Day of the Month',
           'x-i18n-title': {
-            fr: 'Jour du mois'
+            fr: 'Jour fixe dans le mois'
           },
           type: 'integer',
           minimum: 1,
           maximum: 28,
-          default: 1
+          default: 1,
+          layout: {
+            cols: 6,
+            switch: [
+              {
+                if: 'parent.data?.lastDayOfMonth',
+                props: {
+                  disabled: true
+                }
+              }
+            ]
+          }
+        },
+        lastDayOfMonth: {
+          title: 'Last Day of the Month',
+          'x-i18n-title': {
+            fr: 'Dernier jour du mois'
+          },
+          type: 'boolean',
+          default: false,
+          layout: { cols: 6 }
         },
         hour: {
           $ref: '#/$defs/hour'
@@ -51,7 +71,7 @@ export default {
         dayOfWeek: {
           title: 'Day of the Week',
           'x-i18n-title': {
-            fr: 'Jour dans la semaine'
+            fr: 'Jour fixe dans la semaine'
           },
           type: 'string',
           oneOf: [
@@ -168,7 +188,7 @@ export default {
     hour: {
       title: 'Hour',
       'x-i18n-title': {
-        fr: 'Heure'
+        fr: 'Heure fixe dans le jour'
       },
       type: 'integer',
       minimum: 0,
@@ -179,7 +199,7 @@ export default {
     minute: {
       title: 'Minute',
       'x-i18n-title': {
-        fr: 'Minute'
+        fr: 'Minute fixe dans l\'heure'
       },
       type: 'integer',
       minimum: 0,

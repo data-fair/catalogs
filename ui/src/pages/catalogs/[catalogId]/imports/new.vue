@@ -44,6 +44,9 @@
             :defaults="{
               global: {
                 hideDetails: 'auto'
+              },
+              VNumberInput: {
+                inset: true
               }
             }"
           >
