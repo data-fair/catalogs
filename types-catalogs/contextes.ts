@@ -97,7 +97,14 @@ export type GetResourceContext<TCatalogConfig> = {
   /** The path to the working directory where the resource will be downloaded */
   tmpDir: string,
   /** The log functions to write logs during the processing */
-  log: LogFunctions
+  log: LogFunctions,
+  /** Indicates which parts of the resource data should be returned by the function. This allows implementations to optimize by only fetching and returning the data that will actually be used by the calling function. */
+  update: {
+    /** Whether to update the metadata of the resource. If true, the function should return metadata (title, attachments, etc.) as it will be used to update the dataset. If false, metadata can be omitted to optimize performance. */
+    metadata: boolean,
+    /** Whether to update the schema of the resource. If true, the function should return the schema as it will be processed. If false, the schema can be omitted to avoid unnecessary fetching and improve performance. */
+    schema: boolean,
+  }
 }
 
 /**

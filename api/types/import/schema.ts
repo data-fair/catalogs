@@ -18,6 +18,8 @@ export default {
     'status',
     'catalog',
     'remoteResource',
+    'shouldUpdateMetadata',
+    'shouldUpdateSchema',
     'scheduling'
   ],
   properties: {

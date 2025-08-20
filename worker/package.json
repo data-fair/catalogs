@@ -13,7 +13,7 @@
     "#api/types/*": "../api/types/*"
   },
   "devDependencies": {
-    "@data-fair/types-catalogs": "^0.3.4",
+    "@data-fair/types-catalogs": "^0.4.0",
     "@types/resolve-path": "^1.4.3"
   },
   "dependencies": {
