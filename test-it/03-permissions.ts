@@ -1,3 +1,4 @@
+import type { ImportPostReq } from '../api/doc/imports/post-req/index.ts'
 import { strict as assert } from 'node:assert'
 import { it, describe, before, after, beforeEach } from 'node:test'
 import { axios, axiosAuth, clean, cleanAll, installMockPlugin, startApiServer, stopApiServer } from './utils/index.ts'
@@ -235,11 +236,13 @@ describe.only('Permissions', () => {
       }))
     })
 
-    const createImportPayload = (catalogId: string) => ({
+    const createImportPayload = (catalogId: string): ImportPostReq['body'] => ({
       catalog: { id: catalogId },
       config: {},
       remoteResource: { id: 'test-resource' },
-      scheduling: []
+      scheduling: [],
+      shouldUpdateMetadata: true,
+      shouldUpdateSchema: true
     })
 
     it('superadmin can import from any catalog', async () => {

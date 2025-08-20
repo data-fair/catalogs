@@ -199,7 +199,11 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
       importConfig: imp.config,
       resourceId: imp.remoteResource.id,
       tmpDir: tmpDir.path,
-      log: logFunctions
+      log: logFunctions,
+      update: {
+        metadata: imp.shouldUpdateMetadata,
+        schema: imp.shouldUpdateSchema
+      }
     })
   } catch (err) {
     return await handleImportError('download', imp, err, logFunctions.error)
