@@ -69,23 +69,28 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
   if (!datasetId) await log.info('Creating new dataset')
   else await log.info('Updating existing dataset')
 
+  const datasetResource: any = {}
+
+  // Add metadata if creating new dataset or if metadata should be updated
   if (!datasetId || imp.shouldUpdateMetadata) {
-    const datasetResource = {
-      slug: resource.slug,
-      title: resource.title,
-      description: resource.description,
-      frequency: resource.frequency,
-      image: resource.image,
-      license: resource.license,
-      keywords: resource.keywords,
-      origin: resource.origin,
-      schema: resource.schema,
-      topics: resource.topics
-    }
+    datasetResource.slug = resource.slug
+    datasetResource.title = resource.title
+    datasetResource.description = resource.description
+    datasetResource.frequency = resource.frequency
+    datasetResource.image = resource.image
+    datasetResource.license = resource.license
+    datasetResource.keywords = resource.keywords
+    datasetResource.origin = resource.origin
+    datasetResource.topics = resource.topics
+
     if (datasetId) delete datasetResource.slug // never updating slug when updating
-    if (!imp.shouldUpdateSchema) delete datasetResource.schema
-    formData.append('body', JSON.stringify(datasetResource))
   }
+
+  // Add schema if creating new dataset or if schema should be updated
+  if (!datasetId || imp.shouldUpdateSchema) {
+    datasetResource.schema = resource.schema
+  }
+  formData.append('body', JSON.stringify(datasetResource))
   formData.append('dataset', fs.createReadStream(resource.filePath))
 
   const getLength = promisify(formData.getLength.bind(formData))
