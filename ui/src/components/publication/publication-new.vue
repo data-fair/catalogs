@@ -34,7 +34,7 @@
         <v-btn
           v-bind="props"
           class="mt-2"
-          color="primary"
+          color="warning"
           variant="flat"
           :disabled="!validPublication"
           :loading="createPublication.loading.value"
@@ -123,7 +123,7 @@ const { catalog, dataFairDataset } = defineProps<{
 const emit = defineEmits<{ (e: 'on-create'): void }>()
 
 const publications = useFetch<PublicationsGetRes>(`${$apiPath}/publications`, {
-  query: { catalogId: catalog?.id, dataFairDatasetId: dataFairDataset?.id },
+  // TODO: Filter by publications from the same plugin as the selected catalog
 })
 
 /** Set / Reset default values for the new publication */

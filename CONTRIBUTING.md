@@ -208,3 +208,36 @@ export default {
 | Department | Organization | Department | ❓ Ask admin | TODO: For the moment, this is just forbidden |
 | Department | Department | Organization | ✅ Allowed | |
 | Department | Department | Department | ✅ Allowed | |
+
+## Possible relations between Remote datasets and Datafair datasets
+
+```mermaid
+flowchart TB
+    subgraph Catalogue_B
+        direction TB
+        RD3[Remote dataset 3]
+        RD4[Remote dataset 4]
+        DD3[Datafair dataset 3]
+        DD4[Datafair dataset 4]
+
+        DD3 -->|publication| RD3
+        DD3 -->|publication| RD4
+        DD4 -.-x|publication| RD4
+    end
+
+        subgraph Catalogue_A
+        direction TB
+        RD1[Remote dataset 1]
+        RD2[Remote dataset 2]
+        DD1[Datafair dataset 1]
+        DD2[Datafair dataset 2]
+
+        RD1 -->|import| DD1
+        RD1 -->|import| DD2
+        RD2 -.-x|import| DD2
+    end
+
+    RD2 -->|import| DD3
+    DD3 -.-x|publication| RD2
+
+```
