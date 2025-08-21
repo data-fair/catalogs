@@ -97,7 +97,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
   const contentLength = await getLength()
 
   // Use existing dataset ID if provided, otherwise create a new dataset
-  const url = datasetId ? `/api/v1/datasets/${datasetId}` : '/api/v1/datasets'
+  const url = `/api/v1/datasets${datasetId ? `/${datasetId}${imp.dataFairDataset?.isRest ? '/_bulk_lines' : ''}` : ''}`
   const account = { ...catalog.owner }
   if (account.name) account.name = encodeURIComponent(account.name)
   if (account.departmentName) account.departmentName = encodeURIComponent(account.departmentName)

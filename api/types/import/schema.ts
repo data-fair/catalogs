@@ -131,11 +131,14 @@ export default {
         },
         title: {
           type: 'string'
+        },
+        isRest: {
+          type: 'boolean'
         }
       },
       layout: {
         getItems: {
-          url: '${context.origin}/data-fair/api/v1/datasets?mine=true&raw=true&type=file&select=id,title',
+          url: '${context.origin}/data-fair/api/v1/datasets?mine=true&raw=true&type=file,rest&select=id,title',
           qSearchParam: 'q',
           itemsResults: 'data.results',
           itemTitle: '`${item.title} (${item.id})`',
@@ -171,6 +174,10 @@ export default {
       default: true,
       layout: {
         comp: 'switch',
+        props: {
+          color: 'primary',
+          'base-color': 'error'
+        },
         cols: 4
       }
     },

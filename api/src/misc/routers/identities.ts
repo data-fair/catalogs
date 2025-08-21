@@ -37,8 +37,8 @@ export default createIdentitiesRouter(
       { $set: { 'owner.name': identity.name } }
     )
 
-    if (identity.type) {
-      // Update created name
+    if (identity.type === 'user') {
+      // Update created/updated name
       await Promise.all([
         updateAllCollections(
           { 'created.id': identity.id },

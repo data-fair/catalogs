@@ -20,7 +20,7 @@ export default router
  * @param topicAction The action part of the topic key (e.g. "create", "delete")
  * @param sessionState Optional session state for authentication
  */
-export const sendImportEvent = (
+const sendImportEvent = (
   imp: Import,
   actionText: string,
   topicAction: string,
