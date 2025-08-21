@@ -52,44 +52,85 @@ const handleImportError = async (type: 'upload' | 'download', imp: Import, err: 
 }
 
 /**
- * Create a Data Fair dataset and upload the resource file to it.
- * If datasetId is provided, update the existing dataset instead of creating a new one.
+ * Upload data to a REST dataset using bulk lines endpoint.
  * @param log - The logging functions for the import operation.
  * @param catalog - The catalog to which the dataset belongs.
  * @param resource - The resource to upload.
- * @param datasetId - Optional ID of an existing dataset to update.
- * @returns The dataset ID and title.
- * @throws Will throw an error if the upload fails.
+ * @param imp - The import configuration.
+ * @param datasetResource - The dataset metadata/schema to update.
+ * @param account - The account information.
+ * @returns The dataset response.
  */
-const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalog, resource: Resource, imp: Import) => {
+const uploadRestDataset = async (
+  log: ReturnType<typeof prepareLog>,
+  catalog: Catalog,
+  resource: Resource,
+  imp: Import,
+  datasetResource: any,
+  account: any
+) => {
   const datasetId = imp.dataFairDataset?.id
-  await log.step(`${datasetId ? 'Update existing dataset' : 'Create new dataset'}`)
 
+  // For REST datasets, we need to update metadata/schema first if needed
+  if ((imp.shouldUpdateMetadata || imp.shouldUpdateSchema) && Object.keys(datasetResource).length > 0) {
+    await log.info('Updating dataset metadata/schema')
+    await axios({
+      method: 'PATCH',
+      url: `/api/v1/datasets/${datasetId}`,
+      baseURL: config.privateDataFairUrl,
+      data: datasetResource,
+      headers: {
+        'content-type': 'application/json',
+        'x-apiKey': config.dataFairAPIKey,
+        'x-account': JSON.stringify(account),
+        'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
+        host: config.host
+      }
+    })
+  }
+
+  // Then upload the data using bulk lines endpoint
+  await log.info('Uploading data using bulk lines endpoint')
+  await axios({
+    method: 'POST',
+    url: `/api/v1/datasets/${datasetId}/_bulk_lines?drop=true`,
+    baseURL: config.privateDataFairUrl,
+    data: fs.createReadStream(resource.filePath),
+    maxContentLength: Infinity,
+    maxBodyLength: Infinity,
+    headers: {
+      'Content-Type': 'text/csv',
+      'Content-Length': fs.statSync(resource.filePath).size,
+      'x-apiKey': config.dataFairAPIKey,
+      'x-account': JSON.stringify(account),
+      'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
+      host: config.host
+    }
+  })
+}
+
+/**
+ * Upload data to a standard dataset using FormData.
+ * @param log - The logging functions for the import operation.
+ * @param catalog - The catalog to which the dataset belongs.
+ * @param resource - The resource to upload.
+ * @param imp - The import configuration.
+ * @param datasetResource - The dataset metadata/schema to update.
+ * @param account - The account information.
+ * @returns The dataset response.
+ */
+const uploadStandardDataset = async (
+  log: ReturnType<typeof prepareLog>,
+  catalog: Catalog,
+  resource: Resource,
+  imp: Import,
+  datasetResource: any,
+  account: any
+) => {
+  const datasetId = imp.dataFairDataset?.id
+
+  // Standard upload using FormData
   const formData = new FormData()
-  if (!datasetId) await log.info('Creating new dataset')
-  else await log.info('Updating existing dataset')
-
-  const datasetResource: any = {}
-
-  // Add metadata if creating new dataset or if metadata should be updated
-  if (!datasetId || imp.shouldUpdateMetadata) {
-    datasetResource.slug = resource.slug
-    datasetResource.title = resource.title
-    datasetResource.description = resource.description
-    datasetResource.frequency = resource.frequency
-    datasetResource.image = resource.image
-    datasetResource.license = resource.license
-    datasetResource.keywords = resource.keywords
-    datasetResource.origin = resource.origin
-    datasetResource.topics = resource.topics
-
-    if (datasetId) delete datasetResource.slug // never updating slug when updating
-  }
-
-  // Add schema if creating new dataset or if schema should be updated
-  if (!datasetId || imp.shouldUpdateSchema) {
-    datasetResource.schema = resource.schema
-  }
   formData.append('body', JSON.stringify(datasetResource))
   formData.append('dataset', fs.createReadStream(resource.filePath))
 
@@ -97,10 +138,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
   const contentLength = await getLength()
 
   // Use existing dataset ID if provided, otherwise create a new dataset
-  const url = datasetId ? `/api/v1/datasets/${datasetId}` : '/api/v1/datasets'
-  const account = { ...catalog.owner }
-  if (account.name) account.name = encodeURIComponent(account.name)
-  if (account.departmentName) account.departmentName = encodeURIComponent(account.departmentName)
+  const url = `/api/v1/datasets${datasetId ? `/${datasetId}` : ''}`
 
   const dataset = await axios({
     method: 'POST',
@@ -136,8 +174,61 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
     })
   }
 
+  return {
+    id: dataset.data.id,
+    title: dataset.data.title
+  }
+}
+
+/**
+ * Create a Data Fair dataset and upload the resource file to it.
+ * If datasetId is provided, update the existing dataset instead of creating a new one.
+ * @param log - The logging functions for the import operation.
+ * @param catalog - The catalog to which the dataset belongs.
+ * @param resource - The resource to upload.
+ * @param imp - The import configuration.
+ * @returns The dataset ID and title.
+ * @throws Will throw an error if the upload fails.
+ */
+const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalog, resource: Resource, imp: Import) => {
+  const datasetResource: any = {}
+  const datasetId = imp.dataFairDataset?.id
+
+  // Add metadata if creating new dataset or if metadata should be updated
+  if (!datasetId || imp.shouldUpdateMetadata) {
+    datasetResource.slug = resource.slug
+    datasetResource.title = resource.title
+    datasetResource.description = resource.description
+    datasetResource.frequency = resource.frequency
+    datasetResource.image = resource.image
+    datasetResource.license = resource.license
+    datasetResource.keywords = resource.keywords
+    datasetResource.origin = resource.origin
+    datasetResource.topics = resource.topics
+
+    if (datasetId) delete datasetResource.slug // never updating slug when updating
+  }
+
+  // Add schema if creating new dataset or if schema should be updated
+  if (!datasetId || imp.shouldUpdateSchema) {
+    datasetResource.schema = resource.schema
+  }
+
+  const account = { ...catalog.owner }
+  if (account.name) account.name = encodeURIComponent(account.name)
+  if (account.departmentName) account.departmentName = encodeURIComponent(account.departmentName)
+
+  let dataset: { id?: string; title?: string } | undefined
+  // Handle REST dataset differently
+  if (imp.dataFairDataset?.isRest && datasetId) {
+    await uploadRestDataset(log, catalog, resource, imp, datasetResource, account)
+  } else {
+    dataset = await uploadStandardDataset(log, catalog, resource, imp, datasetResource, account)
+  }
+
   await log.info('Resource file uploaded successfully')
 
+  // Handle attachments
   const attachments = []
   if (resource.attachments && resource.attachments.length > 0 && (!datasetId || imp.shouldUpdateMetadata)) {
     await log.task('attachments', 'Uploading attachments to the dataset', resource.attachments.length)
@@ -147,7 +238,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
         attachmentFormData.append('attachment', fs.createReadStream(attachment.filePath))
         const newAttachment = await axios({
           method: 'POST',
-          url: `/api/v1/datasets/${dataset.data.id}/metadata-attachments`,
+          url: `/api/v1/datasets/${datasetId || dataset?.id}/metadata-attachments`,
           baseURL: config.privateDataFairUrl,
           data: attachmentFormData,
           headers: {
@@ -176,7 +267,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
     }
     await axios({
       method: 'PATCH',
-      url: `/api/v1/datasets/${dataset.data.id}`,
+      url: `/api/v1/datasets/${datasetId || dataset?.id}`,
       baseURL: config.privateDataFairUrl,
       data: { attachments },
       headers: {
@@ -188,8 +279,9 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
     })
   }
 
-  await log.info(`Import ${datasetId ? 'updated' : 'created'} successfully - Dataset "${dataset.data.title}" (${dataset.data.id})`)
-  return { id: dataset.data.id, title: dataset.data.title }
+  await log.info(`Import ${datasetId ? 'updated' : 'created'} successfully - Dataset "${dataset?.title || imp.dataFairDataset?.title}" (${dataset?.id || imp.dataFairDataset?.id})`)
+
+  return dataset
 }
 
 export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Import) => {
@@ -214,38 +306,44 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, imp: Impo
     return await handleImportError('download', imp, err, logFunctions.error)
   }
 
-  // Create datafair dataset and upload the file
-  // If the import already has a dataFairDataset ID, update the existing dataset
-  let dataset: { id: string; title: string }
+  const stepTitle = `${imp.dataFairDataset?.id ? 'Update existing dataset' : 'Create new dataset'}`
+  await logFunctions.step(stepTitle)
+  await logFunctions.info(stepTitle)
+
   try {
-    dataset = await uploadDataset(
+    const datasetInfo = await uploadDataset(
       logFunctions,
       catalog,
       resource,
       imp
     )
+
+    // Update import document with proper logic for REST vs standard datasets
+    const newValues: Partial<Import> = {
+      catalog: {
+        id: catalog._id,
+        title: catalog.title
+      },
+      dataFairDataset: {
+        id: datasetInfo?.id || imp.dataFairDataset?.id as string,
+        title: datasetInfo?.title || imp.dataFairDataset?.title,
+        isRest: imp.dataFairDataset?.isRest
+      },
+      remoteResource: {
+        id: imp.remoteResource.id,
+        title: resource.title,
+        origin: resource.origin
+      },
+      status: 'done' as const,
+      finishedAt: new Date().toISOString(),
+      lastImportDate: new Date().toISOString()
+    }
+
+    await mongo.imports.updateOne({ _id: imp._id }, { $set: newValues })
+    await wsEmit(`import/${imp._id}`, newValues)
   } catch (err) {
     return await handleImportError('upload', imp, err, logFunctions.error)
   }
-
-  // Update import document
-  const newValues = {
-    dataFairDataset: {
-      id: dataset.id,
-      title: dataset.title,
-    },
-    remoteResource: {
-      id: imp.remoteResource.id,
-      title: resource.title,
-      origin: resource.origin
-    },
-    status: 'done' as const,
-    finishedAt: new Date().toISOString(),
-    lastImportDate: new Date().toISOString()
-  }
-
-  await mongo.imports.updateOne({ _id: imp._id }, { $set: newValues })
-  await wsEmit(`import/${imp._id}`, newValues)
 
   await tmpDir.cleanup() // Clean up temporary directory
 }

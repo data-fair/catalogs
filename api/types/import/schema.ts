@@ -131,14 +131,20 @@ export default {
         },
         title: {
           type: 'string'
+        },
+        isRest: {
+          type: 'boolean'
         }
       },
       layout: {
         getItems: {
-          url: '${context.origin}/data-fair/api/v1/datasets?mine=true&raw=true&type=file&select=id,title',
+          url: '${context.origin}/data-fair/api/v1/datasets?mine=true&raw=true&type=file,rest&select=id,title,isRest',
           qSearchParam: 'q',
           itemsResults: 'data.results',
-          itemTitle: '`${item.title} (${item.id})`',
+          itemTitle: '`${item.title} (${item.id}) ${item.isRest ? "(REST)" : ""}`',
+          'x-i18n-itemTitle': {
+            fr: '`${item.title} (${item.id}) ${item.isRest ? "(Éditable)" : ""}`'
+          },
           itemKey: 'item.id'
         }
       }
@@ -171,6 +177,10 @@ export default {
       default: true,
       layout: {
         comp: 'switch',
+        props: {
+          color: 'primary',
+          'base-color': 'error'
+        },
         cols: 4
       }
     },

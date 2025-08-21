@@ -42,7 +42,7 @@
         <v-btn
           v-if="hasUpdateAvailable(plugin)"
           color="warning"
-          :title="t('update')"
+          :title="t('update', { version: hasUpdateAvailable(plugin)!.version })"
           :icon="mdiUpdate"
           :disabled="!!pluginLocked"
           @click="install.execute({ name: plugin.name, version: hasUpdateAvailable(plugin)!.version })"
@@ -339,7 +339,7 @@ const hasUpdateAvailable = (plugin: PluginPost) => {
     selectTgzFile: Select .tgz file
     uninstall: Uninstall
     uninstallPlugin: Uninstall plugin
-    update: Update
+    update: Update to {version}
     usedTimesVersion: "Used {count} times - {version}"
     yes: Yes
 
@@ -363,7 +363,7 @@ const hasUpdateAvailable = (plugin: PluginPost) => {
     selectTgzFile: Sélectionner un fichier .tgz
     uninstall: Désinstaller
     uninstallPlugin: Désinstaller le plugin
-    update: Mettre à jour
+    update: Mettre à jour vers {version}
     usedTimesVersion: "Jamais utilisé - {version} | Utilisé {count} fois - {version} | Utilisé {count} fois - {version}"
     yes: Oui
 

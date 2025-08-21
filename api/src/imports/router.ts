@@ -20,7 +20,7 @@ export default router
  * @param topicAction The action part of the topic key (e.g. "create", "delete")
  * @param sessionState Optional session state for authentication
  */
-export const sendImportEvent = (
+const sendImportEvent = (
   imp: Import,
   actionText: string,
   topicAction: string,
@@ -193,11 +193,9 @@ router.delete('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   assertAccountRole(sessionState, sessionState.account, 'admin')
 
-  const { id } = req.params
-  if (!id) throw httpError(400, 'Import ID is required')
-
-  const result = await mongo.imports.deleteOne({ _id: id })
-  if (result.deletedCount === 0) throw httpError(404, 'Import not found')
+  const deletedImport = await mongo.imports.findOneAndDelete({ _id: req.params.id })
+  if (!deletedImport) throw httpError(404, 'Import not found')
+  sendImportEvent(deletedImport, 'a été supprimé', 'delete', sessionState)
 
   res.status(204).send()
 })

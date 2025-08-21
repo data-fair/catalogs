@@ -88,6 +88,7 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
 
   // 4. Update the publication status
   pub.dataFairDataset.title = dataFairDataset.title
+  pub.catalog.title = catalog.title
   Object.assign(pub, {
     remoteResource: publicationRes.remoteResource,
     remoteDataset: publicationRes.remoteDataset,
