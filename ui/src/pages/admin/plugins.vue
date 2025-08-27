@@ -220,6 +220,7 @@ import type { PluginsGetRes, PluginPost } from '#api/doc'
 import { gt as semverGt } from 'semver'
 
 const session = useSession()
+const { sendUiNotif } = useUiNotif()
 const { t } = useI18n()
 
 if (!session.state.user?.adminMode) throw new Error(t('noPermissionAdminPage'))
@@ -316,6 +317,18 @@ const hasUpdateAvailable = (plugin: PluginPost) => {
   if (!availablePlugin) return null
   return semverGt(availablePlugin.version, plugin.version) ? availablePlugin : null
 }
+
+watch(installedPluginsFetch.data, (newData) => {
+  if (newData?.errors && newData.errors.length > 0) {
+    const errorDetails = newData.errors.map(error => `${error.dir}: ${error.error}`).join('\n')
+    sendUiNotif({
+      type: 'error',
+      msg: t('errorFetchingPlugins'),
+      error: errorDetails
+    })
+  }
+})
+
 </script>
 
 <i18n lang="yaml">
@@ -323,6 +336,7 @@ const hasUpdateAvailable = (plugin: PluginPost) => {
     availablePlugins: plugins to install
     cancel: Cancel
     confirmUninstallPlugin: "Do you really want to uninstall the plugin {name}?"
+    errorFetchingPlugins: Error fetching some plugins
     errorInstallingPlugin: Error installing the plugin
     errorUninstallingPlugin: Error uninstalling the plugin
     forceInstall: Install a plugin manually
@@ -347,6 +361,7 @@ const hasUpdateAvailable = (plugin: PluginPost) => {
     availablePlugins: plugins à installer
     cancel: Annuler
     confirmUninstallPlugin: "Voulez-vous vraiment désinstaller le plugin {name} ?"
+    errorFetchingPlugins: Erreur lors du chargement de certains plugins
     errorInstallingPlugin: Erreur lors de l'installation du plugin
     errorUninstallingPlugin: Erreur lors de la désinstallation du plugin
     forceInstall: Installer un plugin manuellement

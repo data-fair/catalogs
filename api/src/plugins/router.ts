@@ -29,18 +29,23 @@ router.get('/', async (req, res) => {
 
   const dirs = await fs.readdir(pluginsDir)
   const results: Plugin[] = []
-  for (const dir of dirs) {
-    const pluginInfo = await fs.readJson(path.join(pluginsDir, dir, 'plugin.json'))
-    const plugin = await getPlugin(dir)
+  const errors: { dir: string; error: string }[] = []
 
-    results.push({
-      id: pluginInfo.id,
-      name: pluginInfo.name,
-      description: pluginInfo.description,
-      version: pluginInfo.version,
-      configSchema: plugin.configSchema,
-      metadata: plugin.metadata
-    } as Plugin)
+  for (const dir of dirs) {
+    try {
+      const pluginInfo = await fs.readJson(path.join(pluginsDir, dir, 'plugin.json'))
+      const plugin = await getPlugin(dir)
+      results.push({
+        id: pluginInfo.id,
+        name: pluginInfo.name,
+        description: pluginInfo.description,
+        version: pluginInfo.version,
+        configSchema: plugin.configSchema,
+        metadata: plugin.metadata
+      } as Plugin)
+    } catch (e: any) {
+      errors.push({ dir, error: e.toString() })
+    }
   }
 
   const aggregationResult = (
@@ -55,6 +60,7 @@ router.get('/', async (req, res) => {
   res.send({
     count: results.length,
     results,
+    errors,
     facets: { usages: aggregationResult || {} }
   })
 })

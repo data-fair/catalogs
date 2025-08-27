@@ -25,6 +25,17 @@ export default {
       items: {
         $ref: 'https://github.com/data-fair/catalogs/plugin'
       }
+    },
+    errors: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          dir: { type: 'string' },
+          error: { type: 'string' }
+        },
+        required: ['dir', 'error']
+      }
     }
   },
   $defs: {
