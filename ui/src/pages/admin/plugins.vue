@@ -123,6 +123,7 @@
         <v-card
           :title="t('forceInstall')"
           :loading="install.loading.value ? 'warning' : false"
+          width="500"
         >
           <v-card-text class="pb-0">
             <div class="mb-4">
@@ -154,11 +155,13 @@
               </p>
               <v-file-input
                 v-model="selectedFile"
-                accept=".tgz"
                 :label="t('selectTgzFile')"
                 :disabled="!!pluginLocked || hasNpmFields"
+                :hint="hasNpmFields ? t('fileInputDisabledHint') : undefined"
+                :persistent-hint="hasNpmFields"
+                accept=".tgz"
+                hide-details="auto"
                 chips
-                hide-details
                 show-size
               />
             </div>
@@ -339,6 +342,7 @@ watch(installedPluginsFetch.data, (newData) => {
     errorFetchingPlugins: Error fetching some plugins
     errorInstallingPlugin: Error installing the plugin
     errorUninstallingPlugin: Error uninstalling the plugin
+    fileInputDisabledHint: File selection is disabled because you have already entered a plugin name or version above. Clear those fields to upload a file instead.
     forceInstall: Install a plugin manually
     install: Install
     installFromFile: Install from file
@@ -364,6 +368,7 @@ watch(installedPluginsFetch.data, (newData) => {
     errorFetchingPlugins: Erreur lors du chargement de certains plugins
     errorInstallingPlugin: Erreur lors de l'installation du plugin
     errorUninstallingPlugin: Erreur lors de la désinstallation du plugin
+    fileInputDisabledHint: La sélection de fichier est désactivée car vous avez déjà saisi un nom de plugin ou une version ci-dessus. Videz ces champs pour télécharger un fichier à la place.
     forceInstall: Installer un plugin manuellement
     install: Installer
     installFromFile: Installer depuis un fichier

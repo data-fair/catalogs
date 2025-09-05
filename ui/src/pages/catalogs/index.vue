@@ -8,6 +8,7 @@
     data-iframe-height
     style="min-height:500px"
   >
+    <!-- Skeleton loader-->
     <v-row
       v-if="catalogsFetch.loading.value"
       class="d-flex align-stretch"
@@ -26,18 +27,21 @@
         />
       </v-col>
     </v-row>
+    <!-- No catalogs created -->
     <span
       v-else-if="!catalogsFetch.data.value?.results.length"
       class="d-flex justify-center text-h6 mt-4"
     >
       {{ t('noCatalogsCreated') }}
     </span>
+    <!-- No catalogs displayed (filters) -->
     <span
       v-else-if="!displayCatalogs.length"
       class="d-flex justify-center text-h6 mt-4"
     >
       {{ t('noCatalogsDisplayed') }}
     </span>
+    <!-- List of catalogs -->
     <template v-else>
       <v-row class="d-flex align-stretch">
         <v-col

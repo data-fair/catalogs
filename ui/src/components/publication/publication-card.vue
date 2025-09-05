@@ -6,9 +6,10 @@
   >
     <v-card-text class="pb-0">
       <div
-        v-if="publication.action === 'addAsResource'"
+        v-if="publication.action === 'createResource' || publication.action === 'replaceResource'"
         class="text-caption font-italic"
       >
+        <!-- TODO: Use a text provided by the plugin -->
         {{ t('publishAsResource') }}
       </div>
       <!-- TODO: Show the last error if present -->
@@ -19,13 +20,13 @@
     <v-card-actions>
       <v-spacer />
       <v-btn
-        v-if="publication.remoteDataset?.url"
+        v-if="publication.remoteFolder?.url || publication.remoteResource?.url"
         color="primary"
         density="comfortable"
         variant="text"
         :icon="mdiOpenInNew"
         :title="t('viewPublication')"
-        :href="publication.remoteDataset.url"
+        :href="publication.remoteFolder?.url || publication.remoteResource?.url"
         target="_blank"
       />
       <v-menu

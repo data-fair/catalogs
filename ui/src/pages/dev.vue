@@ -1,9 +1,5 @@
 <template>
-  <v-app-bar
-    flat
-    dense
-    class="px-0 main-app-bar"
-  >
+  <v-app-bar flat>
     <v-toolbar-items>
       <v-btn
         variant="text"
@@ -49,7 +45,7 @@
   </v-app-bar>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import personalMenu from '@data-fair/lib-vuetify/personal-menu.vue'
 
 const session = useSession()

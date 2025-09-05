@@ -28,7 +28,7 @@ import type { Catalog } from '#api/types'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
-import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog/index.ts'
+import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog'
 
 const { t } = useI18n()
 const session = useSessionAuthenticated()

@@ -1,6 +1,7 @@
 <template>
   <v-container
     data-iframe-height
+    style="min-height:800px"
     class="pa-0"
     fluid
   >
@@ -28,7 +29,7 @@
 
       <v-stepper-window class="mb-4">
         <v-stepper-window-item value="1">
-          <import-select-resource
+          <resources-explorer
             v-if="catalog && plugin"
             v-model="selectedResource"
             :catalog="catalog"
@@ -55,7 +56,6 @@
                 v-model="importConfig"
                 :schema="importSchema"
                 :options="vjsfOptions"
-                @update:model-value="'todo'"
               >
                 <template #scheduling-summary="{ node }">
                   {{ t(`frequency.${node.data.type}`) }}
@@ -127,7 +127,7 @@ import 'cronstrue/locales/fr'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
-import { resolvedSchema as importSchemaBase } from '#api/types/import/index.ts'
+import { resolvedSchema as importSchemaBase } from '#api/types/import'
 import { toCRON } from '@data-fair/catalogs-shared/cron.ts'
 
 const { t } = useI18n()
@@ -137,7 +137,7 @@ const session = useSessionAuthenticated()
 const { catalog, plugin } = createCatalogStore(route.params.catalogId)
 
 const step = ref('1')
-const selectedResource = ref<{ id: string, title: string, origin?: string } | null>(null)
+const selectedResource = ref<{ id: string, title: string, type: 'resource' | 'folder' } | null>(null)
 const validImportConfig = ref(false)
 const importConfig = ref<Partial<Import>>({})
 
@@ -176,9 +176,6 @@ const createImport = useAsyncAction(async () => {
   }
   if (importConfig.value.dataFairDataset) {
     newImport.dataFairDataset = importConfig.value.dataFairDataset
-  }
-  if (selectedResource.value.origin) {
-    newImport.remoteResource.origin = selectedResource.value.origin
   }
 
   // Create the import via API

@@ -27,6 +27,25 @@ export default {
     owner: {
       $ref: 'https://github.com/data-fair/lib/account'
     },
+    catalog: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['id'],
+      title: 'Catalog',
+      'x-i18n-title': {
+        fr: 'Catalogue'
+      },
+      properties: {
+        id: {
+          type: 'string',
+          description: 'Id of the catalog'
+        },
+        title: {
+          type: 'string',
+          description: 'Title of the catalog'
+        }
+      }
+    },
     created: {
       type: 'object',
       additionalProperties: false,
@@ -70,38 +89,14 @@ export default {
         fr: 'Action à effectuer dans le catalogue distant'
       },
       enum: [
-        'create',
-        'addAsResource',
-        'overwrite',
+        'createFolderInRoot',
+        'createFolder',
+        'createResource',
+        'replaceFolder',
+        'replaceResource',
         'delete'
       ],
-      layout: {
-        cols: 6,
-        items: [
-          {
-            title: 'Create a new dataset',
-            'x-i18n-title': {
-              fr: 'Créer un nouveau jeu de données'
-            },
-            value: 'create'
-          },
-          {
-            title: 'Add as resource to an existing dataset',
-            'x-i18n-title': {
-              fr: 'Ajouter comme ressource à un jeu de données existant'
-            },
-            value: 'addAsResource'
-          },
-          {
-            title: 'Overwrite an existing dataset',
-            'x-i18n-title': {
-              fr: 'Écraser un jeu de données existant'
-            },
-            value: 'overwrite'
-          }
-          // Do not show delete option in the form
-        ]
-      }
+      layout: { cols: 6 }
     },
     publicationSite: {
       type: 'object',
@@ -131,7 +126,7 @@ export default {
       additionalProperties: false,
       layout: {
         getItems: {
-          url: '${context.origin}/data-fair/api/v1/datasets/${rootData.dataFairDataset?.id}',
+          url: '${context.origin}/data-fair/api/v1/datasets/${rootData.dataFairDataset?.id}?select=publicationSites',
           itemsResults: 'data.publicationSites ?? []',
           itemValue: 'context.publicationSites[item]',
           itemTitle: '`${context.publicationSites[item]?.title} (${context.publicationSites[item]?.url})`',
@@ -141,43 +136,6 @@ export default {
           'x-i18n-no-data-text': {
             fr: 'Ce jeu de données n\'est publié sur aucun site, vous ne pouvez donc pas le publier sur un catalogue.'
           }
-        }
-      }
-    },
-    catalog: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['id'],
-      title: 'Catalog',
-      'x-i18n-title': {
-        fr: 'Catalogue'
-      },
-      properties: {
-        id: {
-          type: 'string',
-          description: 'Id of the catalog'
-        },
-        title: {
-          type: 'string',
-          description: 'Title of the catalog'
-        }
-      },
-      layout: {
-        cols: 6,
-        if: '!context.catalog.id',
-        props: {
-          placeholder: 'Search for a catalog',
-          'x-i18n-placeholder': {
-            fr: 'Rechercher...'
-          }
-        },
-        getItems: {
-          url: '${context.origin}/catalogs/api/catalogs?sort=updated.date:-1&select=_id,title&capabilities=publication',
-          itemsResults: 'data.results',
-          itemTitle: 'item.title',
-          itemValue: '{ id: item._id, title: item.title }',
-          itemKey: 'item.id',
-          qSearchParam: 'q',
         }
       }
     },
@@ -199,7 +157,6 @@ export default {
       },
       layout: {
         cols: 6,
-        if: '!context.dataFairDataset.id',
         props: {
           placeholder: 'Search for a dataset',
           'x-i18n-placeholder': {
@@ -215,14 +172,10 @@ export default {
         }
       }
     },
-    remoteDataset: {
+    remoteFolder: {
       type: 'object',
       additionalProperties: false,
       required: ['id'],
-      title: 'Remote dataset',
-      'x-i18n-title': {
-        fr: 'Jeu de données distant'
-      },
       properties: {
         id: {
           type: 'string'
@@ -232,24 +185,7 @@ export default {
         },
         url: {
           type: 'string',
-          description: 'URL to view the dataset in the remote catalog'
-        }
-      },
-      layout: {
-        if: "parent.data.action === 'addAsResource' || parent.data.action === 'overwrite'",
-        props: {
-          placeholder: 'Search in the remote catalog...',
-          'x-i18n-placeholder': {
-            fr: 'Rechercher dans le catalogue distant...'
-          }
-        },
-        getItems: {
-          url: '${context.origin}/catalogs/api/catalogs/${rootData.catalog.id}/datasets?mode=${rootData.action}',
-          itemsResults: 'data.results',
-          itemTitle: '`${item.title} (${item.id})`',
-          itemValue: '{ id: item.id, title: item.title }',
-          itemKey: 'item.id',
-          qSearchParam: 'q'
+          description: 'URL to view the folder in the remote catalog (if available)'
         }
       }
     },
@@ -266,7 +202,7 @@ export default {
         },
         url: {
           type: 'string',
-          description: 'URL to view the resource in the remote catalog'
+          description: 'URL to view the resource in the remote catalog (if available)'
         }
       }
     },
@@ -291,29 +227,11 @@ export default {
       readOnly: true
     }
   },
-  // JSON-Schema-to-typescript does not support conditional required properties,
-  // but VJSF support it partially with `oneOf`, so we add it dynamically in the UI.
-  // https://stackoverflow.com/questions/38717933/jsonschema-attribute-conditionally-required
-  // oneOf: [
-  //   {
-  //     properties: {
-  //       action: { enum: ['addAsResource', 'overwrite'] }
-  //     },
-  //     required: ['remoteDataset']
-  //   },
-  //   {
-  //     properties: {
-  //       action: { enum: ['create', 'delete'] }
-  //     }
-  //   }
-  // ],
   layout: {
     title: null,
     children: [
-      'catalog',
       'dataFairDataset',
       'action',
-      'remoteDataset',
       'publicationSite'
     ]
   }

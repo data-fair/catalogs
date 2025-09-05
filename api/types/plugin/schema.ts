@@ -32,20 +32,12 @@ export default {
       type: 'string',
       description: 'The package description of the plugin (from package.json).'
     },
-    version: {
-      type: 'string'
-    },
-    configSchema: {
-      type: 'object'
-    },
-    listFiltersSchema: {
-      type: 'object'
-    },
-    importConfigSchema: {
-      type: 'object'
-    },
-    metadata: {
-      $ref: 'https://github.com/data-fair/types-catalogs/metadata',
-    }
+    version: { type: 'string' },
+    configSchema: { type: 'object' },
+    listFiltersSchema: { type: 'object' },
+    importFiltersSchema: { type: 'object' },
+    publicationFiltersSchema: { type: 'object' },
+    importConfigSchema: { type: 'object' },
+    metadata: { $ref: 'https://github.com/data-fair/types-catalogs/metadata' }
   }
 }

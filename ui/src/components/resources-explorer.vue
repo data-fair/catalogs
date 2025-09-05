@@ -9,24 +9,24 @@
     :items="levelData"
     :items-length="fetchFolders.data.value?.count || 0"
     :items-per-page-options="[5, 10, 20]"
-    :item-selectable="(item: any) => item.type === 'resource'"
+    :item-selectable="!shouldSelectFolder ? (item: any) => item.type === 'resource' : () => false"
     :loading="fetchFolders.loading.value ? 'primary' : false"
     :loading-text="t('loading')"
     :row-props="(data: any) => ({
       onClick: () => handleRowClick(data.item),
-      style: data.item.type === 'resource' ? 'cursor: pointer' : 'cursor: default'
+      style: !shouldSelectFolder && data.item.type === 'resource' ? 'cursor: pointer' : 'cursor: default'
     })"
-    :show-select="levelData.some((item: any) => item.type === 'resource')"
+    :show-select="!shouldSelectFolder && levelData.some((item: any) => item.type === 'resource')"
     item-value="id"
     select-strategy="single"
   >
     <template #top>
-      <v-form v-if="catalog?.capabilities.includes('additionalFilters')">
+      <v-form v-if="additionalFiltersSchema">
         <vjsf
           v-model="additionalFilters"
-          class="ma-2"
-          :schema="plugin?.listFiltersSchema"
+          :schema="additionalFiltersSchema"
           :options="vjsfOptions"
+          class="ma-2"
         />
       </v-form>
       <div class="d-flex align-center">
@@ -95,7 +95,7 @@
         />
         {{ item.title }}
         <v-chip
-          v-if="isResourceImported(item.id)"
+          v-if="!publicationAction && isResourceImported(item.id)"
           class="ml-2"
           color="grey"
           size="x-small"
@@ -118,7 +118,7 @@
 
 <script setup lang="ts">
 import type CatalogPlugin from '@data-fair/types-catalogs'
-import type { Catalog, Plugin, Import } from '#api/types'
+import type { Catalog, Plugin, Import, Publication } from '#api/types'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import { VDataTable, VDataTableServer } from 'vuetify/components'
@@ -126,15 +126,21 @@ import formatBytes from '@data-fair/lib-vue/format/bytes.js'
 
 const { t } = useI18n()
 const session = useSessionAuthenticated()
-const { catalog, plugin } = defineProps<{
+const { catalog, plugin, publicationAction } = defineProps<{
   catalog: Catalog
   plugin: Plugin
+  publicationAction?: Publication['action']
 }>()
 
 // Navigation state
 const currentFolderId = ref<string | null>(null)
 const selected = ref<string[]>([])
-const resourceSelected = defineModel<{ id: string, title: string } | null>()
+const resourceSelected = defineModel<{ id: string, title: string, type: 'resource' | 'folder' } | null>()
+
+// Determine selection mode based on publicationAction
+const shouldSelectFolder = computed(() => {
+  return publicationAction && publicationAction !== 'replaceResource'
+})
 
 // Pagination state
 const currentPage = ref<number>(1)
@@ -147,7 +153,7 @@ const supportsPagination = computed(() => catalog.capabilities.includes('paginat
 const tableComponent = computed(() => supportsPagination.value ? VDataTableServer : VDataTable)
 
 // Fetch folder data based on current folder ID
-const fetchFolders = useFetch<Awaited<ReturnType<CatalogPlugin['listResources']>>>(
+const fetchFolders = useFetch<Awaited<ReturnType<CatalogPlugin['list']>>>(
   `${$apiPath}/catalogs/${catalog._id}/resources`, {
     query: computed(() => ({
       ...(currentFolderId.value && { currentFolderId: currentFolderId.value }),
@@ -180,6 +186,23 @@ watch(selected, (newSelected) => {
   }
 })
 
+// Watch for folder navigation in folder selection mode
+watch([currentFolderId, () => fetchFolders.data.value], ([currentFolder, data]) => {
+  if (shouldSelectFolder.value && currentFolder && data?.path && data.path.length > 0) {
+    // When navigating to a folder in folder selection mode,
+    // consider the current folder as selected
+    const currentFolderFromPath = data.path[data.path.length - 1]
+    resourceSelected.value = {
+      id: currentFolderFromPath.id,
+      title: currentFolderFromPath.title,
+      type: 'folder'
+    }
+  } else if (shouldSelectFolder.value && !currentFolder) {
+    // If we're in folder selection mode and at root, select null (root folder could be considered as selected)
+    resourceSelected.value = null
+  }
+})
+
 // Check if a resource is already imported
 const existingImports = useFetch<{ results: Pick<Import, 'remoteResource'>[] }>(`${$apiPath}/imports`, {
   query: {
@@ -193,11 +216,21 @@ const isResourceImported = (resourceId: string): boolean => {
 
 /** Function to handle row click for resource selection */
 const handleRowClick = (item: any) => {
-  if (item.type !== 'resource') return
+  if (shouldSelectFolder.value || item.type !== 'resource') return
   // if (isResourceImported(item.id)) return // Don't allow selection of already imported resources
   if (selected.value.includes(item.id)) selected.value = []
   else selected.value = [item.id]
 }
+
+/** Computed property for the additional filters schema */
+const additionalFiltersSchema = computed(() => {
+  if (!publicationAction) {
+    if (catalog.capabilities.includes('additionalFilters')) return plugin.listFiltersSchema
+    if (catalog.capabilities.includes('importFilters')) return plugin.importFiltersSchema
+  }
+  if (publicationAction && catalog.capabilities.includes('publicationFilters')) return plugin.publicationFiltersSchema
+  return null
+})
 
 /** Function to get the appropriate icon for a resource based on its mimeType */
 const getResourceIcon = (mimeType?: string | null): string => {
@@ -212,7 +245,7 @@ const getResourceIcon = (mimeType?: string | null): string => {
   return iconMap[mimeType || ''] || mdiFileOutline
 }
 
-// Navigation methods
+/** Navigation methods */
 const navigate = (folderId: string | null) => {
   currentFolderId.value = folderId
   currentPage.value = 1
@@ -227,7 +260,7 @@ const levelData = computed(() => {
   return results
 })
 
-// Computed property for breadcrumb items
+/** Computed property for breadcrumb items */
 const breadcrumbItems = computed(() => {
   if (!fetchFolders.data.value?.path) return []
   return fetchFolders.data.value?.path.map((item, index) => ({
@@ -237,11 +270,18 @@ const breadcrumbItems = computed(() => {
   }))
 })
 
-const headers = computed(() => [
-  { title: t('name'), key: 'title', align: 'start' as const },
-  { title: t('size'), key: 'size' },
-  { title: t('format'), key: 'format' }
-])
+const headers = computed(() => {
+  const headers: Record<string, string>[] = [
+    { title: t('name'), key: 'title', align: 'start' }
+  ]
+  if (!publicationAction) {
+    headers.push(
+      { title: t('size'), key: 'size' },
+      { title: t('format'), key: 'format' }
+    )
+  }
+  return headers
+})
 
 const vjsfOptions = computed<VjsfOptions>(() => ({
   context: {

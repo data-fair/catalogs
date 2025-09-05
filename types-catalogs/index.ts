@@ -12,9 +12,8 @@ import type {
   ListContext,
   ListResourcesContext,
   GetResourceContext,
-  ListDatasetsContext,
   PublishDatasetContext,
-  DeleteDatasetContext
+  DeletePublicationContext
 } from './contextes.ts'
 
 // Export types from json schemas
@@ -32,9 +31,8 @@ export type {
   ListContext,
   ListResourcesContext,
   GetResourceContext,
-  ListDatasetsContext,
   PublishDatasetContext,
-  DeleteDatasetContext
+  DeletePublicationContext
 } from './contextes.ts'
 
 /**
@@ -45,7 +43,7 @@ export type {
 export type CatalogPlugin<TCatalogConfig = object, TCapabilities extends Capability[] = Capability[]> =
   BaseCatalogPlugin<TCatalogConfig, TCapabilities> &
   (Includes<TCapabilities, 'import'> extends true ? WithImport<TCatalogConfig, TCapabilities> : {}) &
-  (Includes<TCapabilities, 'publication'> extends true ? WithPublication<TCatalogConfig> : {})
+  (Includes<TCapabilities, 'publication'> extends true ? WithPublication<TCatalogConfig, TCapabilities> : {})
 
 type BaseCatalogPlugin<TCatalogConfig, TCapabilities extends Capability[]> = {
   metadata: CatalogMetadata<TCapabilities>
@@ -77,6 +75,17 @@ type BaseCatalogPlugin<TCatalogConfig, TCapabilities extends Capability[]> = {
     secrets?: Record<string, string>,
     thumbnailUrl?: string
   }>
+  /**
+   * List available folders and resources in the catalog
+   */
+  list: (context: ListContext<TCatalogConfig, TCapabilities>) => Promise<{
+    /** The total number of items in the current folder */
+    count: number
+    /** The list of folders and resources in the current folder, filtered with the search and pagination parameters */
+    results: (Folder | Pick<Resource, 'id' | 'title' | 'description' | 'format' | 'mimeType' | 'origin' | 'size'> & { type: 'resource' })[],
+    /** The path to the current folder, including the current folder itself, used to navigate back */
+    path: Folder[]
+  }>
 }
 
 /**
@@ -88,23 +97,11 @@ type BaseCatalogPlugin<TCatalogConfig, TCapabilities extends Capability[]> = {
  */
 type WithImport<TCatalogConfig, TCapabilities extends Capability[]> = {
   /**
-   * List available folders and resources in the catalog.
-   *
-   * @deprecated Use `listResources` instead.
-   */
-  list?: (context: ListContext<TCatalogConfig, TCapabilities>) => Promise<{
-    /** The total number of items in the current folder */
-    count: number
-    /** The list of folders and resources in the current folder, filtered with the search and pagination parameters */
-    results: (Folder | Pick<Resource, 'id' | 'title' | 'description' | 'format' | 'mimeType' | 'origin' | 'size'> & { type: 'resource' })[],
-    /** The path to the current folder, including the current folder itself, used to navigate back */
-    path: Folder[]
-  }>
-
-  /**
    * List available folders and resources in the catalog
+   *
+   * @deprecated Use `list` instead.
    */
-  listResources: (context: ListResourcesContext<TCatalogConfig, TCapabilities>) => Promise<{
+  listResources?: (context: ListResourcesContext<TCatalogConfig, TCapabilities>) => Promise<{
     /** The total number of items in the current folder */
     count: number
     /** The list of folders and resources in the current folder, filtered with the search and pagination parameters */
@@ -120,33 +117,32 @@ type WithImport<TCatalogConfig, TCapabilities extends Capability[]> = {
   getResource: (context: GetResourceContext<TCatalogConfig>) => Promise<Resource>
 }
   & (Includes<TCapabilities, 'additionalFilters'> extends true ? { listFiltersSchema: Record<string, any> } : {})
+  & (Includes<TCapabilities, 'importFilters'> extends true ? { importFiltersSchema: Record<string, any> } : {})
   & (Includes<TCapabilities, 'importConfig'> extends true ? { importConfigSchema: Record<string, any> } : {})
 
-type WithPublication<TCatalogConfig> = {
-  /** List available datasets in the catalog. */
-  listDatasets: (context: ListDatasetsContext<TCatalogConfig>) => Promise<{
-    /** The list of datasets in the current folder, filtered with the search and mode parameters */
-    results: { id: string, title: string }[]
-  }>
-
+type WithPublication<TCatalogConfig, TCapabilities extends Capability[]> = {
   /**
-   * Publish/Update a dataset or add/update a resource to a dataset
-   * @param catalogConfig The configuration of the catalog
-   * @param dataset The datafair dataset to publish
-   * @param publication The publication to process
-   * @param publicationSite The site where the user will be redirected from the remote dataset
+   * Publish a dataset / Update a publication
+   * @param catalogConfig - The catalog configuration.
+   * @param secrets - The deciphered secrets of the catalog.
+   * @param dataset - The datafair dataset to publish.
+   * @param publication - The publication to process.
+   * @param publicationSite - The site where the user will be redirected from the remote dataset.
+   * @param log - The log functions to write logs during the processing.
    * @returns A promise that is resolved when the dataset is published
    */
   publishDataset: (context: PublishDatasetContext<TCatalogConfig>) => Promise<Publication>
 
   /**
-   * Delete a dataset or remove a resource from a dataset
-   * @param catalogConfig The configuration of the catalog
-   * @param datasetId The id of the remoteDataset to delete, or the dataset where the resource to delete is
-   * @param resourceId The id of the resource to delete
+   * Delete a publication
+   * @param catalogConfig - The catalog configuration.
+   * @param secrets - The deciphered secrets of the catalog.
+   * @param folderId - The ID of the remote folder to delete.
+   * @param resourceId - The ID of the resource to delete.
+   * @param log - The log functions to write logs during the processing.
    */
-  deleteDataset: (context: DeleteDatasetContext<TCatalogConfig>) => Promise<void>
-}
+  deletePublication: (context: DeletePublicationContext<TCatalogConfig>) => Promise<void>
+} & (Includes<TCapabilities, 'publicationFilters'> extends true ? { publicationFiltersSchema: Record<string, any> } : {})
 
 /**
  * The metadata of the catalog plugin.

@@ -51,9 +51,12 @@ router.post('/', async (req, res) => {
   })
   if (existingPublication) throw httpError(409, 'Publication already exists for this dataset and catalog')
 
-  // In overwrite mode, check if they are already a publication with the same remoteDataset.id, and delete the link
-  if (body.action === 'overwrite' && body.remoteDataset?.id) {
-    await mongo.publications.deleteOne({ 'remoteDataset.id': body.remoteDataset?.id })
+  // In replace mode, check if they are already a publication with the same remote Folder/Resource id, and delete the link
+  if (body.action === 'replaceFolder' && body.remoteFolder?.id) {
+    await mongo.publications.deleteOne({ 'remoteFolder.id': body.remoteFolder?.id })
+  }
+  if (body.action === 'replaceResource' && body.remoteResource?.id) {
+    await mongo.publications.deleteOne({ 'remoteResource.id': body.remoteResource?.id })
   }
 
   // Check if the catalog exists
