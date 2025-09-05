@@ -24,7 +24,7 @@ const getAxiosOptions = (catalog: Catalog): AxiosRequestConfig => {
 }
 
 export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication) => {
-  if (pub.action === 'delete') return await deleteDataset(catalog, plugin, pub)
+  if (pub.action === 'delete') return await deletePublication(catalog, plugin, pub)
 
   // 1. Get the Data Fair Dataset
   const dataFairDataset = (await axios.get(`/api/v1/datasets/${pub.dataFairDataset.id}`, getAxiosOptions(catalog))).data
@@ -78,9 +78,9 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
     secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
     dataset: dataFairDataset,
     publication: {
-      remoteDataset: pub.remoteDataset,
-      remoteResource: pub.remoteResource,
-      isResource: pub.action === 'addAsResource'
+      action: pub.action,
+      remoteFolder: pub.remoteFolder,
+      remoteResource: pub.remoteResource
     },
     publicationSite: pub.publicationSite,
     log: prepareLog(pub, 'publication')
@@ -90,9 +90,18 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
   pub.dataFairDataset.title = dataFairDataset.title
   pub.catalog.title = catalog.title
   Object.assign(pub, {
-    remoteResource: publicationRes.remoteResource,
-    remoteDataset: publicationRes.remoteDataset,
+    remoteFolder: publicationRes.remoteFolder,
+    remoteResource: publicationRes.remoteResource
   })
+
+  // If the action was to create a folder or resource, change it to replace for the next publication
+  if (pub.action === 'createFolderInRoot' || pub.action === 'createFolder') {
+    pub.action = 'replaceFolder'
+  } else if (pub.action === 'createResource') {
+    pub.remoteFolder = undefined // Reset it to avoid confusion, replace a resource is not linked to a folder
+    pub.action = 'replaceResource'
+  }
+
   pub.status = 'done'
   pub.lastPublicationDate = new Date().toISOString()
   const validPublication = (await import('../../../api/types/publication/index.ts')).returnValid(pub)
@@ -101,15 +110,15 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
   await wsEmit(`publication/${pub._id}`, validPublication)
 }
 
-const deleteDataset = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication) => {
-  if (!pub.remoteDataset) {
-    internalError('worker-missing-remote-data', 'try do delete a publication without remote dataset, weird')
+const deletePublication = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication) => {
+  if (!pub.remoteFolder && !pub.remoteResource) {
+    internalError('worker-missing-remote', 'try do delete a publication without remote folder or resource, weird')
   } else {
     try {
-      await plugin.deleteDataset({
+      await plugin.deletePublication({
         catalogConfig: catalog.config,
         secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
-        datasetId: pub.remoteDataset.id,
+        folderId: pub.remoteFolder?.id,
         resourceId: pub.remoteResource?.id,
         log: prepareLog(pub, 'publication')
       })

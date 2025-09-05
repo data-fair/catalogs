@@ -1,8 +1,8 @@
 <template>
   <v-container
     v-if="imp"
-    style="min-height:800px"
     data-iframe-height
+    style="min-height:500px"
   >
     <h2 class="text-h5 mb-2">
       Import {{ imp.remoteResource?.title ?? imp.remoteResource.id }}
@@ -54,7 +54,7 @@ import 'cronstrue/locales/fr'
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import { toCRON } from '@data-fair/catalogs-shared/cron.ts'
-import { resolvedSchema as importSchemaBase } from '#api/types/import/index.ts'
+import { resolvedSchema as importSchemaBase } from '#api/types/import'
 
 const { t } = useI18n()
 const route = useRoute<'/catalogs/[catalogId]/imports/[importId]'>()

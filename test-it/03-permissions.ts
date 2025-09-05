@@ -339,7 +339,7 @@ describe.only('Permissions', () => {
         url: 'http://localhost:5600/data-fair',
         datasetUrlTemplate: 'http://localhost:5600/data-fair/dataset/{id}'
       },
-      action: 'create'
+      action: 'createFolderInRoot'
     })
 
     it('superadmin can publish any dataset to any catalog', async () => {

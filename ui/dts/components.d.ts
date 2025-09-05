@@ -18,7 +18,6 @@ declare module 'vue' {
     ImportList: typeof import('./../src/components/import/import-list.vue')['default']
     ImportLog: typeof import('./../src/components/import/import-log.vue')['default']
     ImportLogs: typeof import('./../src/components/import/import-logs.vue')['default']
-    ImportSelectResource: typeof import('./../src/components/import/import-select-resource.vue')['default']
     LayoutActions: typeof import('./../src/components/layout/layout-actions.vue')['default']
     LayoutActionsButton: typeof import('./../src/components/layout/layout-actions-button.vue')['default']
     LayoutActionsRight: typeof import('./../src/components/layout/layout-actions-right.vue')['default']
@@ -26,7 +25,7 @@ declare module 'vue' {
     LayoutSectionTabs: typeof import('./../src/components/layout/layout-section-tabs.vue')['default']
     PublicationCard: typeof import('./../src/components/publication/publication-card.vue')['default']
     PublicationList: typeof import('./../src/components/publication/publication-list.vue')['default']
-    PublicationNew: typeof import('./../src/components/publication/publication-new.vue')['default']
+    ResourcesExplorer: typeof import('./../src/components/resources-explorer.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

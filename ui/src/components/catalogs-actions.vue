@@ -1,7 +1,7 @@
 <template>
   <v-list
-    data-iframe-height
     density="compact"
+    data-iframe-height
     style="background-color: transparent;"
   >
     <v-list-item

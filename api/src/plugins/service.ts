@@ -126,7 +126,7 @@ export const getPlugin = async (pluginId: string): Promise<CatalogPlugin> => {
     const plugin = (await import(pluginPath)).default
 
     // For compatibility
-    if (plugin.list && !plugin.listResources) plugin.listResources = plugin.list
+    if (plugin.listResources && !plugin.list) plugin.list = plugin.listResources
 
     return plugin
   } catch (e: any) {

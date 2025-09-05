@@ -22,8 +22,11 @@ export type PrepareContext<TCatalogConfig, TCapabilities extends Capability[]> =
 
 /**
  * Context for listing resources and folders in a catalog.
- *
- * @deprecated Use `ListResourcesContext` instead.
+ * @template TCatalogConfig - The type of the catalog configuration.
+ * @template TCapabilities - The capabilities of the catalog.
+ * @property catalogConfig - The catalog configuration.
+ * @property secrets - The deciphered secrets of the catalog.
+ * @property params - The specific parameters for listing resources and folders.
  */
 export type ListContext<TCatalogConfig, TCapabilities extends Capability[]> = {
   /** The catalog configuration */
@@ -36,11 +39,8 @@ export type ListContext<TCatalogConfig, TCapabilities extends Capability[]> = {
 
 /**
  * Context for listing resources and folders in a catalog.
- * @template TCatalogConfig - The type of the catalog configuration.
- * @template TCapabilities - The capabilities of the catalog.
- * @property catalogConfig - The catalog configuration.
- * @property secrets - The deciphered secrets of the catalog.
- * @property params - The specific parameters for listing resources and folders.
+ *
+ * @deprecated Use `ListContext` instead.
  */
 export type ListResourcesContext<TCatalogConfig, TCapabilities extends Capability[]> = {
   /** The catalog configuration */
@@ -66,7 +66,10 @@ type ListParams<TCapabilities extends Capability[]> = {
 } &
   (Includes<TCapabilities, 'search'> extends true ? SearchParams : {}) &
   (Includes<TCapabilities, 'pagination'> extends true ? PaginationParams : {}) &
-  (Includes<TCapabilities, 'additionalFilters'> extends true ? Record<string, string | number> : {})
+  (Includes<TCapabilities, 'additionalFilters'> extends true ? Record<string, string | number> : {}) &
+  (Includes<TCapabilities, 'importFilters'> extends true ? Record<string, string | number> : {}) &
+  (Includes<TCapabilities, 'publicationFilters'> extends true ? Record<string, string | number> : {}) &
+  (Includes<TCapabilities, 'publication'> extends true ? ActionParams : {})
 
 /** The params q is used to search resources */
 type SearchParams = { q?: string }
@@ -75,6 +78,8 @@ type PaginationParams = {
   page?: number
   size?: number
 }
+/** The params action is used to filter resources by their action type. */
+type ActionParams = { action?: 'createFolder' | 'createResource' | 'replaceFolder' | 'replaceResource' }
 
 /**
  * Context for get and downloading a resource.
@@ -143,6 +148,7 @@ export type ListDatasetsContext<TCatalogConfig> = {
  * @property publicationSite.title - The title of the publication site.
  * @property publicationSite.url - The URL of the publication site.
  * @property publicationSite.datasetUrlTemplate - The template for the URL to view the dataset in the publication site, using url-template syntax.
+ * @property log - The log functions to write logs during the processing.
  */
 export type PublishDatasetContext<TCatalogConfig> = {
   /** The catalog configuration */
@@ -171,17 +177,18 @@ export type PublishDatasetContext<TCatalogConfig> = {
  * @template TCatalogConfig - The type of the catalog configuration.
  * @property catalogConfig - The catalog configuration.
  * @property secrets - The deciphered secrets of the catalog.
- * @property datasetId - The ID of the remote dataset to delete, or the dataset where the resource to delete is.
- * @property resourceId - The ID of the resource to delete, if applicable.
+ * @property folderId - The ID of the remote folder to delete.
+ * @property resourceId - The ID of the resource to delete.
+ * @property log - The log functions to write logs during the processing.
  */
-export type DeleteDatasetContext<TCatalogConfig> = {
+export type DeletePublicationContext<TCatalogConfig> = {
   /** The catalog configuration */
   catalogConfig: TCatalogConfig,
   /** The deciphered secrets of the catalog */
   secrets: Record<string, string>,
-  /** The ID of the remote dataset to delete, or the dataset where the resource to delete is */
-  datasetId: string,
-  /** The ID of the resource to delete, if applicable */
+  /** The ID of the remote folder to delete */
+  folderId?: string,
+  /** The ID of the remote resource to delete */
   resourceId?: string
   /** The log functions to write logs during the processing */
   log: LogFunctions

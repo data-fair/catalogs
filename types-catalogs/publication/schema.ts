@@ -5,13 +5,13 @@ export default {
   type: 'object',
   title: 'Publication',
   additionalProperties: false,
-  description: 'A small object that contains the information needed to publish or update a dataset or a resource',
+  description: 'A small object that contains the information needed to publish or update a folder or a resource',
   properties: {
-    remoteDataset: {
+    remoteFolder: {
       type: 'object',
       required: ['id'],
       additionalProperties: false,
-      description: 'Dataset from the remote catalog, used if a local dataset is published as a dataset on a remote catalog. If it is defined during publication, then the remote dataset must be updated.',
+      description: 'In create actions, the remote folder where to create the folder/resource. In other actions, the remote folder to update or delete',
       properties: {
         id: {
           type: 'string',
@@ -21,7 +21,7 @@ export default {
         },
         url: {
           type: 'string',
-          description: 'URL to view the dataset in the remote catalog'
+          description: 'URL to view the folder in the remote catalog'
         }
       }
     },
@@ -29,7 +29,7 @@ export default {
       type: 'object',
       required: ['id'],
       additionalProperties: false,
-      description: 'Dataset\'s resource from the remote catalog, used if a local dataset is published as a resource on a remote catalog. If it is defined during publication, then the remote resource must be updated.',
+      description: 'The remote resource to update or delete',
       properties: {
         id: {
           type: 'string',
@@ -43,9 +43,17 @@ export default {
         }
       }
     },
-    isResource: {
-      type: 'boolean',
-      description: 'If true, the publication is for a resource, otherwise it is for a dataset'
-    }
+    action: {
+      type: 'string',
+      description: 'The action to perform in the remote catalog.',
+      enum: [
+        'createFolderInRoot',
+        'createFolder',
+        'createResource',
+        'replaceFolder',
+        'replaceResource',
+        'delete'
+      ]
+    },
   }
 }

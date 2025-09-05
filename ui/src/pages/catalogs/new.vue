@@ -6,6 +6,7 @@
   <v-container
     v-else
     data-iframe-height
+    style="min-height:800px"
     class="pa-0"
     fluid
   >
@@ -49,9 +50,8 @@
             <v-col
               v-for="plugin in installedPluginsFetch.data.value?.results"
               :key="plugin.id"
-              md="3"
-              sm="4"
-              xs="6"
+              md="4"
+              sm="6"
               cols="12"
             >
               <v-card
@@ -61,7 +61,8 @@
               >
                 <template #title>
                   <span :class="newPlugin !== plugin.id ? 'text-primary' : ''">
-                    {{ plugin.metadata.title }}
+                    <!-- Remove 'Catalog ' from the title for retrocompatibility -->
+                    {{ t('catalog') }} {{ plugin.metadata.title.replace('Catalog ', '') }}
                   </span>
                 </template>
                 <template #append>
@@ -73,7 +74,7 @@
                     size="32"
                   />
                 </template>
-                <v-card-text>{{ plugin.metadata.description }}</v-card-text>
+                <v-card-text>{{ plugin.metadata.i18n?.[session.lang.value].description || plugin.metadata.description }}</v-card-text>
               </v-card>
             </v-col>
           </v-row>
@@ -138,7 +139,7 @@ import { computedAsync } from '@vueuse/core'
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import OwnerPick from '@data-fair/lib-vuetify/owner-pick.vue'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
-import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog/index.ts'
+import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog'
 
 const session = useSessionAuthenticated()
 const router = useRouter()
@@ -147,7 +148,6 @@ const { t } = useI18n()
 const installedPluginsFetch = useFetch<{ results: Plugin[], count: number }>(`${$apiPath}/plugins`, { notifError: false })
 
 const step = ref('1')
-const showCreateMenu = ref(false)
 const newCatalog = ref<Partial<CatalogPostReq['body']>>({})
 const newPlugin = ref<string | undefined>(undefined)
 const newOwner = ref<Account | undefined>(session.state.account)
@@ -186,7 +186,6 @@ const createCatalog = useAsyncAction(
     })
 
     await router.replace({ path: `/catalogs/${catalog._id}` })
-    showCreateMenu.value = false
   },
   {
     error: t('errorCreatingCatalog'),
@@ -217,6 +216,7 @@ const vjsfOptions: VjsfOptions = {
 <i18n lang="yaml">
   en:
     catalogs: Catalogs
+    catalog: Catalog
     configuration: Configuration
     create: Create
     createCatalog: Create a catalog
@@ -229,6 +229,7 @@ const vjsfOptions: VjsfOptions = {
     selectOwner: Select owner
 
   fr:
+    catalog: Catalogue
     catalogs: Catalogues
     configuration: Configuration
     create: Créer

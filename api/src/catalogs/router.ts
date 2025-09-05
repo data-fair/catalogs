@@ -199,7 +199,7 @@ router.delete('/:id', async (req, res) => {
   res.status(204).send()
 })
 
-// Get the list of remote resources from a catalog
+// Explore the list of remote folders/resources from a catalog
 router.get('/:id/resources', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
@@ -208,39 +208,10 @@ router.get('/:id/resources', async (req, res) => {
 
   // Execute the plugin function
   const plugin = await getPlugin(catalog.plugin)
-  if (!plugin.metadata.capabilities.includes('import')) throw httpError(501, 'Plugin does not support listing resources')
-  const datasets = await plugin.listResources({
+  const datasets = await plugin.list({
     catalogConfig: catalog.config,
     secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
     params: req.query as Record<string, any>
-  })
-
-  res.status(200).json(datasets)
-})
-
-// Get the list of remote datasets from a catalog
-router.get('/:id/datasets', async (req, res) => {
-  const sessionState = await session.reqAuthenticated(req)
-  const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
-  if (!catalog) throw httpError(404, 'Catalog not found')
-  assertAccountRole(sessionState, catalog.owner, 'admin')
-
-  // Execute the plugin function
-  const plugin = await getPlugin(catalog.plugin)
-  if (!plugin.metadata.capabilities.includes('publication')) throw httpError(501, 'Plugin does not support listing datasets')
-  // Validate params
-  if (req.query.q && typeof req.query.q !== 'string') throw httpError(400, 'Invalid query parameter "q", must be a string')
-  if (!['addAsResource', 'overwrite'].includes(req.query.mode as string)) {
-    throw httpError(400, 'Invalid query parameter "mode", must be "addAsResource" or "overwrite"')
-  }
-
-  const datasets = await plugin.listDatasets({
-    catalogConfig: catalog.config,
-    secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
-    params: {
-      q: req.query.q,
-      mode: req.query.mode as 'addAsResource' | 'overwrite'
-    }
   })
 
   res.status(200).json(datasets)

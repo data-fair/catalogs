@@ -23,6 +23,7 @@
   <v-container
     v-else-if="catalog"
     data-iframe-height
+    style="min-height:500px"
   >
     <layout-section-tabs
       v-if="tabs.length"

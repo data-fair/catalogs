@@ -84,6 +84,8 @@ router.get('/:id', async (req, res) => {
     version: pluginInfo.version,
     configSchema: plugin.configSchema,
     listFiltersSchema: plugin.listFiltersSchema,
+    importFiltersSchema: plugin.importFiltersSchema,
+    publicationFiltersSchema: plugin.publicationFiltersSchema,
     importConfigSchema: plugin.importConfigSchema,
     metadata: plugin.metadata
   } as Plugin)
