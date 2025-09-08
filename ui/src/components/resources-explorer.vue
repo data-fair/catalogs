@@ -162,6 +162,7 @@ const fetchFolders = useFetch<Awaited<ReturnType<CatalogPlugin['list']>>>(
         page: currentPage.value,
         size: itemsPerPage.value
       }),
+      ...(mode !== 'import' && { action: mode }),
       ...additionalFilters.value
     }))
   })
