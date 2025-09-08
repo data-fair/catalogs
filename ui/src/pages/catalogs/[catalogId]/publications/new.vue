@@ -56,11 +56,11 @@
           class="ma-1"
         >
           <resources-explorer
-            v-if="catalog && plugin"
+            v-if="catalog && plugin && publicationConfig.action"
             v-model="selectedFolderOrResource"
             :catalog="catalog"
             :plugin="plugin"
-            :publication-action="publicationConfig.action"
+            :mode="publicationConfig.action"
           />
         </v-stepper-window-item>
       </v-stepper-window>
@@ -282,7 +282,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
 
     actionLabels:
       createFolderInRoot: Créer un dossier à la racine
-      createFolder: Créer un dossier 2
+      createFolder: Créer un dossier
       createResource: Créer une ressource
       replaceFolder: Écraser un dossier
       replaceResource: Écraser une ressource

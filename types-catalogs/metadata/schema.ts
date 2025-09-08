@@ -44,28 +44,23 @@ export default {
             properties: {
               createFolderInRoot: {
                 type: 'string',
-                description: 'Label for the action "Create folder in root".',
-                default: 'Create folder in root'
+                description: 'Label for the action "Create folder in root".'
               },
               createFolder: {
                 type: 'string',
-                description: 'Label for the action "Create folder".',
-                default: 'Create folder'
+                description: 'Label for the action "Create folder".'
               },
               createResource: {
                 type: 'string',
-                description: 'Label for the action "Create resource".',
-                default: 'Create resource'
+                description: 'Label for the action "Create resource".'
               },
               replaceFolder: {
                 type: 'string',
-                description: 'Label for the action "Replace folder".',
-                default: 'Replace folder'
+                description: 'Label for the action "Replace folder".'
               },
               replaceResource: {
                 type: 'string',
-                description: 'Label for the action "Replace resource".',
-                default: 'Replace resource'
+                description: 'Label for the action "Replace resource".'
               }
             }
           },
@@ -76,28 +71,23 @@ export default {
             properties: {
               createFolderInRoot: {
                 type: 'string',
-                description: 'Button label for creating a publication in the root folder.',
-                default: 'Create publication'
+                description: 'Button label for creating a publication in the root folder. Default: "Create publication".'
               },
               createFolder: {
                 type: 'string',
-                description: 'Button label for creating a folder in the selected folder.',
-                default: 'Create publication here'
+                description: 'Button label for creating a folder in the selected folder. Default: "Create publication here".'
               },
               createResource: {
                 type: 'string',
-                description: 'Button label for creating a resource in the selected folder.',
-                default: 'Create publication here'
+                description: 'Button label for creating a resource in the selected folder. Default: "Create publication here".'
               },
               replaceFolder: {
                 type: 'string',
-                description: 'Button label for replacing the selected folder with a new publication.',
-                default: 'Replace this folder'
+                description: 'Button label for replacing the selected folder with a new publication. Default: "Replace this folder".'
               },
               replaceResource: {
                 type: 'string',
-                description: 'Button label for replacing the selected resource with a new publication.',
-                default: 'Replace this resource'
+                description: 'Button label for replacing the selected resource with a new publication. Default: "Replace this resource".'
               }
             }
           },
@@ -108,23 +98,19 @@ export default {
             properties: {
               createFolder: {
                 type: 'string',
-                description: 'Title of the step where the user selects the destination folder for the publication.',
-                default: 'Destination folder selection'
+                description: 'Title of the step where the user selects the destination folder for the publication. Default: "Destination folder selection".'
               },
               createResource: {
                 type: 'string',
-                description: 'Title of the step where the user selects the destination folder for the publication.',
-                default: 'Destination folder selection'
+                description: 'Title of the step where the user selects the destination folder for the publication. Default: "Destination folder selection".'
               },
               replaceFolder: {
                 type: 'string',
-                description: 'Title of the step where the user selects a folder to replace with the publication.',
-                default: 'Folder to replace selection'
+                description: 'Title of the step where the user selects a folder to replace with the publication. Default: "Folder to replace selection".'
               },
               replaceResource: {
                 type: 'string',
-                description: 'Title of the step where the user selects a resource to replace with the publication.',
-                default: 'Resource to replace selection'
+                description: 'Title of the step where the user selects a resource to replace with the publication. Default: "Resource to replace selection".'
               }
             }
           }
