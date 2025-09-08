@@ -95,7 +95,7 @@
         />
         {{ item.title }}
         <v-chip
-          v-if="!publicationAction && isResourceImported(item.id)"
+          v-if="mode === 'import' && isResourceImported(item.id)"
           class="ml-2"
           color="grey"
           size="x-small"
@@ -126,10 +126,10 @@ import formatBytes from '@data-fair/lib-vue/format/bytes.js'
 
 const { t } = useI18n()
 const session = useSessionAuthenticated()
-const { catalog, plugin, publicationAction } = defineProps<{
+const { catalog, plugin, mode } = defineProps<{
   catalog: Catalog
   plugin: Plugin
-  publicationAction?: Publication['action']
+  mode: 'import' | Publication['action']
 }>()
 
 // Navigation state
@@ -137,9 +137,9 @@ const currentFolderId = ref<string | null>(null)
 const selected = ref<string[]>([])
 const resourceSelected = defineModel<{ id: string, title: string, type: 'resource' | 'folder' } | null>()
 
-// Determine selection mode based on publicationAction
+// Determine selection mode based on mode
 const shouldSelectFolder = computed(() => {
-  return publicationAction && publicationAction !== 'replaceResource'
+  return mode !== 'import' && mode !== 'replaceResource'
 })
 
 // Pagination state
@@ -224,11 +224,10 @@ const handleRowClick = (item: any) => {
 
 /** Computed property for the additional filters schema */
 const additionalFiltersSchema = computed(() => {
-  if (!publicationAction) {
+  if (mode === 'import') {
     if (catalog.capabilities.includes('additionalFilters')) return plugin.listFiltersSchema
     if (catalog.capabilities.includes('importFilters')) return plugin.importFiltersSchema
-  }
-  if (publicationAction && catalog.capabilities.includes('publicationFilters')) return plugin.publicationFiltersSchema
+  } else if (catalog.capabilities.includes('publicationFilters')) return plugin.publicationFiltersSchema
   return null
 })
 
@@ -274,7 +273,7 @@ const headers = computed(() => {
   const headers: Record<string, string>[] = [
     { title: t('name'), key: 'title', align: 'start' }
   ]
-  if (!publicationAction) {
+  if (mode === 'import') {
     headers.push(
       { title: t('size'), key: 'size' },
       { title: t('format'), key: 'format' }

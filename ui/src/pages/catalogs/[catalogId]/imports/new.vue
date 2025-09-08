@@ -34,6 +34,7 @@
             v-model="selectedResource"
             :catalog="catalog"
             :plugin="plugin"
+            mode="import"
           />
         </v-stepper-window-item>
 

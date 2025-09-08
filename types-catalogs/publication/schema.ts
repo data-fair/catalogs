@@ -1,11 +1,11 @@
 export default {
   $id: 'https://github.com/data-fair/types-catalogs/publication',
   'x-exports': ['types'],
-
   type: 'object',
   title: 'Publication',
   additionalProperties: false,
   description: 'A small object that contains the information needed to publish or update a folder or a resource',
+  required: ['action'],
   properties: {
     remoteFolder: {
       type: 'object',
