@@ -113,31 +113,6 @@ export type GetResourceContext<TCatalogConfig> = {
 }
 
 /**
- * Context for listing remote datasets in a catalog.
- * @template TCatalogConfig - The type of the catalog configuration.
- * @template TCapabilities - The capabilities of the catalog.
- * @property catalogConfig - The catalog configuration.
- * @property secrets - The deciphered secrets of the catalog.
- * @property params - The specific parameters for listing datasets.
- */
-export type ListDatasetsContext<TCatalogConfig> = {
-  /** The catalog configuration */
-  catalogConfig: TCatalogConfig,
-  /** The deciphered secrets of the catalog */
-  secrets: Record<string, string>,
-  /** The specific parameters for listing datasets */
-  params: {
-    /** The search field to filter datasets */
-    q?: string,
-    /** The mode :
-     * - 'addAsResource': The remote dataset where the datafair dataset will be added as a resource.
-     * - 'overwrite': he remote dataset that will be overwritten by the DataFair dataset.
-     */
-    mode: 'addAsResource' | 'overwrite'
-  }
-}
-
-/**
  * Context for publishing a dataset.
  * @template TCatalogConfig - The type of the catalog configuration.
  * @property catalogConfig - The catalog configuration.
