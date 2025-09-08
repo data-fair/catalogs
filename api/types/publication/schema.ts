@@ -126,7 +126,10 @@ export default {
       additionalProperties: false,
       layout: {
         getItems: {
-          url: '${context.origin}/data-fair/api/v1/datasets/${rootData.dataFairDataset?.id}?select=publicationSites',
+          url: {
+            expr: 'rootData.dataFairDataset?.id && `${context.origin}/data-fair/api/v1/datasets/${rootData.dataFairDataset.id}?select=publicationSites`',
+            type: 'js-eval'
+          },
           itemsResults: 'data.publicationSites ?? []',
           itemValue: 'context.publicationSites[item]',
           itemTitle: '`${context.publicationSites[item]?.title} (${context.publicationSites[item]?.url})`',

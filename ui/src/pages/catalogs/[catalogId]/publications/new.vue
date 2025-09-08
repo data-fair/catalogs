@@ -43,6 +43,7 @@
           >
             <v-form v-model="validPublicationConfig">
               <vjsf
+                v-if="publicationSites.data.value"
                 v-model="publicationConfig"
                 :schema="publicationSchema"
                 :options="vjsfOptions"
