@@ -32,7 +32,8 @@
             color="primary"
             variant="flat"
             class="mt-2"
-            @click="createNewPublication"
+            :href="`/data-fair/extra/catalogs/?p=./${selectedCatalogId}/publications/new&datasetId=${datasetId}`"
+            target="_top"
           >
             {{ t('createNewPublication') }}
           </v-btn>
@@ -71,12 +72,6 @@ const hasPublicationSites = computed(() => {
   return !!datasetFetch.data.value?.publicationSites?.length
 })
 
-// Function to create new publication and redirect parent iframe
-const createNewPublication = () => {
-  if (selectedCatalogId.value && hasPublicationSites.value) {
-    window.parent.location.href = `/catalogs/catalogs/${selectedCatalogId.value}/publications/new?datasetId=${datasetId.value}`
-  }
-}
 </script>
 
 <i18n lang="yaml">
