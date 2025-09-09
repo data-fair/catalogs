@@ -50,7 +50,7 @@ export const installPlugin = async (req: Request & { file?: Express.Multer.File 
     const extractedPath = path.join(dir.path, 'package')
 
     // install dependencies of the plugin
-    await execAsync('npm install', { cwd: extractedPath })
+    await execAsync('npm i --omit=dev --no-audit --no-fund', { cwd: extractedPath })
 
     // generate plugin.json from package.json
     const packageJson = await fs.readJson(path.join(extractedPath, 'package.json'))

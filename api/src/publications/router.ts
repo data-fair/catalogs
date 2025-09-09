@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
 
   const params = (await import('../../doc/publications/get-req/index.ts')).returnValid(req.query)
   const sort = findUtils.sort(params.sort || 'lastPublicationDate:-1,created.date:-1')
-  const { skip, size } = findUtils.pagination(params)
+  const { skip, size } = findUtils.pagination(params, 1000)
   const project = findUtils.project(params.select)
   const query = findUtils.filterPermissions(params, sessionState)
   const queryWithFilters = Object.assign(findUtils.query(params, { catalogId: 'catalog.id', dataFairDatasetId: 'dataFairDataset.id' }), query)
