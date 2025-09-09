@@ -1,15 +1,20 @@
 <template>
   <v-container data-iframe-height>
-    <p v-if="!catalogsFetch.data.value?.results.length">
+    <span
+      v-if="!catalogsFetch.data.value?.results.length"
+      class="d-flex justify-center text-h6"
+    >
       {{ t('noCatalogs') }}
-    </p>
+    </span>
+    <span
+      v-if="!hasPublicationSites"
+      class="d-flex justify-center text-h6"
+    >
+      {{ t('noPublicationSites') }}
+    </span>
     <template v-else>
       <!-- Create new publication -->
-      <p v-if="!hasPublicationSites">
-        {{ t('noPublicationSites') }}
-      </p>
       <v-card
-        v-else
         rounded="lg"
         variant="elevated"
         class="mb-4"
