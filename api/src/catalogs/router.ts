@@ -114,7 +114,7 @@ router.patch('/:id', async (req, res) => {
 
   // Restrict the parts of the catalog that can be edited
   const acceptedParts = Object.keys(catalogSchema.properties)
-    .filter(k => sessionState.user.adminMode || !(catalogSchema.properties)[k].readOnly)
+    .filter(k => sessionState.user.adminMode || !(catalogSchema.properties)[k].readOnly || k === 'owner')
   for (const key in req.body) {
     if (!acceptedParts.includes(key)) throw httpError(400, `Unsupported patch part ${key}`)
     // Check if the user has the right to change to this owner

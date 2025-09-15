@@ -135,7 +135,7 @@ router.patch('/:id', async (req, res) => {
 
   // Restrict the parts of the import that can be edited
   const acceptedParts = Object.keys(importSchema.properties)
-    .filter(k => sessionState.user.adminMode || !(importSchema.properties)[k].readOnly || 'status')
+    .filter(k => sessionState.user.adminMode || !(importSchema.properties)[k].readOnly || k === 'owner' || k === 'status')
 
   for (const key in req.body) {
     if (!acceptedParts.includes(key)) throw httpError(400, `Unsupported patch part ${key}`)
