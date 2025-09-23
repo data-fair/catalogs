@@ -23,14 +23,6 @@
         />
       </template>
 
-      <!-- Owner -->
-      <template #append>
-        <owner-avatar
-          v-if="showOwner"
-          :owner="catalog.owner"
-        />
-      </template>
-
       <!-- Catalog title -->
       <template #title>
         <span class="font-weight-bold text-primary">
@@ -42,6 +34,14 @@
           location="top left"
           open-delay="300"
           :text="catalog.title"
+        />
+      </template>
+
+      <!-- Owner -->
+      <template #append>
+        <owner-avatar
+          v-if="showOwner"
+          :owner="catalog.owner"
         />
       </template>
     </v-card-item>

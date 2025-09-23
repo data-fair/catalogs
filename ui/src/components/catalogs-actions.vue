@@ -94,7 +94,8 @@ const pluginsItems = computed(() => {
   return Object.entries(facets.plugins)
     .map(
       ([pluginKey, count]) => {
-        const title = plugins.find((plugin) => plugin.id === pluginKey)?.metadata.title
+        // Remove 'Catalog ' from the title for retrocompatibility
+        const title = plugins.find((plugin) => plugin.id === pluginKey)?.metadata.title.replace('Catalog ', '')
         return {
           display: `${title || t('deletedPlugin', { key: pluginKey })} (${count})`,
           pluginKey
