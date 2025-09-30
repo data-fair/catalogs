@@ -9,7 +9,7 @@ export const filterPermissions = (reqQuery: Record<string, string>, sessionState
 
   const showAll = reqQuery.showAll === 'true'
   if (showAll && !sessionState.user.adminMode) {
-    throw httpError(400, 'Only super admins can override permissions filter with showAll parameter')
+    throw httpError(403, 'Only super admins can use showAll parameter')
   }
   if (!showAll) {
     query['owner.type'] = sessionState.account.type
