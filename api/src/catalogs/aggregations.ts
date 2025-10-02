@@ -1,3 +1,4 @@
+// Catalogs with count of imports and publications
 export const catalogsWithCounts = (queryWithFilters: Record<string, any>, sort: any, skip: number, size: number, project: Record<string, any>) => {
   return [
     { $match: queryWithFilters },

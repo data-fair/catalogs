@@ -7,10 +7,15 @@ export const publicationsStoreKey = Symbol('publications-store')
 
 export const createPublicationsStore = (catalogId?: string, dataFairDatasetId?: string) => {
   const ws = useWS('/catalogs/api/')
+  const showAll = useBooleanSearchParam('showAll')
 
   // First fetch publications
   const publicationsFetch = useFetch<PublicationsGetRes>(`${$apiPath}/publications`, {
-    query: { catalogId, dataFairDatasetId }
+    query: computed(() => ({
+      showAll: showAll.value ? 'true' : undefined,
+      catalogId,
+      dataFairDatasetId
+    }))
   })
 
   // Copy of fetch data, that can be edited

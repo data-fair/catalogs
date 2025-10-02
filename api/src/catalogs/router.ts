@@ -91,7 +91,7 @@ router.post('/', async (req, res) => {
     sendCatalogEvent(validCatalog, 'a été créé', 'create', sessionState)
   }
   delete validCatalog.secrets // Do not return secrets in the response
-  res.status(200).json(validCatalog)
+  res.status(201).json(validCatalog)
 })
 
 // Get a catalog

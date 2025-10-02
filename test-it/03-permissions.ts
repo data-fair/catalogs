@@ -43,7 +43,7 @@ describe.only('Permissions', () => {
         id: 'KWqAGZ4mG',
         name: 'Fivechat'
       }))
-      assert.equal(orgCatalog.status, 200, 'Superadmin should be able to create a catalog in an organization')
+      assert.equal(orgCatalog.status, 201, 'Superadmin should be able to create a catalog in an organization')
 
       // Department level catalog
       const depCatalog = await superadmin.post('/api/catalogs', createCatalogPayload({
@@ -52,7 +52,7 @@ describe.only('Permissions', () => {
         name: 'Fivechat',
         department: 'dep1'
       }))
-      assert.equal(depCatalog.status, 200, 'Superadmin should be able to create a catalog in a department')
+      assert.equal(depCatalog.status, 201, 'Superadmin should be able to create a catalog in a department')
 
       // Get catalogs
       const getOrg = await superadmin.get(`/api/catalogs/${orgCatalog.data._id}`)
@@ -127,7 +127,7 @@ describe.only('Permissions', () => {
         id: 'KWqAGZ4mG',
         name: 'Fivechat'
       }))
-      assert.equal(catalog.status, 200, 'Organization admin should be able to create organization level catalog')
+      assert.equal(catalog.status, 201, 'Organization admin should be able to create organization level catalog')
 
       const updated = await adminOrga.patch(`/api/catalogs/${catalog.data._id}`, { title: 'Updated' })
       assert.equal(updated.status, 200, 'Organization admin should be able to update organization level catalog')
@@ -143,7 +143,7 @@ describe.only('Permissions', () => {
         name: 'Fivechat',
         department: 'dep1'
       }))
-      assert.equal(catalog.status, 200, 'Organization admin should be able to create department level catalog')
+      assert.equal(catalog.status, 201, 'Organization admin should be able to create department level catalog')
 
       const updated = await adminOrga.patch(`/api/catalogs/${catalog.data._id}`, { title: 'Updated' })
       assert.equal(updated.status, 200, 'Organization admin should be able to update department level catalog')
@@ -172,7 +172,7 @@ describe.only('Permissions', () => {
         name: 'Fivechat',
         department: 'dep1'
       }))
-      assert.equal(catalog.status, 200, 'Department admin should be able to create department level catalog')
+      assert.equal(catalog.status, 201, 'Department admin should be able to create department level catalog')
 
       const updated = await adminDep.patch(`/api/catalogs/${catalog.data._id}`, { title: 'Updated' })
       assert.equal(updated.status, 200, 'Department admin should be able to update department level catalog')

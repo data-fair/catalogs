@@ -49,8 +49,12 @@ const { catalogId } = defineProps<{
 }>()
 
 const { t } = useI18n()
+const showAll = useBooleanSearchParam('showAll')
 const importsFetch = useFetch<{ results: Import[], count: number }>(`${$apiPath}/imports`, {
-  query: { catalogId }
+  query: computed(() => ({
+    showAll: showAll.value ? 'true' : undefined,
+    catalogId
+  }))
 })
 
 </script>

@@ -10,10 +10,9 @@ export default {
     skip: {
       type: 'string'
     },
-    // We can use it but I don't see the use case
-    // showAll: {
-    //   type: 'string'
-    // },
+    showAll: {
+      type: 'string'
+    },
     sort: {
       type: 'string'
     },
