@@ -19,7 +19,7 @@
     >
       <v-form v-model="valid">
         <vjsf
-          v-if="importSchema && imp"
+          v-if="importSchema && editImport"
           v-model="editImport"
           :schema="importSchema"
           :options="vjsfOptions"
@@ -62,12 +62,29 @@ const session = useSessionAuthenticated()
 const ws = useWS('/catalogs/api/')
 const { catalog, plugin } = createCatalogStore(route.params.catalogId)
 
-const importFetch = useFetch<Import>(`${$apiPath}/imports/${route.params.importId}`)
-const imp = ref<Import | null>(null)
-watch(importFetch.data, () => { imp.value = importFetch.data.value })
-
 const valid = ref(false)
-const editImport: Ref<Partial<Import>> = ref({})
+const imp = ref<Import | null>(null)
+const editImport: Ref<Partial<Import> | null> = ref(null)
+
+const importFetch = useFetch<Import>(`${$apiPath}/imports/${route.params.importId}`)
+watch(importFetch.data, (newImp) => {
+  if (!newImp) return
+  imp.value = newImp
+  editImport.value = {
+    config: newImp.config,
+    scheduling: newImp.scheduling,
+    isSchedulingActive: newImp.isSchedulingActive,
+    shouldUpdateMetadata: newImp.shouldUpdateMetadata,
+    shouldUpdateSchema: newImp.shouldUpdateSchema
+  }
+
+  setBreadcrumbs([
+    { text: t('catalogs'), to: '/catalogs' },
+    { text: newImp.catalog.title ?? newImp.catalog.id, to: `/catalogs/${newImp.catalog.id}` },
+    { text: t('imports'), to: `/catalogs/${newImp.catalog.id}` },
+    { text: newImp.remoteResource.title ?? newImp.remoteResource.id }
+  ])
+})
 
 ws?.subscribe<Partial<Import>>(
   `import/${route.params.importId}`,
@@ -91,7 +108,7 @@ const patch = useAsyncAction(
     await new Promise(resolve => setTimeout(resolve, 1))
 
     if (!valid.value) return
-    const res = await $fetch(`${$apiPath}/imports/${route.params.importId}`, {
+    const res = await $fetch<Import>(`${$apiPath}/imports/${route.params.importId}`, {
       method: 'PATCH',
       body: editImport.value,
     })
@@ -103,43 +120,20 @@ const patch = useAsyncAction(
   }
 )
 
-watch(imp, (newImp) => {
-  if (newImp) {
-    editImport.value = {
-      config: newImp.config,
-      dataFairDataset: newImp.dataFairDataset,
-      scheduling: newImp.scheduling,
-      isSchedulingActive: newImp.isSchedulingActive,
-      shouldUpdateMetadata: newImp.shouldUpdateMetadata,
-      shouldUpdateSchema: newImp.shouldUpdateSchema
-    }
-  }
-}, { immediate: true })
-
-watch(importFetch.data, async (imp) => {
-  if (!imp) return
-
-  setBreadcrumbs([
-    { text: t('catalogs'), to: '/catalogs' },
-    { text: imp.catalog.title ?? imp.catalog.id, to: `/catalogs/${imp.catalog.id}` },
-    { text: t('imports'), to: `/catalogs/${imp.catalog.id}` },
-    { text: imp.remoteResource.title ?? imp.remoteResource.id }
-  ])
-})
-
 const importSchema = computed(() => {
+  if (!catalog.value || !plugin.value) return undefined
   const base = jsonSchema(importSchemaBase)
     .pickProperties(['config', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema', 'scheduling'])
 
-  if (catalog.value?.capabilities.includes('importConfig')) {
-    base.addProperty('config', { ...plugin.value?.importConfigSchema })
+  if (catalog.value.capabilities.includes('importConfig') && plugin.value.importConfigSchema) {
+    base.addProperty('config', plugin.value.importConfigSchema)
   }
   return base.schema
 })
 
 const vjsfOptions = computed<VjsfOptions>(() => ({
   context: {
-    resourceId: importFetch.data.value?.remoteResource.id || '',
+    resourceId: imp.value?.remoteResource.id,
     catalogConfig: catalog.value?.config,
     origin: window.location.origin
   },
