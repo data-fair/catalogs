@@ -65,7 +65,7 @@ RUN npm -w ui run build
 # =============================
 FROM installer AS worker-installer
 
-RUN npm ci -w worker --prefer-offline --omit=dev --omit=optional --omit=peer --no-audit --no-fund && \
+RUN npm ci -w worker --prefer-offline --omit=dev --omit=optional --no-audit --no-fund && \
     npx clean-modules --yes
 RUN mkdir -p /app/worker/node_modules
 RUN mkdir -p /app/shared/node_modules
@@ -97,7 +97,7 @@ CMD ["node", "index.ts"]
 FROM installer AS api-installer
 
 # remove other workspaces and reinstall, otherwise we can get rig have some peer dependencies from other workspaces
-RUN npm ci -w api --prefer-offline --omit=dev --omit=optional --omit=peer --no-audit --no-fund && \
+RUN npm ci -w api --prefer-offline --omit=dev --omit=optional --no-audit --no-fund && \
     npx clean-modules --yes
 RUN mkdir -p /app/shared/node_modules
 RUN mkdir -p /app/api/node_modules
