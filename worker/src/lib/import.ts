@@ -205,6 +205,8 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
     datasetResource.keywords = resource.keywords
     datasetResource.origin = resource.origin
     datasetResource.topics = resource.topics
+    datasetResource.analysis = resource.analysis
+    datasetResource.projection = resource.projection
 
     if (datasetId) delete datasetResource.slug // never updating slug when updating
   }
