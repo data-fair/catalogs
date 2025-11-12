@@ -143,6 +143,22 @@ export default {
           }
         ]
       }
-    }
+    },
+    analysis: {
+      type: 'object',
+      properties: {
+        escapeKeyAlgorithm: {
+          type: 'string',
+          enum: ['compat-ods']
+        }
+      }
+    },
+    projection: {
+      type: 'object',
+      properties: {
+        code: { type: 'string' },
+        title: { type: 'string' }
+      }
+    },
   }
 }
