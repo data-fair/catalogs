@@ -31,7 +31,7 @@ COPY api/package.json api/package.json
 COPY worker/package.json worker/package.json
 # full deps install used for types and ui building
 # also used to fill the npm cache for faster install api and worker deps
-RUN npm ci --omit=dev --omit=optional --omit=peer --no-audit --no-fund
+RUN npm ci --omit=dev --no-audit --no-fund
 
 # =============================
 # Build Types
