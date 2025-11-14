@@ -37,7 +37,7 @@
             color="primary"
             variant="flat"
             class="mt-2"
-            :href="`/data-fair/extra/catalogs/${selectedCatalogId}/publications/new?datasetId=${datasetId}`"
+            :href="`/data-fair/catalogs/${selectedCatalogId}/publications/new?datasetId=${datasetId}`"
             target="_top"
           >
             {{ t('createNewPublication') }}

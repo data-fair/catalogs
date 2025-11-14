@@ -24,7 +24,7 @@
       </v-btn>
       <v-btn
         variant="text"
-        href="/data-fair/extra/catalogs"
+        href="/data-fair/catalogs"
         color="primary"
       >
         Data Fair
