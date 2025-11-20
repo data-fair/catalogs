@@ -166,7 +166,7 @@ const publicationSchema = computed(() => {
   }
 
   if (catalog.value.capabilities.includes('requiresPublicationSite')) {
-    if (!formatedPublicationSites.value) return null
+    if (!publicationSites.data.value) return null
     propertiesToPick.push('publicationSite')
   }
 
