@@ -30,12 +30,10 @@
           <!-- Warning message for catalogs requiring publication site -->
           <v-alert
             v-if="selectedCatalogRequiresPublicationSite && !hasPublicationSites"
+            :text="t('publicationSiteRequired')"
             type="warning"
-            variant="tonal"
             class="mt-3"
-          >
-            {{ t('publicationSiteRequired') }}
-          </v-alert>
+          />
 
           <v-btn
             :disabled="!selectedCatalogId || (selectedCatalogRequiresPublicationSite && !hasPublicationSites)"

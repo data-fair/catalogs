@@ -31,7 +31,7 @@ export default {
     },
     capabilities: {
       type: 'string',
-      description: 'Comma-separated list of capabilities to filter catalogs by; a catalog will be included only if it contains all the specified capabilities.'
+      description: 'Comma-separated list of capabilities to filter catalogs by.'
     }
   }
 }

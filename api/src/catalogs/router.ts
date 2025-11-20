@@ -26,11 +26,8 @@ router.get('/', async (req, res) => {
   const { skip, size } = findUtils.pagination(params)
   const project = findUtils.project(params.select)
   const query = findUtils.filterPermissions(params, sessionState)
-  const filters = findUtils.query(params, { plugins: 'plugin' })
+  const filters = findUtils.query(params, { plugins: 'plugin', capabilities: 'capabilities' })
   const queryWithFilters = Object.assign(filters, query)
-
-  // Filter capabilities
-  if (params.capabilities) queryWithFilters.capabilities = { $all: params.capabilities?.split(',') ?? [] }
 
   // Filter by owner (if showAll)
   const showAll = params.showAll === 'true'
