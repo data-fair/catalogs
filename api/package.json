@@ -14,7 +14,7 @@
     "#utils/*": "./src/misc/utils/*"
   },
   "devDependencies": {
-    "@data-fair/types-catalogs": "^0.5.1",
+    "@data-fair/types-catalogs": "^0.5.2",
     "@types/memoizee": "^0.4.11",
     "@types/multer": "^1.4.13",
     "@types/resolve-path": "^1.4.3",
