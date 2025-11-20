@@ -20,7 +20,7 @@
     </v-list-item>
 
     <v-list-item
-      v-if="catalog.capabilities.includes('publication')"
+      v-if="supportPublication"
       :to="`/catalogs/${catalog._id}/publications/new`"
       rounded
     >
@@ -117,7 +117,7 @@
         <v-card-text class="pb-0">
           {{ t('confirmDeleteCatalog', { title: catalog?.title }) }}
           <v-checkbox
-            v-if="catalog?.capabilities.includes('publication')"
+            v-if="supportPublication"
             v-model="deletePublication"
             base-color="warning"
             color="warning"
@@ -226,7 +226,7 @@
 import ownerPick from '@data-fair/lib-vuetify/owner-pick.vue'
 
 const { t } = useI18n()
-const { catalog } = useCatalogStore()
+const { catalog, supportPublication } = useCatalogStore()
 const session = useSession()
 const showAll = useBooleanSearchParam('showAll')
 

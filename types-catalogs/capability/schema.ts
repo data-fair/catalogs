@@ -17,13 +17,13 @@ Import capabilities:
 - importConfig: The plugin gives an import configuration schema.
 
 Publication capabilities:
-- publication: The plugin can list, publish, overwrite, and delete datasets.
-- publicationFilters: The plugin can use additional filters in the list method for publications.
 - createFolderInRoot: The plugin can publish a dataset in the root folder.
 - createFolder: The plugin can publish a dataset in a folder.
 - createResource: The plugin can publish a dataset as a resource in a folder.
 - replaceFolder: The plugin can overwrite an existing folder when publishing a dataset.
 - replaceResource: The plugin can overwrite an existing resource when publishing a dataset.
+- publicationFilters: The plugin can use additional filters in the list method for publications.
+- requiresPublicationSite: The plugin requires a publication site to publish datasets.
 `,
   enum: [
     // Global capabilities
@@ -39,12 +39,13 @@ Publication capabilities:
     'importConfig',
 
     // Publication capabilities
-    'publication',
-    'publicationFilters',
+    'publication', // DEPRECATED
     'createFolderInRoot',
     'createFolder',
     'createResource',
     'replaceFolder',
-    'replaceResource'
+    'replaceResource',
+    'publicationFilters',
+    'requiresPublicationSite'
   ]
 }

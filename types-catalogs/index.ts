@@ -6,7 +6,7 @@ import type { Publication } from './publication/index.ts'
 import type { Resource } from './resource/index.ts'
 
 // Import types from ts files
-import type { Includes } from './utils.ts'
+import type { Includes, HasPublicationCapability, IsListRequired } from './utils.ts'
 import type {
   PrepareContext,
   ListContext,
@@ -42,8 +42,9 @@ export type {
  */
 export type CatalogPlugin<TCatalogConfig = object, TCapabilities extends Capability[] = Capability[]> =
   BaseCatalogPlugin<TCatalogConfig, TCapabilities> &
+  WithList<TCatalogConfig, TCapabilities> &
   (Includes<TCapabilities, 'import'> extends true ? WithImport<TCatalogConfig, TCapabilities> : {}) &
-  (Includes<TCapabilities, 'publication'> extends true ? WithPublication<TCatalogConfig, TCapabilities> : {})
+  (HasPublicationCapability<TCapabilities> extends true ? WithPublication<TCatalogConfig, TCapabilities> : {})
 
 type BaseCatalogPlugin<TCatalogConfig, TCapabilities extends Capability[]> = {
   metadata: CatalogMetadata<TCapabilities>
@@ -75,18 +76,24 @@ type BaseCatalogPlugin<TCatalogConfig, TCapabilities extends Capability[]> = {
     secrets?: Record<string, string>,
     thumbnailUrl?: string
   }>
-  /**
-   * List available folders and resources in the catalog
-   */
-  list: (context: ListContext<TCatalogConfig, TCapabilities>) => Promise<{
-    /** The total number of items in the current folder */
-    count: number
-    /** The list of folders and resources in the current folder, filtered with the search and pagination parameters */
-    results: (Folder | Pick<Resource, 'id' | 'title' | 'description' | 'format' | 'mimeType' | 'origin' | 'size'> & { type: 'resource' })[],
-    /** The path to the current folder, including the current folder itself, used to navigate back */
-    path: Folder[]
-  }>
 }
+
+type WithList<TCatalogConfig, TCapabilities extends Capability[]> =
+  IsListRequired<TCapabilities> extends true
+    ? {
+        /**
+         * List available folders and resources in the catalog
+         */
+        list: (context: ListContext<TCatalogConfig, TCapabilities>) => Promise<{
+          /** The total number of items in the current folder */
+          count: number
+          /** The list of folders and resources in the current folder, filtered with the search and pagination parameters */
+          results: (Folder | Pick<Resource, 'id' | 'title' | 'description' | 'format' | 'mimeType' | 'origin' | 'size'> & { type: 'resource' })[]
+          /** The path to the current folder, including the current folder itself, used to navigate back */
+          path: Folder[]
+        }>
+      }
+    : {}
 
 /**
  * Type for catalog implementations that support listing and retrieving resources.
@@ -127,11 +134,11 @@ type WithPublication<TCatalogConfig, TCapabilities extends Capability[]> = {
    * @param secrets - The deciphered secrets of the catalog.
    * @param dataset - The datafair dataset to publish.
    * @param publication - The publication to process.
-   * @param publicationSite - The site where the user will be redirected from the remote dataset.
+   * @param publicationSite - The site where the user will be redirected from the remote dataset (required only if 'requiresPublicationSite' capability is present).
    * @param log - The log functions to write logs during the processing.
    * @returns A promise that is resolved when the dataset is published
    */
-  publishDataset: (context: PublishDatasetContext<TCatalogConfig>) => Promise<Publication>
+  publishDataset: (context: PublishDatasetContext<TCatalogConfig, TCapabilities>) => Promise<Publication>
 
   /**
    * Delete a publication

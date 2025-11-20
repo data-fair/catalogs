@@ -6,12 +6,6 @@
     >
       {{ t('noCatalogs') }}
     </span>
-    <span
-      v-if="!hasPublicationSites"
-      class="d-flex justify-center text-h6"
-    >
-      {{ t('noPublicationSites') }}
-    </span>
     <template v-else>
       <!-- Create new publication -->
       <v-card
@@ -32,8 +26,19 @@
             required
             clearable
           />
+
+          <!-- Warning message for catalogs requiring publication site -->
+          <v-alert
+            v-if="selectedCatalogRequiresPublicationSite && !hasPublicationSites"
+            type="warning"
+            variant="tonal"
+            class="mt-3"
+          >
+            {{ t('publicationSiteRequired') }}
+          </v-alert>
+
           <v-btn
-            :disabled="!selectedCatalogId"
+            :disabled="!selectedCatalogId || (selectedCatalogRequiresPublicationSite && !hasPublicationSites)"
             color="primary"
             variant="flat"
             class="mt-2"
@@ -63,11 +68,11 @@ const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, {
   query: {
     sort: 'updated.date:-1',
     select: '_id,title,plugin,capabilities',
-    capabilities: 'publication'
+    capabilities: 'createFolderInRoot,createFolder,createResource,replaceFolder,replaceResource'
   }
 })
 
-// Check que le dataset est publié sur un jeu de données
+// Check que le dataset est publié sur un site de publication
 const datasetFetch = useFetch<{ publicationSites?: any[] }>(
   `${window.location.origin}/data-fair/api/v1/datasets/${datasetId.value}`,
   { query: { select: 'publicationSites' } }
@@ -77,20 +82,31 @@ const hasPublicationSites = computed(() => {
   return !!datasetFetch.data.value?.publicationSites?.length
 })
 
+// Check if the selected catalog requires a publication site
+const selectedCatalogRequiresPublicationSite = computed(() => {
+  if (!selectedCatalogId.value || !catalogsFetch.data.value?.results) return false
+
+  const selectedCatalog = catalogsFetch.data.value.results.find(
+    (catalog) => catalog._id === selectedCatalogId.value
+  )
+
+  return selectedCatalog?.capabilities?.includes('requiresPublicationSite') ?? false
+})
+
 </script>
 
 <i18n lang="yaml">
   en:
     createNewPublication: Create a new publication
     noCatalogs: You have not yet configured any catalog that supports dataset publication.
-    noPublicationSites: This dataset is not published on any portal, you cannot publish it to a catalog.
+    publicationSiteRequired: This catalog requires that the dataset be published on a portal. Please publish it on a portal before publishing to this catalog.
     selectCatalog: Select a catalog
     catalogRequired: Please select a catalog
 
   fr:
     createNewPublication: Créer une nouvelle publication
     noCatalogs: Vous n'avez pas encore configuré de catalogue qui supporte la publication de jeux de données.
-    noPublicationSites: Ce jeu de données n'est publié sur aucun portail, vous ne pouvez donc pas le publier sur un catalogue.
+    publicationSiteRequired: Ce catalogue nécessite que le jeu de données soit publié sur un portail. Veuillez le publier sur un portail avant de le publier sur ce catalogue.
     selectCatalog: Sélectionner un catalogue
     catalogRequired: Veuillez sélectionner un catalogue
 
