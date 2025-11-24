@@ -9,15 +9,15 @@ export default {
   title: 'Publication',
   type: 'object',
   additionalProperties: false,
+  layout: { title: null },
   required: [
     '_id',
     'owner',
+    'catalog',
     'created',
     'status',
-    'action',
-    'publicationSite',
-    'catalog',
-    'dataFairDataset'
+    'dataFairDataset',
+    'action'
   ],
   properties: {
     _id: {
@@ -82,6 +82,39 @@ export default {
       ],
       default: 'waiting'
     },
+    dataFairDataset: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['id'],
+      title: 'Data Fair dataset',
+      'x-i18n-title': {
+        fr: 'Jeu de données Data Fair'
+      },
+      properties: {
+        id: {
+          type: 'string'
+        },
+        title: {
+          type: 'string'
+        }
+      },
+      layout: {
+        cols: 4,
+        props: {
+          placeholder: 'Search for a dataset',
+          'x-i18n-placeholder': {
+            fr: 'Rechercher...'
+          }
+        },
+        getItems: {
+          url: '${context.origin}/data-fair/api/v1/datasets?raw=true&select=id,title&owner=${context.ownerFilter}',
+          itemsResults: 'data.results',
+          itemTitle: '`${item.title} (${item.id})`',
+          itemKey: 'item.id',
+          qSearchParam: 'q'
+        }
+      }
+    },
     action: {
       type: 'string',
       title: 'Action to perform in the remote catalog',
@@ -96,7 +129,7 @@ export default {
         'replaceResource',
         'delete'
       ],
-      layout: { cols: 6 }
+      layout: { cols: 4 }
     },
     publicationSite: {
       type: 'object',
@@ -139,40 +172,8 @@ export default {
           'x-i18n-no-data-text': {
             fr: 'Ce jeu de données n\'est publié sur aucun site, vous ne pouvez donc pas le publier sur un catalogue.'
           }
-        }
-      }
-    },
-    dataFairDataset: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['id'],
-      title: 'Data Fair dataset',
-      'x-i18n-title': {
-        fr: 'Jeu de données Data Fair'
-      },
-      properties: {
-        id: {
-          type: 'string'
         },
-        title: {
-          type: 'string'
-        }
-      },
-      layout: {
-        cols: 6,
-        props: {
-          placeholder: 'Search for a dataset',
-          'x-i18n-placeholder': {
-            fr: 'Rechercher...'
-          }
-        },
-        getItems: {
-          url: '${context.origin}/data-fair/api/v1/datasets?raw=true&select=id,title&owner=${context.ownerFilter}',
-          itemsResults: 'data.results',
-          itemTitle: '`${item.title} (${item.id})`',
-          itemKey: 'item.id',
-          qSearchParam: 'q'
-        }
+        cols: 4
       }
     },
     remoteFolder: {
@@ -229,13 +230,5 @@ export default {
       },
       readOnly: true
     }
-  },
-  layout: {
-    title: null,
-    children: [
-      'dataFairDataset',
-      'action',
-      'publicationSite'
-    ]
   }
 }

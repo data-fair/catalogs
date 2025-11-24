@@ -1,40 +1,35 @@
 import type { Catalog, Publication, Import } from '#api/types'
 
-import { Mongo } from '@data-fair/lib-node/mongo.js'
+import mongo from '@data-fair/lib-node/mongo.js'
 import config from '#config'
 
 export class CatalogsMongo {
-  private mongo: Mongo
   get client () {
-    return this.mongo.client
+    return mongo.client
   }
 
   get db () {
-    return this.mongo.db
+    return mongo.db
   }
 
   get catalogs () {
-    return this.mongo.db.collection<Catalog>('catalogs')
+    return mongo.db.collection<Catalog>('catalogs')
   }
 
   get imports () {
-    return this.mongo.db.collection<Import>('imports')
+    return mongo.db.collection<Import>('imports')
   }
 
   get publications () {
-    return this.mongo.db.collection<Publication>('publications')
+    return mongo.db.collection<Publication>('publications')
   }
 
-  constructor () {
-    this.mongo = new Mongo()
+  async connect () {
+    await mongo.connect(config.mongoUrl)
   }
 
-  init = async () => {
-    await this.mongo.connect(config.mongoUrl)
-  }
-
-  async close () {
-    await this.mongo.client.close()
+  async init () {
+    await mongo.connect(config.mongoUrl)
   }
 }
 

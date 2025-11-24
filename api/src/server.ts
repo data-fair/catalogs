@@ -76,5 +76,5 @@ export const stop = async () => {
   await httpTerminator.terminate()
   if (config.observer.active) await stopObserver()
   await wsServer.stop()
-  await mongo.close()
+  await mongo.client.close()
 }

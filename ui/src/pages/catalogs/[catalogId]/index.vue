@@ -44,7 +44,7 @@
 
       <v-tabs-window-item value="publications">
         <publication-list
-          v-if="catalog.capabilities.includes('publication')"
+          v-if="supportPublication"
           :catalog-id="catalog._id"
         />
       </v-tabs-window-item>
@@ -66,7 +66,7 @@ const route = useRoute<'/catalogs/[catalogId]/'>()
 const router = useRouter()
 const session = useSessionAuthenticated()
 const { t } = useI18n()
-const { catalog, catalogFetch, plugin, pluginFetch } = provideCatalogStore(route.params.catalogId)
+const { catalog, catalogFetch, plugin, pluginFetch, supportPublication } = provideCatalogStore(route.params.catalogId)
 const activeTab = useStringSearchParam('tab', { default: 'imports' })
 
 const tabs = computed(() => {
@@ -75,7 +75,7 @@ const tabs = computed(() => {
   if (capabilities.includes('import')) {
     tabs.push({ id: 'imports', title: t('tab.imports'), icon: mdiDownload })
   }
-  if (capabilities.includes('publication')) {
+  if (supportPublication.value) {
     tabs.push({ id: 'publications', title: t('tab.publications'), icon: mdiUpload })
   }
   tabs.push({ id: 'configuration', title: t('tab.configuration'), icon: mdiCog })

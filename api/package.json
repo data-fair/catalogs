@@ -14,7 +14,7 @@
     "#utils/*": "./src/misc/utils/*"
   },
   "devDependencies": {
-    "@data-fair/types-catalogs": "^0.5.1",
+    "@data-fair/types-catalogs": "^0.5.2",
     "@types/memoizee": "^0.4.11",
     "@types/multer": "^1.4.13",
     "@types/resolve-path": "^1.4.3",
@@ -23,7 +23,7 @@
   "dependencies": {
     "@data-fair/catalogs-shared": "*",
     "@data-fair/lib-express": "^1.18.1",
-    "@data-fair/lib-node": "^2.8.1",
+    "@data-fair/lib-node": "^2.9.0",
     "@data-fair/lib-utils": "^1.6.0",
     "config": "^4.0.0",
     "express": "^5.1.0",

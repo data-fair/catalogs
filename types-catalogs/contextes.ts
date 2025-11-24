@@ -1,7 +1,7 @@
 import type { Capability } from './capability/index.ts'
 import type { Publication } from './publication/index.ts'
 import type { LogFunctions } from './logs.d.ts'
-import type { Includes } from './utils.ts'
+import type { Includes, HasPublicationCapability } from './utils.ts'
 
 /**
  * Context for preparing a catalog configuration.
@@ -69,7 +69,7 @@ type ListParams<TCapabilities extends Capability[]> = {
   (Includes<TCapabilities, 'additionalFilters'> extends true ? Record<string, string | number> : {}) &
   (Includes<TCapabilities, 'importFilters'> extends true ? Record<string, string | number> : {}) &
   (Includes<TCapabilities, 'publicationFilters'> extends true ? Record<string, string | number> : {}) &
-  (Includes<TCapabilities, 'publication'> extends true ? ActionParams : {})
+  (HasPublicationCapability<TCapabilities> extends true ? ActionParams : {})
 
 /** The params q is used to search resources */
 type SearchParams = { q?: string }
@@ -115,17 +115,18 @@ export type GetResourceContext<TCatalogConfig> = {
 /**
  * Context for publishing a dataset.
  * @template TCatalogConfig - The type of the catalog configuration.
+ * @template TCapabilities - The capabilities of the catalog.
  * @property catalogConfig - The catalog configuration.
  * @property secrets - The deciphered secrets of the catalog.
  * @property dataset - The datafair dataset to publish.
  * @property publication - The publication to process.
- * @property publicationSite - The site where the user will be redirected from the remote dataset.
+ * @property publicationSite - The site where the user will be redirected from the remote dataset. Only present if 'requiresPublicationSite' capability is enabled.
  * @property publicationSite.title - The title of the publication site.
  * @property publicationSite.url - The URL of the publication site.
  * @property publicationSite.datasetUrlTemplate - The template for the URL to view the dataset in the publication site, using url-template syntax.
  * @property log - The log functions to write logs during the processing.
  */
-export type PublishDatasetContext<TCatalogConfig> = {
+export type PublishDatasetContext<TCatalogConfig, TCapabilities extends Capability[] = Capability[]> = {
   /** The catalog configuration */
   catalogConfig: TCatalogConfig,
   /** The deciphered secrets of the catalog */
@@ -134,6 +135,9 @@ export type PublishDatasetContext<TCatalogConfig> = {
   dataset: Record<string, any>,
   /** The publication to process */
   publication: Publication
+  /** The log functions to write logs during the processing */
+  log: LogFunctions
+} & (Includes<TCapabilities, 'requiresPublicationSite'> extends true ? {
   /** The site where the user will be redirected from the remote dataset. */
   publicationSite: {
     /** The title of the publication site */
@@ -142,10 +146,8 @@ export type PublishDatasetContext<TCatalogConfig> = {
     url: string,
     /** The template for the URL to view the dataset in the publication site, using url-template syntax. */
     datasetUrlTemplate: string
-  },
-  /** The log functions to write logs during the processing */
-  log: LogFunctions
-}
+  }
+} : {})
 
 /**
  * Context for deleting a published dataset.

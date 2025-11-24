@@ -63,7 +63,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
   }
 
   // Check if the plugin has the capability to publish (and delete) datasets
-  if (!plugin.metadata.capabilities.includes('publication')) {
+  if (!plugin.metadata.capabilities.some(c => ['createFolderInRoot', 'createFolder', 'createResource', 'replaceFolder', 'replaceResource'].includes(c))) {
     await mongo.publications.deleteOne({ _id: pub._id })
     return internalError('worker-missing-capabilities', 'found a publication without the capability to publish datasets, weird')
   }
@@ -72,8 +72,17 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
 }
 
 const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication, dataFairDataset: Record<string, any>) => {
-  // 3. Publish the dataset
-  const publicationRes = await plugin.publishDataset({
+  // 3. Check if publicationSite is required
+  const requiresPublicationSite = catalog.capabilities.includes('requiresPublicationSite')
+  if (requiresPublicationSite && !pub.publicationSite) {
+    const errorMsg = 'Publication site is required for this catalog'
+    await mongo.publications.updateOne({ _id: pub._id }, { $set: { status: 'error', error: errorMsg } })
+    await wsEmit(`publication/${pub._id}`, { status: 'error', error: errorMsg })
+    return internalError('worker-missing-publication-site', errorMsg)
+  }
+
+  // 4. Publish the dataset
+  const publishContext: any = {
     catalogConfig: catalog.config,
     secrets: decipherSecrets(catalog.secrets, config.cipherPassword),
     dataset: dataFairDataset,
@@ -82,11 +91,15 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
       remoteFolder: pub.remoteFolder,
       remoteResource: pub.remoteResource
     },
-    publicationSite: pub.publicationSite,
     log: prepareLog(pub, 'publication')
-  })
+  }
+  if (requiresPublicationSite) {
+    publishContext.publicationSite = pub.publicationSite
+  }
 
-  // 4. Update the publication status
+  const publicationRes = await plugin.publishDataset(publishContext)
+
+  // 5. Update the publication status
   pub.dataFairDataset.title = dataFairDataset.title
   pub.catalog.title = catalog.title
   Object.assign(pub, {

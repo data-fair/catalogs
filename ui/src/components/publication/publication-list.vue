@@ -71,7 +71,7 @@ const publicationsStore = providePublicationsStore(catalogId, dataFairDatasetId)
 
   fr:
     nbPublications: 'Aucune publication | 1 publication | {count} publications'
-    noPublicationsFromDataset: Ce jeu de données n'est publié sur un aucun catalogue
+    noPublicationsFromDataset: Ce jeu de données n'est publié sur aucun catalogue
     noPublicationsFromCatalog: Ce catalogue ne contient aucune publication
 
 </i18n>

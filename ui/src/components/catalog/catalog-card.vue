@@ -57,8 +57,8 @@
         />
         {{ t('imports', catalog.importsCount || 0 ) }}
       </template>
-      <v-spacer v-if="catalog.capabilities.includes('import') && catalog.capabilities.includes('publication')" />
-      <template v-if="catalog.capabilities.includes('publication')">
+      <v-spacer v-if="catalog.capabilities.includes('import') && catalog.capabilities.some(c => ['createFolderInRoot', 'createFolder', 'createResource', 'replaceFolder', 'replaceResource'].includes(c))" />
+      <template v-if="catalog.capabilities.some(c => ['createFolderInRoot', 'createFolder', 'createResource', 'replaceFolder', 'replaceResource'].includes(c))">
         <v-icon
           color="primary"
           :icon="mdiUpload"

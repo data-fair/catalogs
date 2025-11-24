@@ -18,11 +18,11 @@
           editable
         />
 
-        <v-divider v-if="publicationConfig.action && publicationConfig.action !== 'createFolderInRoot'" />
+        <v-divider v-if="effectiveAction && effectiveAction !== 'createFolderInRoot'" />
 
         <v-stepper-item
-          v-if="publicationConfig.action && publicationConfig.action !== 'createFolderInRoot'"
-          :title="t(`stepTitles.${publicationConfig.action}`)"
+          v-if="effectiveAction && effectiveAction !== 'createFolderInRoot'"
+          :title="t(`stepTitles.${effectiveAction}`)"
           value="2"
           :color="step === '2' ? 'primary' : ''"
           :editable="!!selectedFolderOrResource"
@@ -43,7 +43,7 @@
           >
             <v-form v-model="validPublicationConfig">
               <vjsf
-                v-if="publicationSites.data.value"
+                v-if="publicationSchema"
                 v-model="publicationConfig"
                 :schema="publicationSchema"
                 :options="vjsfOptions"
@@ -57,11 +57,11 @@
           class="ma-1"
         >
           <resources-explorer
-            v-if="catalog && plugin && publicationConfig.action"
+            v-if="catalog && plugin && effectiveAction"
             v-model="selectedFolderOrResource"
             :catalog="catalog"
             :plugin="plugin"
-            :mode="publicationConfig.action"
+            :mode="effectiveAction"
           />
         </v-stepper-window-item>
       </v-stepper-window>
@@ -90,10 +90,10 @@
               :loading="step === '2' ? createPublication.loading.value : false"
             >
               <template v-if="step === '1'">
-                {{ publicationConfig.action === 'createFolderInRoot' ? t('actionButtons.createFolderInRoot') : t('actionButtons.next') }}
+                {{ effectiveAction === 'createFolderInRoot' ? t('actionButtons.createFolderInRoot') : t('actionButtons.next') }}
               </template>
               <template v-else>
-                {{ t(`actionButtons.${publicationConfig.action}`) }}
+                {{ t(`actionButtons.${effectiveAction}`) }}
               </template>
             </v-btn>
           </template>
@@ -104,6 +104,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Capability } from '@data-fair/types-catalogs'
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import { resolvedSchema as publicationSchemaBase, type Publication } from '#api/types/publication'
@@ -119,6 +120,7 @@ const { catalog, plugin } = createCatalogStore(route.params.catalogId)
 const validPublicationConfig = ref(false)
 const selectedFolderOrResource = ref<{ id: string, title: string, type: 'resource' | 'folder' } | null>(null)
 const publicationConfig = ref<Partial<Pick<Publication, 'action' | 'dataFairDataset' | 'publicationSite' | 'remoteFolder' | 'remoteResource'>>>({})
+const defaultAction = ref<Publication['action'] | null>(null)
 const step = ref<'1' | '2'>('1')
 
 // Get datafair dataset info if datasetId is provided
@@ -146,30 +148,43 @@ const formatedPublicationSites = computed(() => {
 })
 
 const publicationSchema = computed(() => {
-  const base = jsonSchema(publicationSchemaBase)
-    .pickProperties(['dataFairDataset', 'action', 'publicationSite'])
-    .schema
+  if (!catalog.value) return null
 
-  // Filter actions based on plugin capabilities
   const availableActions = [
     { title: t('actionLabels.createFolderInRoot'), value: 'createFolderInRoot' },
     { title: t('actionLabels.createFolder'), value: 'createFolder' },
     { title: t('actionLabels.createResource'), value: 'createResource' },
     { title: t('actionLabels.replaceFolder'), value: 'replaceFolder' },
     { title: t('actionLabels.replaceResource'), value: 'replaceResource' }
-  ].filter(action => {
-    // Check if the plugin has the capability for this action
-    return plugin.value?.metadata.capabilities.includes(action.value as any)
-  })
+  ].filter(action => catalog.value?.capabilities.includes(action.value as Capability))
 
-  base.properties.action.layout.items = availableActions
+  const propertiesToPick = ['dataFairDataset']
+  if (availableActions.length > 1) {
+    propertiesToPick.push('action')
+  } else if (availableActions.length === 1) {
+    defaultAction.value = availableActions[0].value as Publication['action']
+  }
+
+  if (catalog.value.capabilities.includes('requiresPublicationSite')) {
+    if (!publicationSites.data.value) return null
+    propertiesToPick.push('publicationSite')
+  }
+
+  const base = jsonSchema(publicationSchemaBase)
+    .pickProperties(propertiesToPick)
+    .schema
+
+  if (base.properties.action) base.properties.action.layout.items = availableActions
+  if (catalog.value.capabilities.includes('requiresPublicationSite')) base.required.push('publicationSite')
 
   return base
 })
 
+const effectiveAction = computed(() => publicationConfig.value.action ?? defaultAction.value)
+
 const createPublication = useAsyncAction(async () => {
   if (!validPublicationConfig.value || (
-    publicationConfig.value.action !== 'createFolderInRoot' &&
+    effectiveAction.value !== 'createFolderInRoot' &&
     !selectedFolderOrResource.value
   )) return
 
@@ -178,7 +193,8 @@ const createPublication = useAsyncAction(async () => {
       id: catalog.value?._id,
       title: catalog.value?.title
     },
-    ...publicationConfig.value
+    ...publicationConfig.value,
+    action: effectiveAction.value
   }
   if (selectedFolderOrResource.value?.type === 'folder') {
     newPublication.remoteFolder = {
@@ -206,7 +222,7 @@ const createPublication = useAsyncAction(async () => {
 })
 
 const handleNext = (next: () => void) => {
-  if (step.value === '2' || publicationConfig.value.action === 'createFolderInRoot') createPublication.execute()
+  if (step.value === '2' || effectiveAction.value === 'createFolderInRoot') createPublication.execute()
   else next()
 }
 

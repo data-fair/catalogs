@@ -17,12 +17,15 @@ export const createCatalogStore = (catalogId: string) => {
     if (plugin) await pluginFetch.refresh()
   })
 
+  const supportPublication = computed(() => catalog.value?.capabilities.some(c => ['createFolderInRoot', 'createFolder', 'createResource', 'replaceFolder', 'replaceResource'].includes(c)))
+
   return {
     catalog,
     catalogFetch,
     refresh: catalogFetch.refresh,
     plugin: pluginFetch.data,
     pluginFetch,
+    supportPublication
   }
 }
 
