@@ -56,7 +56,7 @@ export const stop = async () => {
   await Promise.all(promisePool.filter(p => !!p))
   await mainLoopPromise
   await locks.stop()
-  await mongo.close()
+  await mongo.client.close()
   if (config.observer.active) await stopObserver()
 }
 
