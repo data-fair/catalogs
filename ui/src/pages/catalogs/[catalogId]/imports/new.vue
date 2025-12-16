@@ -61,6 +61,7 @@
                 <template #scheduling-summary="{ node }">
                   {{ t(`frequency.${node.data.type}`) }}
                   {{ cronstrue.toString(toCRON(node.data), { locale: session.lang.value }) }}
+                  {{ timezoneLabel(node.data.timeZone) }}
                 </template>
               </vjsf>
             </v-form>
@@ -207,6 +208,11 @@ watch(catalog, (newCatalog) => {
   ])
 })
 
+const timezoneLabel = (timeZone: string) => {
+  if (timeZone === 'Europe/Paris') return ''
+  return ' — ' + t('timezone') + ' ' + timeZone ? timeZone : 'UTC'
+}
+
 const utcs: string[] = []
 for (const tz of timeZones) {
   for (const utc of tz.utc) {
@@ -253,6 +259,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
     step2:
       next: Import
       title: Import Configuration
+    timezone: 'Timezone:'
 
   fr:
     catalogs: Catalogues
@@ -274,7 +281,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
     step2:
       next: Importer
       title: Configuration de l'import
-
+    timezone: 'Fuseau horaire :'
 </i18n>
 
 <style scoped>
