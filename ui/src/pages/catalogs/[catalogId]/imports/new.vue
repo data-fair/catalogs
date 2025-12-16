@@ -122,6 +122,7 @@
 <script setup lang="ts">
 import type { Import } from '#api/types'
 
+import timeZones from 'timezones.json'
 import cronstrue from 'cronstrue'
 import 'cronstrue/locales/en'
 import 'cronstrue/locales/fr'
@@ -206,12 +207,19 @@ watch(catalog, (newCatalog) => {
   ])
 })
 
+const utcs: string[] = []
+for (const tz of timeZones) {
+  for (const utc of tz.utc) {
+    if (!utcs.includes(utc)) utcs.push(utc)
+  }
+}
+
 const vjsfOptions = computed<VjsfOptions>(() => ({
   context: {
     resourceId: selectedResource.value?.id || '',
     catalogConfig: catalog.value?.config,
     origin: window.location.origin,
-
+    utcs
   },
   density: 'comfortable',
   initialValidation: 'always',

@@ -47,6 +47,7 @@
 import type { Log } from '@data-fair/types-catalogs'
 import type { Import } from '#api/types'
 
+import timeZones from 'timezones.json'
 import cronstrue from 'cronstrue'
 import 'cronstrue/locales/en'
 import 'cronstrue/locales/fr'
@@ -131,11 +132,19 @@ const importSchema = computed(() => {
   return base.schema
 })
 
+const utcs: string[] = []
+for (const tz of timeZones) {
+  for (const utc of tz.utc) {
+    if (!utcs.includes(utc)) utcs.push(utc)
+  }
+}
+
 const vjsfOptions = computed<VjsfOptions>(() => ({
   context: {
     resourceId: imp.value?.remoteResource.id,
     catalogConfig: catalog.value?.config,
-    origin: window.location.origin
+    origin: window.location.origin,
+    utcs
   },
   density: 'comfortable',
   initialValidation: 'always',

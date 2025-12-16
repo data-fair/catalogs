@@ -84,9 +84,7 @@ router.post('/', async (req, res) => {
   Object.assign(validCatalog, await prepareCatalog(validCatalog))
   await mongo.catalogs.insertOne(validCatalog)
 
-  if (config.privateEventsUrl && config.secretKeys.events) {
-    sendCatalogEvent(validCatalog, 'a été créé', 'create', sessionState)
-  }
+  sendCatalogEvent(validCatalog, 'a été créé', 'create', sessionState)
   delete validCatalog.secrets // Do not return secrets in the response
   res.status(201).json(validCatalog)
 })
