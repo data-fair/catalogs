@@ -10,7 +10,7 @@ export default {
   properties: {
     body:
       jsonSchema(ImportSchema)
-        .pickProperties(['catalog', 'dataFairDataset', 'remoteResource', 'scheduling', 'config', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema'])
+        .pickProperties(['catalog', 'dataFairDataset', 'separator', 'remoteResource', 'scheduling', 'config', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema'])
         .removeId()
         .appendTitle(' post')
         .schema

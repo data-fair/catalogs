@@ -146,7 +146,29 @@ export default {
             fr: '`${item.title} (${item.id}) ${item.isRest ? "(Éditable)" : ""}`'
           },
           itemKey: 'item.id'
-        }
+        },
+        switch: [
+          {
+            if: 'parent.data.dataFairDataset?.isRest',
+            cols: { md: 10 }
+          }
+        ]
+      }
+    },
+    separator: {
+      title: 'CSV Separator',
+      'x-i18n-title': {
+        fr: 'Séparateur CSV'
+      },
+      description: 'For CSV files only: choose the value separator. Default for CSV is ",". Leave empty for other formats.',
+      'x-i18n-description': {
+        fr: 'Pour les fichiers CSV uniquement : choisissez le séparateur de valeurs. Par défaut pour les CSV, c\'est la virgule ",". Pour les autres formats, laissez ce champ vide.'
+      },
+      type: 'string',
+      enum: [',', ';'],
+      layout: {
+        if: 'parent.data.dataFairDataset?.isRest',
+        cols: { md: 2 }
       }
     },
     remoteResource: {

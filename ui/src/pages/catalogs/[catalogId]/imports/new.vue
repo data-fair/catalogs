@@ -151,7 +151,7 @@ const existingImports = useFetch<{ results: Import[], count: number }>(
 
 const importSchema = computed(() => {
   const base = jsonSchema(importSchemaBase)
-    .pickProperties(['dataFairDataset', 'config', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema', 'scheduling'])
+    .pickProperties(['dataFairDataset', 'separator', 'config', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema', 'scheduling'])
 
   if (catalog.value?.capabilities.includes('importConfig')) {
     base.addProperty('config', { ...plugin.value?.importConfigSchema })
@@ -179,6 +179,7 @@ const createImport = useAsyncAction(async () => {
   }
   if (importConfig.value.dataFairDataset) {
     newImport.dataFairDataset = importConfig.value.dataFairDataset
+    if (importConfig.value.separator) newImport.separator = importConfig.value.separator
   }
 
   // Create the import via API

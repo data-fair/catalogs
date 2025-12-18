@@ -29,7 +29,7 @@ tmp.setGracefulCleanup()
  * @param errorLog - A function to log the error.
  */
 const handleImportError = async (type: 'upload' | 'download', imp: Import, err: any, errorLog: ReturnType<typeof prepareLog>['error']) => {
-  await errorLog(`Failed to ${type} resource file: ` + (err instanceof Error ? err.message : String(err)), err)
+  await errorLog(`Failed to ${type} resource file: ` + (err instanceof Error ? err.message : String(err)), err.name !== 'AxiosRequestError' ? err : undefined)
   await mongo.imports.updateOne({ _id: imp._id }, { $set: { status: 'error', finishedAt: new Date().toISOString() } })
   await wsEmit(`import/${imp._id}`, { status: 'error', finishedAt: new Date().toISOString() })
   internalError(`worker-${type}-failed`, `Failed to ${type} resource file`, imp)
@@ -91,9 +91,11 @@ const uploadRestDataset = async (
 
   // Then upload the data using bulk lines endpoint
   await log.info('Uploading data using bulk lines endpoint')
+  const url = `/api/v1/datasets/${datasetId}/_bulk_lines?drop=true` +
+    (resource.format === 'csv' && imp.separator ? `&sep=${encodeURIComponent(imp.separator)}` : '')
   await axios({
     method: 'POST',
-    url: `/api/v1/datasets/${datasetId}/_bulk_lines?drop=true`,
+    url,
     baseURL: config.privateDataFairUrl,
     data: fs.createReadStream(resource.filePath),
     maxContentLength: Infinity,

@@ -68,14 +68,13 @@ services:
       - PORT=8081
       - MONGO_URL=mongodb://localhost:27017/data-fair
       - DIRECTORY_URL=http://localhost:5600/simple-directory
-      - NOTIFY_URL=http://localhost:5600/events
+      - PRIVATE_EVENTS_URL=http://localhost:8088
+      - PRIVATE_DIRECTORY_URL=http://localhost:8080
       - PUBLIC_URL=http://localhost:5600/data-fair
       - WS_PUBLIC_URL=ws://localhost:5600/data-fair
-      - EXTRA_NAV_ITEMS=[{"id":"events","can":"admin","iframe":"http://localhost:5600/events/embed/events","basePath":"/events","icon":"mdi-clipboard-text-clock","title":"Traçabilité"}]
       - OBSERVER_ACTIVE=false
       - PRIVATE_CATALOGS_URL=http://localhost:5600/catalogs
       - SECRET_CATALOGS=secret-catalogs
-
   #####
   # db and search engine
   #####
