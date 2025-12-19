@@ -82,6 +82,11 @@ export default {
       type: 'number',
       description: 'The size of the resource in bytes, if available. It is displayed in the UI of catalogs.'
     },
+    updatedAt: {
+      type: 'string',
+      format: 'date-time',
+      description: 'The date and time when the resource was last updated, if available. It is displayed in the UI of catalogs.'
+    },
     topics: {
       type: 'array',
       items: {

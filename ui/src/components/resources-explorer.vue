@@ -113,6 +113,10 @@
     <template #item.format="{ item }">
       {{ item.type === 'resource' ? item.format : '-' }}
     </template>
+
+    <template #item.updatedAt="{ item }">
+      {{ item.updatedAt ? dayjs(item.updatedAt).format('lll') : '-' }}
+    </template>
   </tableComponent>
 </template>
 
@@ -125,6 +129,7 @@ import { VDataTable, VDataTableServer } from 'vuetify/components'
 import formatBytes from '@data-fair/lib-vue/format/bytes.js'
 
 const { t } = useI18n()
+const { dayjs } = useLocaleDayjs()
 const session = useSessionAuthenticated()
 const { catalog, plugin, mode } = defineProps<{
   catalog: Catalog
@@ -277,6 +282,7 @@ const headers = computed(() => {
   if (mode === 'import') {
     headers.push(
       { title: t('size'), key: 'size' },
+      { title: t('updatedAt'), key: 'updatedAt' },
       { title: t('format'), key: 'format' }
     )
   }
@@ -307,6 +313,7 @@ en:
   noItemsFound: No items found at this level
   search: Search...
   size: Size
+  updatedAt: Updated At
 
 fr:
   alreadyImported: Déjà importé
@@ -317,6 +324,7 @@ fr:
   noItemsFound: Aucun élément trouvé à ce niveau
   search: Rechercher...
   size: Taille
+  updatedAt: Mis à jour le
 </i18n>
 
 <style scoped>

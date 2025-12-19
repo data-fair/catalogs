@@ -14,6 +14,10 @@ export default {
     },
     type: {
       const: 'folder',
+    },
+    updatedAt: {
+      type: 'string',
+      format: 'date-time'
     }
   }
 }

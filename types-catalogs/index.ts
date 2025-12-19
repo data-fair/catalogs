@@ -88,7 +88,7 @@ type WithList<TCatalogConfig, TCapabilities extends Capability[]> =
           /** The total number of items in the current folder */
           count: number
           /** The list of folders and resources in the current folder, filtered with the search and pagination parameters */
-          results: (Folder | Pick<Resource, 'id' | 'title' | 'description' | 'format' | 'mimeType' | 'origin' | 'size'> & { type: 'resource' })[]
+          results: (Folder | Pick<Resource, 'id' | 'title' | 'description' | 'format' | 'mimeType' | 'origin' | 'size' | 'updatedAt'> & { type: 'resource' })[]
           /** The path to the current folder, including the current folder itself, used to navigate back */
           path: Folder[]
         }>
