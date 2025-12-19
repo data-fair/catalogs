@@ -100,18 +100,18 @@
           <v-card-text class="pb-0">
             {{ t('deletePublicationConfirm') }}
             <v-checkbox
-              v-model="deleteOnlyLink"
+              v-model="deleteRemotePublication"
               base-color="warning"
               color="warning"
               hide-details
-              :label="t('deleteOnlyLink')"
+              :label="t('deleteRemotePublication')"
             />
           </v-card-text>
           <v-card-actions>
             <v-spacer />
             <v-btn
               :disabled="deletePublication.loading.value"
-              @click="showDeleteMenu = false; deleteOnlyLink = false"
+              @click="showDeleteMenu = false; deleteRemotePublication = false"
             >
               {{ t('no') }}
             </v-btn>
@@ -144,16 +144,16 @@ const { publication } = defineProps<{
 
 const showDeleteMenu = ref(false)
 const showRePublishMenu = ref(false)
-/** If true, delete only the link between the local and the remote catalog */
-const deleteOnlyLink = ref(false)
+/** If true, delete the remote publication */
+const deleteRemotePublication = ref(false)
 
 const deletePublication = useAsyncAction(
   async () => {
-    await $fetch(`/publications/${publication?._id}?onlyLink=${deleteOnlyLink.value}`, {
+    await $fetch(`/publications/${publication?._id}?onlyLink=${!deleteRemotePublication.value}`, {
       method: 'DELETE'
     })
 
-    if (deleteOnlyLink.value) await publicationsStore.refresh()
+    if (!deleteRemotePublication.value) await publicationsStore.refresh()
     else usePublicationWatch(publicationsStore, publication._id, ['update', 'delete'])
     showDeleteMenu.value = false
   },
@@ -181,7 +181,7 @@ const rePublish = useAsyncAction(
 <i18n lang="yaml">
   en:
     createPublicationError: 'Error recreating publication'
-    deleteOnlyLink: 'Delete only the link'
+    deleteRemotePublication: 'Delete also remote publication'
     deletePublication: 'Delete Publication'
     deletePublicationConfirm: 'Are you sure you want to delete this publication?'
     deletePublicationError: 'Error deleting publication'
@@ -209,9 +209,9 @@ const rePublish = useAsyncAction(
 
   fr:
     createPublicationError: 'Erreur lors de la republication'
-    deleteOnlyLink: 'Supprimer uniquement le lien'
+    deleteRemotePublication: 'Supprimer également la publication distante'
     deletePublication: 'Supprimer la publication'
-    deletePublicationConfirm: 'Êtes-vous sûr de vouloir supprimer la publication ? Cette action supprimera le jeu de données distant. Vous pouvez cependant choisir de supprimer seulement le lien entre le jeu de données local et le jeu de données distant.'
+    deletePublicationConfirm: 'Êtes-vous sûr de vouloir supprimer la publication ?'
     deletePublicationError: 'Erreur lors de la demande de suppression'
     error: 'Erreur'
     lastPublicationDate: 'Date de la dernière publication'
@@ -223,7 +223,7 @@ const rePublish = useAsyncAction(
       waiting: 'En attente de publication'
     publicationStatusDelete:
       done: 'Publication supprimée'
-      error: 'Suppression echouée'
+      error: 'Suppression échouée'
       running: 'En cour de suppression'
       waiting: 'En attente suppression'
     publicationTitle:

@@ -116,18 +116,18 @@
         <v-card-text class="pb-0">
           {{ t('deleteImportConfirm') }}
           <v-checkbox
-            v-model="deleteOnlyLink"
+            v-model="deleteImportedDataset"
             base-color="warning"
             color="warning"
             hide-details
-            :label="t('deleteOnlyLink')"
+            :label="t('deleteImportedDataset')"
           />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
             :disabled="deleteImport.loading.value"
-            @click="showDeleteMenu = false; deleteOnlyLink = false"
+            @click="showDeleteMenu = false; deleteImportedDataset = false"
           >
             {{ t('no') }}
           </v-btn>
@@ -157,8 +157,8 @@ const { imp } = defineProps<{
 
 const showDeleteMenu = ref(false)
 const showReImportMenu = ref(false)
-/** If true, delete only the link between the local dataset and the remote resource */
-const deleteOnlyLink = ref(false)
+/** If true, delete the imported dataset */
+const deleteImportedDataset = ref(false)
 
 const deleteImport = useAsyncAction(
   async () => {
@@ -166,7 +166,7 @@ const deleteImport = useAsyncAction(
       method: 'DELETE'
     })
 
-    if (!deleteOnlyLink.value && imp.dataFairDataset) {
+    if (deleteImportedDataset.value && imp.dataFairDataset) {
       await $fetch(`/data-fair/api/v1/datasets/${imp.dataFairDataset.id}`, {
         method: 'DELETE',
         baseURL: $sitePath
@@ -200,9 +200,9 @@ const loading = computed(() => deleteImport.loading.value || reImport.loading.va
 <i18n lang="yaml">
   en:
     deleteImport: 'Delete Import'
-    deleteImportConfirm: 'Are you sure you want to delete this import? This action will also delete the imported dataset. However, you can choose to delete only the import: the link between the remote resource and the imported dataset will be removed.'
+    deleteImportConfirm: 'Are you sure you want to delete this import?'
     deleteImportError: 'Error deleting import'
-    deleteOnlyLink: 'Delete only the link'
+    deleteImportedDataset: 'Delete also imported dataset'
     no: 'No'
     reImport: 'Re-import'
     reImportConfirm: 'Are you sure you want to re-import this resource? The already imported data will be overwritten.'
@@ -212,9 +212,9 @@ const loading = computed(() => deleteImport.loading.value || reImport.loading.va
 
   fr:
     deleteImport: "Supprimer l'import"
-    deleteImportConfirm: "Êtes-vous sûr de vouloir supprimer cet import ? Cette action supprimera également le jeu de données importé. Vous pouvez cependant choisir de supprimer uniquement l'import : le lien entre la ressource distante et jeu de données importé."
+    deleteImportConfirm: "Êtes-vous sûr de vouloir supprimer cet import ?"
     deleteImportError: 'Erreur lors de la demande de suppression'
-    deleteOnlyLink: 'Supprimer uniquement le lien'
+    deleteImportedDataset: 'Supprimer également le jeu de données importé'
     no: 'Non'
     reImport: 'Importer à nouveau'
     reImportConfirm: 'Êtes-vous sûr de vouloir réimporter cette ressource ? Les données déjà importées seront écrasées.'
