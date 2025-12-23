@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import express from 'express'
-import { session, errorHandler, createSiteMiddleware, createSpaMiddleware } from '@data-fair/lib-express'
+import { session, errorHandler, createSiteMiddleware, createSpaMiddleware, defaultNonceCSPDirectives } from '@data-fair/lib-express'
 import catalogsRouter from './catalogs/router.ts'
 import datasetsRouter from './misc/routers/datasets.ts'
 import identitiesRouter from './misc/routers/identities.ts'
@@ -33,8 +33,17 @@ app.use('/api/plugins', pluginRouter)
 app.use('/api/publications', publicationsRouter)
 app.use('/api/admin', adminRouter)
 
-if (config.serveUi) {
-  app.use(await createSpaMiddleware(resolve(import.meta.dirname, '../../ui/dist'), uiConfig))
+if (process.env.NODE_ENV !== 'test') {
+  const cspDirectives = { ...defaultNonceCSPDirectives }
+  // necessary to use vjsf without pre-compilation
+  cspDirectives['script-src'] = "'unsafe-eval' " + defaultNonceCSPDirectives['script-src']
+  app.use(await createSpaMiddleware(resolve(import.meta.dirname, '../../ui/dist'), uiConfig, {
+    csp: {
+      nonce: true,
+      header: cspDirectives
+    },
+    privateDirectoryUrl: config.privateDirectoryUrl
+  }))
 }
 
 app.use(errorHandler)

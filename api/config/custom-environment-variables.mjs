@@ -17,6 +17,5 @@ export default {
     events: 'SECRET_EVENTS',
     identities: 'SECRET_IDENTITIES'
   },
-  serveUi: 'SERVE_UI',
   tmpDir: 'TMP_DIR'
 }

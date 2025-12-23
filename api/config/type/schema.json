@@ -17,8 +17,7 @@
     "observer",
     "port",
     "privateDirectoryUrl",
-    "secretKeys",
-    "serveUi"
+    "secretKeys"
   ],
   "properties": {
     "cipherPassword": {
@@ -76,9 +75,6 @@
           "type": "string"
         }
       }
-    },
-    "serveUi": {
-      "type": "boolean"
     },
     "tmpDir": {
       "type": "string",

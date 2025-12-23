@@ -17,6 +17,5 @@ export default {
     events: undefined,
     identities: undefined
   },
-  serveUi: true,
   tmpDir: undefined,
 }

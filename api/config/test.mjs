@@ -12,6 +12,5 @@ export default {
     catalogs: 'secret-catalogs',
     events: 'secret-events',
     identities: 'secret-identities'
-  },
-  serveUi: false
+  }
 }

@@ -22,9 +22,9 @@
   },
   "dependencies": {
     "@data-fair/catalogs-shared": "*",
-    "@data-fair/lib-express": "^1.18.1",
-    "@data-fair/lib-node": "^2.9.0",
-    "@data-fair/lib-utils": "^1.6.0",
+    "@data-fair/lib-express": "^1.22.1",
+    "@data-fair/lib-node": "^2.10.2",
+    "@data-fair/lib-utils": "^1.8.0",
     "config": "^4.0.0",
     "express": "^5.1.0",
     "fs-extra": "^11.3.0",
