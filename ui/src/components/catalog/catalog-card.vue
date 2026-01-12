@@ -3,7 +3,7 @@
     class="h-100 d-flex flex-column"
     :to="`/catalogs/${catalog._id}`"
   >
-    <v-card-item>
+    <v-card-item class="text-primary">
       <!-- Plugin thumbnail -->
       <template
         v-if="thumbnailCapability"
@@ -25,7 +25,7 @@
 
       <!-- Catalog title -->
       <template #title>
-        <span class="font-weight-bold text-primary">
+        <span class="font-weight-bold">
           {{ catalog.title || catalog._id }}
         </span>
         <v-tooltip
