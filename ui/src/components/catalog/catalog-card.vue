@@ -1,7 +1,7 @@
 <template>
   <v-card
     class="h-100 d-flex flex-column"
-    :to="`/catalogs/${catalog._id}`"
+    :to="`/catalogs/${ catalog._id }` + ($route.query.showAll ? `?showAll=${$route.query.showAll}` : '')"
   >
     <v-card-item class="text-primary">
       <!-- Plugin thumbnail -->

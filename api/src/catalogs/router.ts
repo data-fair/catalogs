@@ -34,12 +34,14 @@ router.get('/', async (req, res) => {
   if (showAll) {
     if (params.owners) {
       queryWithFilters.$or = params.owners.split(',').map(owner => {
-        const [type, id] = owner.split(':')
+        const [type, id, department] = owner.split(':')
         if (!type || !id) throw httpError(400, 'Invalid owner format')
-        return {
+        const filter: any = {
           'owner.type': type,
           'owner.id': id
         }
+        if (department) filter['owner.department'] = department
+        return filter
       })
     }
   } else {
