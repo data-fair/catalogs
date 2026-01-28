@@ -38,9 +38,9 @@ const valid = ref(false)
 const editCatalog: Ref<Partial<Catalog> | null> = ref(null)
 editCatalog.value = {
   title: catalog.value?.title,
-  description: catalog.value?.description,
   config: catalog.value?.config
 }
+if (catalog.value?.description) editCatalog.value.description = catalog.value.description
 
 const catalogSchema = computed(() => {
   const schema = jsonSchema(catalogSchemaBase)
@@ -52,10 +52,13 @@ const catalogSchema = computed(() => {
 
 const patch = useAsyncAction(
   async () => {
-    if (!valid.value) return
+    if (!editCatalog.value || !valid.value) return
     const res = await $fetch(`/catalogs/${catalog.value?._id}`, {
       method: 'PATCH',
-      body: editCatalog.value,
+      body: {
+        ...editCatalog.value,
+        ...(!editCatalog.value.description ? { description: null } : {})
+      }
     })
 
     if (catalog.value) Object.assign(catalog.value, res)
