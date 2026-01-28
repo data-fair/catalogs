@@ -1,5 +1,4 @@
 import type { Catalog, Publication, Import } from '#types'
-
 import mongo from '@data-fair/lib-node/mongo.js'
 import config from '#config'
 

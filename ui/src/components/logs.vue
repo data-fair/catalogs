@@ -1,11 +1,11 @@
 <template data-iframe-height>
   <v-list-item
     class="mb-4"
-    :title="t(`status.${imp.status}`, { statusDate })"
+    :title="t(`status.${item.status}`, { statusDate })"
   >
     <template #prepend>
       <v-progress-circular
-        v-if="imp.status === 'running'"
+        v-if="item.status === 'running'"
         class="mr-4"
         color="primary"
         size="24"
@@ -13,8 +13,8 @@
       />
       <v-icon
         v-else
-        :color="colorsByStatus[imp.status]"
-        :icon="iconsByStatus[imp.status]"
+        :color="colorsByStatus[item.status]"
+        :icon="iconsByStatus[item.status]"
       />
     </template>
   </v-list-item>
@@ -31,7 +31,7 @@
     >
       <v-expansion-panel-title>
         <v-progress-circular
-          v-if="i === steps.length - 1 && imp.status === 'running'"
+          v-if="i === steps.length - 1 && item.status === 'running'"
           color="primary"
           size="24"
           indeterminate
@@ -47,7 +47,7 @@
         v-if="step.children.length"
         class="px-2"
       >
-        <import-log
+        <log
           v-for="log in step.children"
           :key="log.date"
           :log="log"
@@ -59,24 +59,25 @@
 
 <script setup lang="ts">
 import type { Log } from '@data-fair/types-catalogs'
-import type { Import } from '#api/types'
+import type { Import, Publication } from '#api/types'
 
 const { t } = useI18n()
 const { dayjs } = useLocaleDayjs()
 
-const { imp } = defineProps<{
-  imp: Import
+const { item, type } = defineProps<{
+  item: Import | Publication
+  type: 'import' | 'publication'
 }>()
 
 /**
- * Get each step's from the import logs
+ * Get each step from the logs
  */
 const steps = computed(() => {
-  if (!imp.logs) return []
+  if (!item.logs) return []
 
   const steps = []
   let lastStep: { date: string, msg: string, children: Log[] } | undefined
-  for (const log of imp.logs) {
+  for (const log of item.logs) {
     if (log.type === 'step') {
       lastStep = { date: log.date, msg: log.msg, children: [] }
       steps.push(lastStep)
@@ -92,7 +93,10 @@ const steps = computed(() => {
 })
 
 const statusDate = computed(() => {
-  return imp.lastImportDate ? formatDate(imp.lastImportDate) : ''
+  const date = type === 'import'
+    ? (item as Import).lastImportDate
+    : (item as Publication).lastPublicationDate
+  return date ? formatDate(date) : ''
 })
 
 const getColor = (logs: Log[]) => {
@@ -134,17 +138,17 @@ const colorsByStatus = {
 <i18n lang="yaml">
 en:
   status:
-    waiting: Waiting for import
-    running: Import in progress
-    done: Last import completed - {statusDate}
-    error: Last import failed
+    waiting: Waiting for {type}
+    running: '{type} in progress'
+    done: 'Last {type} completed - {statusDate}'
+    error: 'Last {type} failed'
 
 fr:
   status:
-    waiting: En attente d'import
-    running: En cours d'import
-    done: Dernier import terminé - {statusDate}
-    error: Dernier import en erreur
+    waiting: "En attente d'{type}"
+    running: "En cours d'{type}"
+    done: "Dernier {type} terminé - {statusDate}"
+    error: "Dernier {type} en erreur"
 </i18n>
 
 <style scoped>

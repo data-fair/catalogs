@@ -3,12 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "NODE_CONFIG_DIR=../api/config/ vite --port 3039",
     "build": "vite build",
-    "preview": "vite preview",
     "check-types": "vue-tsc",
+    "dev": "NODE_CONFIG_DIR=../api/config/ vite --port 3039",
     "lint": "eslint .",
-    "lint-fix": "eslint --fix ."
+    "lint-fix": "eslint --fix .",
+    "preview": "vite preview"
   },
   "imports": {
     "#api/doc": "../api/doc/index.ts",
@@ -17,15 +17,15 @@
   },
   "dependencies": {
     "@data-fair/catalogs-shared": "*",
-    "@data-fair/frame": "^0.14.0",
+    "@data-fair/frame": "^0.17.0",
     "@data-fair/lib-common-types": "^1.19.4",
     "@data-fair/lib-utils": "^1.8.0",
     "@data-fair/lib-vue": "^1.24.2",
-    "@data-fair/lib-vuetify": "^1.12.6",
+    "@data-fair/lib-vuetify": "^1.13.0",
     "@data-fair/types-catalogs": "^0.6.0",
-    "@intlify/unplugin-vue-i18n": "^6.0.5",
+    "@intlify/unplugin-vue-i18n": "^6.0.8",
     "@koumoul/v-iframe": "^2.4.5",
-    "@koumoul/vjsf": "^3.20.4",
+    "@koumoul/vjsf": "^3.26.0",
     "@mdi/js": "^7.4.47",
     "@types/config": "^3.3.5",
     "@types/semver": "^7.7.0",
@@ -42,8 +42,8 @@
     "unplugin-vue-components": "^28.4.1",
     "unplugin-vue-router": "^0.12.0",
     "vite": "^6.3.5",
-    "vite-plugin-vuetify": "^2.1.0",
-    "vue": "^3.5.13",
+    "vite-plugin-vuetify": "^2.1.1",
+    "vue": "^3.5.17",
     "vue-i18n": "^11.1.11",
     "vue-router": "^4.5.0",
     "vue-tsc": "^2.2.8"

@@ -93,16 +93,12 @@ const deleteCatalog = useAsyncAction(
   }
 )
 
-watch(
-  [activeTab, () => catalog.value?.title],
-  ([tab, title]) => {
-    setBreadcrumbs([
-      { text: t('catalogs'), to: '/catalogs' },
-      { text: title ?? '' },
-      { text: t(`tab.${tab}`) },
-    ])
-  }
-)
+watch(() => catalog.value?.title, (title) => {
+  setBreadcrumbs([
+    { text: t('catalogs'), to: '/catalogs' },
+    { text: title ?? '' }
+  ])
+})
 
 const assetsUrl = computed(() => {
   if (catalog.value?.capabilities.includes('thumbnailUrl') && catalog.value?.thumbnailUrl) return catalog.value.thumbnailUrl

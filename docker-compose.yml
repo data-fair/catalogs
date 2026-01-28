@@ -5,27 +5,14 @@ services:
   #####
 
   nginx:
-    image: nginx:1.23.1-alpine
+    image: nginx:1.29.4-alpine
     network_mode: host
     volumes:
       - ./dev/resources/nginx.conf:/etc/nginx/nginx.conf:ro
 
   #####
-  # related services from the data-fair stack
+  # required services from the data-fair stack
   #####
-
-  events:
-    profiles:
-      - dev
-    image: ghcr.io/data-fair/events:main
-    network_mode: host
-    environment:
-      - PORT=8088
-      - PRIVATE_DIRECTORY_URL=http://localhost:5600/simple-directory
-      - SECRET_IDENTITIES=secret-identities
-      - SECRET_EVENTS=secret-events
-      - SECRET_SENDMAILS=secret-sendmails
-      - OBSERVER_ACTIVE=false
 
   simple-directory:
     profiles:
@@ -73,12 +60,30 @@ services:
       - PUBLIC_URL=http://localhost:5600/data-fair
       - WS_PUBLIC_URL=ws://localhost:5600/data-fair
       - OBSERVER_ACTIVE=false
+
       - PRIVATE_CATALOGS_URL=http://localhost:5600/catalogs
       - SECRET_CATALOGS=secret-catalogs
+
+  #####
+  # optional services
+  #####
+
+  events:
+    profiles:
+      - dev
+    image: ghcr.io/data-fair/events:main
+    network_mode: host
+    environment:
+      - PORT=8088
+      - PRIVATE_DIRECTORY_URL=http://localhost:5600/simple-directory
+      - SECRET_IDENTITIES=secret-identities
+      - SECRET_EVENTS=secret-events
+      - SECRET_SENDMAILS=secret-sendmails
+      - OBSERVER_ACTIVE=false
+
   #####
   # db and search engine
   #####
-
   elasticsearch:
     profiles:
       - dev
@@ -89,8 +94,8 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms128m -Xmx128m -server"
-      - "ES_HEAP_SIZE=128m"
+      - ES_JAVA_OPTS=-Xms128m -Xmx128m -server
+      - ES_HEAP_SIZE=128m
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
     healthcheck:

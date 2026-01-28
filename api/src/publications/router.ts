@@ -39,6 +39,18 @@ router.get('/', async (req, res) => {
   res.json({ results, count })
 })
 
+// Get a specific publication by ID
+router.get('/:id', async (req, res) => {
+  const sessionState = await session.reqAuthenticated(req)
+  assertAccountRole(sessionState, sessionState.account, 'admin')
+  const { id } = req.params
+  if (!id) throw httpError(400, 'Publication ID is required')
+  const publicationDoc = await mongo.publications.findOne({ _id: id })
+  if (!publicationDoc) throw httpError(404, 'Publication not found')
+  assertAccountRole(sessionState, publicationDoc.owner, 'admin')
+  res.json(publicationDoc)
+})
+
 // Publish a data-fair dataset (create a publication that will be processed by the worker)
 router.post('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)

@@ -37,7 +37,10 @@
     <h3 class="text-h6 mt-4">
       {{ t('logSection') }}
     </h3>
-    <import-logs :imp />
+    <logs
+      type="import"
+      :item="imp"
+    />
     <layout-actions>
       <import-actions :imp />
     </layout-actions>

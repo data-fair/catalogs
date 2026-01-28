@@ -87,6 +87,7 @@
       </v-card>
     </v-menu>
 
+    <!-- Delete import action -->
     <v-menu
       v-model="showDeleteMenu"
       :close-on-content-click="false"
@@ -169,7 +170,7 @@ const deleteImport = useAsyncAction(
     if (deleteImportedDataset.value && imp.dataFairDataset) {
       await $fetch(`/data-fair/api/v1/datasets/${imp.dataFairDataset.id}`, {
         method: 'DELETE',
-        baseURL: $sitePath
+        baseURL: $sitePath // Because data-fair is served from the same origin
       })
     }
     await router.replace(`/catalogs/${imp.catalog.id}`)
@@ -182,11 +183,9 @@ const deleteImport = useAsyncAction(
 
 const reImport = useAsyncAction(
   async () => {
-    await $fetch(`${$apiPath}/imports/${imp._id}`, {
+    await $fetch(`/imports/${imp._id}`, {
       method: 'PATCH',
-      body: {
-        status: 'waiting'
-      }
+      body: { status: 'waiting' }
     })
 
     showReImportMenu.value = false
@@ -216,7 +215,7 @@ const loading = computed(() => deleteImport.loading.value || reImport.loading.va
     deleteImportError: 'Erreur lors de la demande de suppression'
     deleteImportedDataset: 'Supprimer également le jeu de données importé'
     no: 'Non'
-    reImport: 'Importer à nouveau'
+    reImport: 'Re-importer'
     reImportConfirm: 'Êtes-vous sûr de vouloir réimporter cette ressource ? Les données déjà importées seront écrasées.'
     viewDataset: 'Voir le jeu de données importé'
     viewRemoteResource: 'Voir la source des données'

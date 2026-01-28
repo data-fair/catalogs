@@ -26,7 +26,7 @@ import 'iframe-resizer/js/iframeResizer.contentWindow.js'
   const uiNotif = createUiNotif()
   const vuetify = createVuetify({
     ...vuetifySessionOptions(session, $cspNonce),
-    icons: { defaultSet: 'mdi', aliases, sets: { mdi, } }
+    icons: { defaultSet: 'mdi', aliases, sets: { mdi } }
   })
   const i18n = createI18n({ locale: session.state.lang });
   (window as any).vIframeOptions = { router }

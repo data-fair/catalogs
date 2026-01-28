@@ -1,6 +1,8 @@
 import { resolve } from 'node:path'
 import express from 'express'
 import { session, errorHandler, createSiteMiddleware, createSpaMiddleware, defaultNonceCSPDirectives } from '@data-fair/lib-express'
+import config, { uiConfig } from '#config'
+
 import catalogsRouter from './catalogs/router.ts'
 import datasetsRouter from './misc/routers/datasets.ts'
 import identitiesRouter from './misc/routers/identities.ts'
@@ -9,15 +11,12 @@ import pluginsRegistryRouter from './plugins/registry/router.ts'
 import pluginRouter from './plugins/router.ts'
 import publicationsRouter from './publications/router.ts'
 import adminRouter from './admin/router.ts'
-import config, { uiConfig } from '#config'
 
 export const app = express()
 
 // no fancy embedded arrays, just string and arrays of strings in req.query
 app.set('query parser', 'simple')
-
 app.use(createSiteMiddleware('catalogs'))
-
 app.use(session.middleware())
 
 app.set('json spaces', 2)
@@ -32,6 +31,7 @@ app.use('/api/plugins-registry', pluginsRegistryRouter)
 app.use('/api/plugins', pluginRouter)
 app.use('/api/publications', publicationsRouter)
 app.use('/api/admin', adminRouter)
+app.use('/api', (req, res) => { res.status(404).send('unknown api endpoint') })
 
 if (process.env.NODE_ENV !== 'test') {
   const cspDirectives = { ...defaultNonceCSPDirectives }
