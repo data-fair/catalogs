@@ -10,7 +10,7 @@
     :items-length="fetchFolders.data.value?.count || 0"
     :items-per-page-options="[5, 10, 20]"
     :item-selectable="!shouldSelectFolder ? (item: any) => item.type === 'resource' : () => false"
-    :loading="fetchFolders.loading.value ? 'primary' : false"
+    :loading="isLoading ? 'primary' : false"
     :loading-text="t('loading')"
     :row-props="(data: any) => ({
       onClick: () => handleRowClick(data.item),
@@ -80,11 +80,13 @@
     <template #item.title="{ item }">
       <v-chip
         v-if="item.type === 'folder'"
-        :text="item.title"
         :prepend-icon="mdiFolder"
         label
         @click="navigate(item.id)"
-      />
+      >
+        <!-- text-truncate enables text overflow with ellipsis (...) when chip width exceeds available space -->
+        <span class="text-truncate">{{ item.title }}</span>
+      </v-chip>
       <div
         v-else
         class="d-flex align-center"
@@ -97,7 +99,6 @@
         <v-chip
           v-if="mode === 'import' && isResourceImported(item.id)"
           class="ml-2"
-          color="grey"
           size="x-small"
           variant="outlined"
         >
@@ -107,15 +108,15 @@
     </template>
 
     <template #item.size="{ item }">
-      {{ item.type === 'resource' && item.size ? formatBytes(item.size) : '-' }}
+      <span class="text-no-wrap">{{ item.type === 'resource' && item.size ? formatBytes(item.size) : '-' }}</span>
     </template>
 
     <template #item.format="{ item }">
-      {{ item.type === 'resource' ? item.format : '-' }}
+      <span class="text-no-wrap">{{ item.type === 'resource' ? item.format : '-' }}</span>
     </template>
 
     <template #item.updatedAt="{ item }">
-      {{ item.updatedAt ? dayjs(item.updatedAt).format('lll') : '-' }}
+      <span class="text-no-wrap">{{ item.updatedAt ? dayjs(item.updatedAt).format('lll') : '-' }}</span>
     </template>
   </tableComponent>
 </template>
@@ -159,7 +160,8 @@ const tableComponent = computed(() => supportsPagination.value ? VDataTableServe
 
 // Fetch folder data based on current folder ID
 const fetchFolders = useFetch<Awaited<ReturnType<CatalogPlugin['list']>>>(
-  `${$apiPath}/catalogs/${catalog._id}/resources`, {
+  `${$apiPath}/catalogs/${catalog._id}/resources`,
+  {
     query: computed(() => ({
       ...(currentFolderId.value && { currentFolderId: currentFolderId.value }),
       ...(supportsSearch.value && { q: search.value }),
@@ -170,7 +172,9 @@ const fetchFolders = useFetch<Awaited<ReturnType<CatalogPlugin['list']>>>(
       ...(mode !== 'import' && { action: mode }),
       ...additionalFilters.value
     }))
-  })
+  }
+)
+const isLoading = computed(() => fetchFolders.loading.value || fetchFolders.data.value === null)
 
 // Check if the selected resource changes
 watch(selected, (newSelected) => {

@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
 import express from 'express'
 import { session, errorHandler, createSiteMiddleware, createSpaMiddleware, defaultNonceCSPDirectives } from '@data-fair/lib-express'
+import { getStatus } from './admin/status.ts'
 import config, { uiConfig } from '#config'
 
 import catalogsRouter from './catalogs/router.ts'
@@ -31,6 +32,13 @@ app.use('/api/plugins-registry', pluginsRegistryRouter)
 app.use('/api/plugins', pluginRouter)
 app.use('/api/publications', publicationsRouter)
 app.use('/api/admin', adminRouter)
+
+app.get('/api/ping', async (req, res) => {
+  const status = await getStatus(req)
+  if (status.status === 'error') res.status(500)
+  res.send(status.status)
+})
+
 app.use('/api', (req, res) => { res.status(404).send('unknown api endpoint') })
 
 if (process.env.NODE_ENV !== 'test') {
