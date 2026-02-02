@@ -1,7 +1,7 @@
 <template data-iframe-height>
   <v-list-item
     class="mb-4"
-    :title="t(`status.${item.status}`, { statusDate })"
+    :title="t(`${type}.status.${item.status}`, { statusDate })"
   >
     <template #prepend>
       <v-progress-circular
@@ -137,18 +137,32 @@ const colorsByStatus = {
 
 <i18n lang="yaml">
 en:
-  status:
-    waiting: Waiting for {type}
-    running: '{type} in progress'
-    done: 'Last {type} completed - {statusDate}'
-    error: 'Last {type} failed'
+  import:
+    status:
+      waiting: Waiting for import
+      running: 'Import in progress'
+      done: 'Last import completed - {statusDate}'
+      error: 'Last import failed'
+  publication:
+    status:
+      waiting: Waiting for publication
+      running: 'Publication in progress'
+      done: 'Last publication completed - {statusDate}'
+      error: 'Last publication failed'
 
 fr:
-  status:
-    waiting: "En attente d'{type}"
-    running: "En cours d'{type}"
-    done: "Dernier {type} terminé - {statusDate}"
-    error: "Dernier {type} en erreur"
+  import:
+    status:
+      waiting: "En attente d'import"
+      running: "En cours d'import"
+      done: "Dernier import terminé - {statusDate}"
+      error: "Dernier import en erreur"
+  publication:
+    status:
+      waiting: "En attente de publication"
+      running: "En cours de publication"
+      done: "Dernière publication terminée - {statusDate}"
+      error: "Dernière publication en erreur"
 </i18n>
 
 <style scoped>
