@@ -61,13 +61,13 @@ const { publication } = defineProps<{
     publicationStatus:
       done: 'Jeu de données publié'
       error: 'Publication en erreur'
-      running: 'En cour de publication'
+      running: 'En cours de publication'
       waiting: 'En attente de publication'
     publicationStatusDelete:
       done: 'Publication supprimée'
       error: 'Suppression échouée'
-      running: 'En cour de suppression'
-      waiting: 'En attente suppression'
+      running: 'En cours de suppression'
+      waiting: 'En attente de suppression'
     publicationTitle:
       catalog: '{title}'
       dataset: '{title}'
