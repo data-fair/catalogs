@@ -47,6 +47,11 @@ const handleImportError = async (type: 'upload' | 'download', imp: Import, err: 
         id: 'catalogs-worker',
         name: 'Catalogs Worker'
       }
+    },
+    urlParams: {
+      catalogId: imp.catalog.id,
+      type: 'imports',
+      itemId: imp._id
     }
   })
 }

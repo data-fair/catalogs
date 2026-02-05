@@ -64,6 +64,11 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
           id: 'catalogs-worker',
           name: 'Catalogs Worker'
         }
+      },
+      urlParams: {
+        catalogId: pub.catalog.id,
+        type: 'publications',
+        itemId: pub._id
       }
     })
     return internalError('worker-missing-permissions', errorMsg)

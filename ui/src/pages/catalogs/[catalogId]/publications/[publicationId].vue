@@ -15,15 +15,16 @@
       type="publication"
       :item="publication"
     />
-    <layout-actions>
+    <navigation-right>
       <publication-actions :publication />
-    </layout-actions>
+    </navigation-right>
   </v-container>
 </template>
 
 <script setup lang="ts">
 import type { Log } from '@data-fair/types-catalogs'
 import type { Publication } from '#api/types'
+import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
 
 const { t } = useI18n()
 const route = useRoute<'/catalogs/[catalogId]/publications/[publicationId]'>()

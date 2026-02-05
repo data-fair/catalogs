@@ -59,7 +59,7 @@
         </v-col>
       </v-row>
     </template>
-    <layout-actions v-if="catalogsFetch.data.value && getAccountRole(session.state, session.state.account) === 'admin'">
+    <navigation-right v-if="catalogsFetch.data.value && getAccountRole(session.state, session.state.account) === 'admin'">
       <catalogs-actions
         v-model:search="search"
         v-model:show-all="showAll"
@@ -69,13 +69,14 @@
         :facets="catalogsFetch.data.value?.facets || {}"
         :plugins="pluginsFetch.data.value?.results || []"
       />
-    </layout-actions>
+    </navigation-right>
   </v-container>
 </template>
 
 <script setup lang="ts">
 import type { CatalogsGetRes, PluginsGetRes } from '#api/doc'
 import { getAccountRole } from '@data-fair/lib-vue/session'
+import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
 
 const session = useSessionAuthenticated()
 const showAll = useBooleanSearchParam('showAll')

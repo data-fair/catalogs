@@ -37,6 +37,37 @@
       {{ t('viewSourceDataset') }}
     </v-list-item>
 
+    <!-- Notifications menu -->
+    <v-menu
+      v-if="eventsSubscribeUrl"
+      v-model="showNotifMenu"
+      :close-on-content-click="false"
+      max-width="500"
+    >
+      <template #activator="{ props }">
+        <v-list-item
+          v-bind="props"
+          rounded
+        >
+          <template #prepend>
+            <v-icon
+              color="primary"
+              :icon="mdiBell"
+            />
+          </template>
+          {{ t('notifications') }}
+        </v-list-item>
+      </template>
+      <v-card
+        :title="t('notifications')"
+        rounded="lg"
+      >
+        <v-card-text class="pa-0">
+          <d-frame :src="eventsSubscribeUrl" />
+        </v-card-text>
+      </v-card>
+    </v-menu>
+
     <!-- Re-publish action -->
     <v-menu
       v-model="showRePublishMenu"
@@ -148,6 +179,7 @@
 
 <script setup lang="ts">
 import type { Publication } from '#api/types'
+import '@data-fair/frame/lib/d-frame.js'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -158,8 +190,22 @@ const { publication } = defineProps<{
 
 const showDeleteMenu = ref(false)
 const showRePublishMenu = ref(false)
+const showNotifMenu = ref(false)
 /** If true, delete the remote publication */
 const deleteRemotePublication = ref(false)
+
+const eventsSubscribeUrl = computed(() => {
+  if (!publication?._id || !publication.catalog?.id) return ''
+  const topics = [
+    { key: `catalogs:publication-error:${publication._id}`, title: t('publicationError') }
+  ]
+
+  // catalogId => the id of the catalog
+  // type => "import" or "publication"
+  // itemId => the id of the import or publication
+  const urlTemplate = window.parent.location.origin + '/data-fair/catalogs/{catalogId}/{type}/{itemId}'
+  return `/events/embed/subscribe?key=${encodeURIComponent(topics.map(t => t.key).join(','))}&title=${encodeURIComponent(topics.map(t => t.title).join(','))}&url-template=${encodeURIComponent(urlTemplate)}&register=false`
+})
 
 const deletePublication = useAsyncAction(
   async () => {
@@ -202,8 +248,10 @@ en:
   error: 'Error'
   lastPublicationDate: 'Last Publication Date'
   no: 'No'
+  notifications: Notifications
   rePublish: 'Re-Publish'
   rePublishConfirm: 'Are you sure you want to re-publish this dataset? The remote dataset will be overwritten.'
+  publicationError: A publication failed.
   viewPublication: 'View Publication'
   viewSourceDataset: 'View Source Dataset'
   yes: 'Yes'
@@ -217,8 +265,10 @@ fr:
   error: 'Erreur'
   lastPublicationDate: 'Date de la dernière publication'
   no: 'Non'
+  notifications: Notifications
   rePublish: 'Re-publier'
   rePublishConfirm: 'Êtes-vous sûr de vouloir republier ce jeu de données ? Le jeu de données distant sera écrasé.'
+  publicationError: Une publication a échoué.
   viewPublication: 'Voir la publication'
   viewSourceDataset: 'Voir le jeu de données source'
   yes: 'Oui'
