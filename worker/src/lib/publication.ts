@@ -27,24 +27,31 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
   if (pub.action === 'delete') return await deletePublication(catalog, plugin, pub)
 
   // 1. Get the Data Fair Dataset
-  const dataFairDataset = (await axios.get(`/api/v1/datasets/${pub.dataFairDataset.id}`, getAxiosOptions(catalog))).data
-  if (!dataFairDataset) {
-    await mongo.publications.deleteOne({ _id: pub._id })
-    return internalError('worker-missing-dataset', 'found a publication without associated dataset, weird')
+  let dataFairDataset
+  let isAccessDenied = false
+  try {
+    dataFairDataset = (await axios.get(`/api/v1/datasets/${pub.dataFairDataset.id}`, getAxiosOptions(catalog))).data
+  } catch (error: any) {
+    if (error.status === 403) {
+      isAccessDenied = true
+    } else {
+      throw error
+    }
   }
 
   // 2. Check permissions
   // If the catalog has a department, check if the dataset is owned by the same department
   if (
+    isAccessDenied ||
     catalog.owner.type !== dataFairDataset.owner.type ||
     catalog.owner.id !== dataFairDataset.owner.id ||
     (catalog.owner.department && catalog.owner.department !== dataFairDataset.owner.department)
   ) {
-    const errorMsg = 'You do not have permission to publish this dataset in this catalog'
-    await mongo.publications.updateOne({ _id: pub._id }, { $set: { status: 'error', error: errorMsg } })
-    await wsEmit(`publication/${pub._id}`, { status: 'error', error: errorMsg })
+    const errorMsg = "You don't have permission to publish this dataset in this catalog. This may be due to a change of ownership for the dataset or the catalog."
+    await mongo.publications.updateOne({ _id: pub._id }, { $set: { status: 'error', logs: [{ date: new Date().toISOString(), msg: errorMsg, type: 'error' }] } })
+    await wsEmit(`publication/${pub._id}`, { status: 'error', logs: [{ date: new Date().toISOString(), msg: errorMsg, type: 'error' }] })
     eventsQueue.pushEvent({
-      title: `La publication du jeu de données ${dataFairDataset.title} a échoué`,
+      title: `La publication du jeu de données ${dataFairDataset?.title || pub.dataFairDataset.title} a échoué`,
       topic: { key: `catalogs:publication-error:${pub._id}` },
       sender: pub.owner,
       resource: {
@@ -60,6 +67,11 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
       }
     })
     return internalError('worker-missing-permissions', errorMsg)
+  }
+
+  if (!dataFairDataset) {
+    await mongo.publications.deleteOne({ _id: pub._id })
+    return internalError('worker-missing-dataset', 'found a publication without associated dataset, weird')
   }
 
   // Check if the plugin has the capability to publish (and delete) datasets
