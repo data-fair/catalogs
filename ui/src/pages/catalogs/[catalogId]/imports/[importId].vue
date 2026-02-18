@@ -41,9 +41,9 @@
       type="import"
       :item="imp"
     />
-    <layout-actions>
+    <navigation-right>
       <import-actions :imp />
-    </layout-actions>
+    </navigation-right>
   </v-container>
 </template>
 
@@ -51,6 +51,7 @@
 import type { Log } from '@data-fair/types-catalogs'
 import type { Import } from '#api/types'
 
+import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
 import timeZones from 'timezones.json'
 import cronstrue from 'cronstrue'
 import 'cronstrue/locales/en'

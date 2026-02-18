@@ -37,6 +37,37 @@
       {{ t('viewRemoteResource') }}
     </v-list-item>
 
+    <!-- Notifications menu -->
+    <v-menu
+      v-if="eventsSubscribeUrl"
+      v-model="showNotifMenu"
+      :close-on-content-click="false"
+      max-width="500"
+    >
+      <template #activator="{ props }">
+        <v-list-item
+          v-bind="props"
+          rounded
+        >
+          <template #prepend>
+            <v-icon
+              color="primary"
+              :icon="mdiBell"
+            />
+          </template>
+          {{ t('notifications') }}
+        </v-list-item>
+      </template>
+      <v-card
+        :title="t('notifications')"
+        rounded="lg"
+      >
+        <v-card-text class="pa-0">
+          <d-frame :src="eventsSubscribeUrl" />
+        </v-card-text>
+      </v-card>
+    </v-menu>
+
     <!-- Re-import action -->
     <v-menu
       v-model="showReImportMenu"
@@ -148,6 +179,7 @@
 
 <script setup lang="ts">
 import type { Import } from '#api/types'
+import '@data-fair/frame/lib/d-frame.js'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -158,8 +190,22 @@ const { imp } = defineProps<{
 
 const showDeleteMenu = ref(false)
 const showReImportMenu = ref(false)
+const showNotifMenu = ref(false)
 /** If true, delete the imported dataset */
 const deleteImportedDataset = ref(false)
+
+const eventsSubscribeUrl = computed(() => {
+  if (!imp?._id || !imp.catalog?.id) return ''
+  const topics = [
+    { key: `catalogs:import-error:${imp._id}`, title: t('importError') }
+  ]
+
+  // catalogId => the id of the catalog
+  // type => "import" or "publication"
+  // itemId => the id of the import or publication
+  const urlTemplate = window.parent.location.origin + '/data-fair/catalogs/{catalogId}/{type}/{itemId}'
+  return `/events/embed/subscribe?key=${encodeURIComponent(topics.map(t => t.key).join(','))}&title=${encodeURIComponent(topics.map(t => t.title).join(','))}&url-template=${encodeURIComponent(urlTemplate)}&register=false`
+})
 
 const deleteImport = useAsyncAction(
   async () => {
@@ -202,7 +248,9 @@ const loading = computed(() => deleteImport.loading.value || reImport.loading.va
     deleteImportConfirm: 'Are you sure you want to delete this import?'
     deleteImportError: 'Error deleting import'
     deleteImportedDataset: 'Delete also imported dataset'
+    importError: An import failed.
     no: 'No'
+    notifications: Notifications
     reImport: 'Re-import'
     reImportConfirm: 'Are you sure you want to re-import this resource? The already imported data will be overwritten.'
     viewDataset: 'View imported dataset'
@@ -214,7 +262,9 @@ const loading = computed(() => deleteImport.loading.value || reImport.loading.va
     deleteImportConfirm: "Êtes-vous sûr de vouloir supprimer cet import ?"
     deleteImportError: 'Erreur lors de la demande de suppression'
     deleteImportedDataset: 'Supprimer également le jeu de données importé'
+    importError: Un import a échoué.
     no: 'Non'
+    notifications: Notifications
     reImport: 'Re-importer'
     reImportConfirm: 'Êtes-vous sûr de vouloir réimporter cette ressource ? Les données déjà importées seront écrasées.'
     viewDataset: 'Voir le jeu de données importé'

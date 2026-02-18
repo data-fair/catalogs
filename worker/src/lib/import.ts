@@ -47,6 +47,11 @@ const handleImportError = async (type: 'upload' | 'download', imp: Import, err: 
         id: 'catalogs-worker',
         name: 'Catalogs Worker'
       }
+    },
+    urlParams: {
+      catalogId: imp.catalog.id,
+      type: 'imports',
+      itemId: imp._id
     }
   })
 }
@@ -198,15 +203,20 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
 
   // Add metadata if creating new dataset or if metadata should be updated
   if (!datasetId || imp.shouldUpdateMetadata) {
+    // Base metadata
     datasetResource.slug = resource.slug
     datasetResource.title = resource.title
     datasetResource.description = resource.description
+
+    // Additional metadata
     datasetResource.frequency = resource.frequency
     datasetResource.image = resource.image
     datasetResource.license = resource.license
     datasetResource.keywords = resource.keywords
     datasetResource.origin = resource.origin
     datasetResource.topics = resource.topics
+
+    // Others metadata (cannot be set with UI)
     datasetResource.analysis = resource.analysis
     datasetResource.projection = resource.projection
 

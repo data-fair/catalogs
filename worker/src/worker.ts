@@ -175,6 +175,11 @@ async function iter (task: Task, type: typeof types[number]) {
           id: 'catalogs-worker',
           name: 'Catalogs Worker'
         }
+      },
+      urlParams: {
+        catalogId: task.catalog.id,
+        type: type + 's',
+        itemId: task._id
       }
     })
   } finally {

@@ -36,10 +36,7 @@ router.get('/', async (req, res) => {
       queryWithFilters.$or = params.owners.split(',').map(owner => {
         const [type, id, department] = owner.split(':')
         if (!type || !id) throw httpError(400, 'Invalid owner format')
-        const filter: any = {
-          'owner.type': type,
-          'owner.id': id
-        }
+        const filter: any = { 'owner.type': type, 'owner.id': id }
         if (department) filter['owner.department'] = department
         return filter
       })

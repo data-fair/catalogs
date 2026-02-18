@@ -54,13 +54,14 @@
       </v-tabs-window-item>
     </v-tabs-window>
 
-    <layout-actions>
+    <navigation-right>
       <catalog-actions />
-    </layout-actions>
+    </navigation-right>
   </v-container>
 </template>
 
 <script setup lang="ts">
+import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
 
 const route = useRoute<'/catalogs/[catalogId]/'>()
 const router = useRouter()

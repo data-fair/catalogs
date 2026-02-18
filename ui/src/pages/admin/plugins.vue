@@ -24,9 +24,7 @@
       :loading="pluginLocked === `${plugin.name}` ? 'primary' : false"
       class="mb-4"
     >
-      <v-toolbar
-        density="compact"
-      >
+      <v-toolbar density="compact">
         <template #title>
           {{ plugin.name }}
           <v-avatar
@@ -37,54 +35,55 @@
             size="24"
           />
         </template>
-        <v-spacer />
-        {{ t('usedTimesVersion', { count: installedPluginsFetch.data.value?.facets.usages[plugin.id] || 0, version: plugin.version }) }}
-        <v-btn
-          v-if="hasUpdateAvailable(plugin)"
-          color="warning"
-          :title="t('update', { version: hasUpdateAvailable(plugin)!.version })"
-          :icon="mdiUpdate"
-          :disabled="!!pluginLocked"
-          @click="install.execute({ name: plugin.name, version: hasUpdateAvailable(plugin)!.version })"
-        />
-        <v-menu
-          :model-value="showDeleteMenu === plugin.id"
-          :close-on-content-click="false"
-          max-width="500"
-        >
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              color="warning"
-              :title="t('uninstall')"
-              :icon="mdiDelete"
-              :disabled="!!pluginLocked"
-              @click="showDeleteMenu = plugin.id"
-            />
-          </template>
-          <v-card
-            :title="t('uninstallPlugin')"
-            :text="t('confirmUninstallPlugin', { name: plugin.name })"
-            :loading="pluginLocked === plugin.id ? 'warning' : false"
+        <template #append>
+          {{ t('usedTimesVersion', { count: installedPluginsFetch.data.value?.facets.usages[plugin.id] || 0, version: plugin.version }) }}
+          <v-btn
+            v-if="hasUpdateAvailable(plugin)"
+            color="warning"
+            :title="t('update', { version: hasUpdateAvailable(plugin)!.version })"
+            :icon="mdiUpdate"
+            :disabled="!!pluginLocked"
+            @click="install.execute({ name: plugin.name, version: hasUpdateAvailable(plugin)!.version })"
+          />
+          <v-menu
+            :model-value="showDeleteMenu === plugin.id"
+            :close-on-content-click="false"
+            max-width="500"
           >
-            <v-card-actions>
-              <v-spacer />
+            <template #activator="{ props }">
               <v-btn
-                :disabled="!!pluginLocked"
-                @click="showDeleteMenu = null"
-              >
-                {{ t('no') }}
-              </v-btn>
-              <v-btn
+                v-bind="props"
                 color="warning"
+                :title="t('uninstall')"
+                :icon="mdiDelete"
                 :disabled="!!pluginLocked"
-                @click="uninstall.execute(plugin.id)"
-              >
-                {{ t('yes') }}
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-menu>
+                @click="showDeleteMenu = plugin.id"
+              />
+            </template>
+            <v-card
+              :title="t('uninstallPlugin')"
+              :text="t('confirmUninstallPlugin', { name: plugin.name })"
+              :loading="pluginLocked === plugin.id ? 'warning' : false"
+            >
+              <v-card-actions>
+                <v-spacer />
+                <v-btn
+                  :disabled="!!pluginLocked"
+                  @click="showDeleteMenu = null"
+                >
+                  {{ t('no') }}
+                </v-btn>
+                <v-btn
+                  color="warning"
+                  :disabled="!!pluginLocked"
+                  @click="uninstall.execute(plugin.id)"
+                >
+                  {{ t('yes') }}
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-menu>
+        </template>
       </v-toolbar>
       <v-card-text>
         {{ plugin.description }}
@@ -196,20 +195,20 @@
       class="mb-4"
     >
       <v-toolbar
+        :title="plugin.name"
         density="compact"
         variant="outlined"
-        :title="plugin.name"
-        flat
       >
-        <v-spacer />
-        {{ plugin.version }}
-        <v-btn
-          color="primary"
-          :title="t('install')"
-          :icon="mdiDownload"
-          :disabled="!!pluginLocked"
-          @click="install.execute({ name: plugin.name, version: plugin.version })"
-        />
+        <template #append>
+          {{ plugin.version }}
+          <v-btn
+            color="primary"
+            :title="t('install')"
+            :icon="mdiDownload"
+            :disabled="!!pluginLocked"
+            @click="install.execute({ name: plugin.name, version: plugin.version })"
+          />
+        </template>
       </v-toolbar>
       <v-card-text>
         {{ plugin.description }}
