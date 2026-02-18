@@ -11,6 +11,8 @@ export default {
       type: 'string',
       description: 'The unique identifier of the resource, independent of the folder it is in'
     },
+
+    // Base metadata
     slug: {
       type: 'string',
       description: 'The URL-friendly identifier of the resource, usually a lowercase version of the title with hyphens instead of spaces'
@@ -22,14 +24,8 @@ export default {
     description: {
       type: 'string',
     },
-    filePath: {
-      type: 'string',
-      description: 'The path to the downloaded resource file.',
-    },
-    format: {
-      type: 'string',
-      description: 'The format of the resource, e.g. csv, json, xml, etc. It is displayed in the UI of catalogs.',
-    },
+
+    // Additional metadata
     // https://www.w3.org/TR/vocab-dcat-2/#Property:dataset_frequency and https://www.dublincore.org/specifications/dublin-core/collection-description/frequency/
     frequency: {
       type: 'string',
@@ -62,30 +58,9 @@ export default {
         type: 'string'
       }
     },
-    mimeType: {
-      type: 'string',
-      description: 'The Mime type of the resource, if available'
-    },
     origin: {
       type: 'string',
       description: 'The URL where the original data can be found'
-    },
-    schema: {
-      type: 'array',
-      description: 'JSON schema properties of the fields in the file',
-      items: {
-        type: 'object',
-        additionalProperties: true,
-      }
-    },
-    size: {
-      type: 'number',
-      description: 'The size of the resource in bytes, if available. It is displayed in the UI of catalogs.'
-    },
-    updatedAt: {
-      type: 'string',
-      format: 'date-time',
-      description: 'The date and time when the resource was last updated, if available. It is displayed in the UI of catalogs.'
     },
     topics: {
       type: 'array',
@@ -101,6 +76,25 @@ export default {
         }
       }
     },
+
+    // Others metadata
+    analysis: {
+      type: 'object',
+      properties: {
+        escapeKeyAlgorithm: {
+          type: 'string',
+          enum: ['compat-ods']
+        }
+      }
+    },
+    projection: {
+      type: 'object',
+      properties: {
+        code: { type: 'string' },
+        title: { type: 'string' }
+      }
+    },
+
     attachments: {
       type: 'array',
       description: 'The list of files attached to the resource, if available',
@@ -149,21 +143,37 @@ export default {
         ]
       }
     },
-    analysis: {
-      type: 'object',
-      properties: {
-        escapeKeyAlgorithm: {
-          type: 'string',
-          enum: ['compat-ods']
-        }
+
+    schema: {
+      type: 'array',
+      description: 'The schema to push into data-fair',
+      items: {
+        type: 'object',
+        additionalProperties: true,
       }
     },
-    projection: {
-      type: 'object',
-      properties: {
-        code: { type: 'string' },
-        title: { type: 'string' }
-      }
+
+    // For catalogs only
+    filePath: {
+      type: 'string',
+      description: 'The path to the downloaded resource file.',
     },
+    format: {
+      type: 'string',
+      description: 'The format of the resource, e.g. csv, json, xml, etc. It is displayed in the UI of catalogs.',
+    },
+    mimeType: {
+      type: 'string',
+      description: 'The Mime type of the resource, if available'
+    },
+    size: {
+      type: 'number',
+      description: 'The size of the resource in bytes, if available. It is displayed in the UI of catalogs.'
+    },
+    updatedAt: {
+      type: 'string',
+      format: 'date-time',
+      description: 'The date and time when the resource was last updated, if available. It is displayed in the UI of catalogs.'
+    }
   }
 }
