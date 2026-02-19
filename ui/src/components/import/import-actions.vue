@@ -1,180 +1,159 @@
 <template>
-  <v-list
-    v-if="imp"
-    data-iframe-height
-    density="compact"
-    style="background-color: transparent;"
+  <!-- Link to data-fair dataset -->
+  <v-list-item
+    v-if="imp.dataFairDataset"
+    :href="`${$sitePath}/data-fair/dataset/${imp.dataFairDataset.id}`"
+    target="_blank"
   >
-    <!-- Link to data-fair dataset -->
-    <v-list-item
-      v-if="imp.dataFairDataset"
-      rounded
-      :href="`${$sitePath}/data-fair/dataset/${imp.dataFairDataset.id}`"
-      target="_blank"
-    >
-      <template #prepend>
-        <v-icon
-          color="primary"
-          :icon="mdiOpenInNew"
-        />
-      </template>
-      {{ t('viewDataset') }}
-    </v-list-item>
+    <template #prepend>
+      <v-icon
+        color="primary"
+        :icon="mdiOpenInNew"
+      />
+    </template>
+    {{ t('viewDataset') }}
+  </v-list-item>
 
-    <!-- Link to remote resource -->
-    <v-list-item
-      v-if="imp.remoteResource.origin"
-      rounded
-      :href="imp.remoteResource.origin"
-      target="_blank"
-    >
-      <template #prepend>
-        <v-icon
-          color="primary"
-          :icon="mdiOpenInNew"
-        />
-      </template>
-      {{ t('viewRemoteResource') }}
-    </v-list-item>
+  <!-- Link to remote resource -->
+  <v-list-item
+    v-if="imp.remoteResource.origin"
+    :href="imp.remoteResource.origin"
+    target="_blank"
+  >
+    <template #prepend>
+      <v-icon
+        color="primary"
+        :icon="mdiOpenInNew"
+      />
+    </template>
+    {{ t('viewRemoteResource') }}
+  </v-list-item>
 
-    <!-- Notifications menu -->
-    <v-menu
-      v-if="eventsSubscribeUrl"
-      v-model="showNotifMenu"
-      :close-on-content-click="false"
-      max-width="500"
-    >
-      <template #activator="{ props }">
-        <v-list-item
-          v-bind="props"
-          rounded
-        >
-          <template #prepend>
-            <v-icon
-              color="primary"
-              :icon="mdiBell"
-            />
-          </template>
-          {{ t('notifications') }}
-        </v-list-item>
-      </template>
-      <v-card
-        :title="t('notifications')"
-        rounded="lg"
-      >
-        <v-card-text class="pa-0">
-          <d-frame :src="eventsSubscribeUrl" />
-        </v-card-text>
-      </v-card>
-    </v-menu>
-
-    <!-- Re-import action -->
-    <v-menu
-      v-model="showReImportMenu"
-      :close-on-content-click="false"
-      max-width="500"
-    >
-      <template #activator="{ props }">
-        <v-list-item
-          v-bind="props"
-          :title="t('reImport')"
-          :disabled="loading"
-          rounded
-        >
-          <template #prepend>
-            <v-icon
-              color="warning"
-              :icon="mdiDownload"
-            />
-          </template>
-        </v-list-item>
-      </template>
-      <v-card
-        rounded="lg"
-        variant="elevated"
-        :title="t('reImport')"
-        :loading="reImport.loading.value ? 'warning' : undefined"
-      >
-        <v-card-text class="pb-0">
-          {{ t('reImportConfirm') }}
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            :disabled="reImport.loading.value"
-            @click="showReImportMenu = false;"
-          >
-            {{ t('no') }}
-          </v-btn>
-          <v-btn
-            color="warning"
-            variant="flat"
-            :loading="reImport.loading.value"
-            @click="reImport.execute()"
-          >
-            {{ t('yes') }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-menu>
-
-    <!-- Delete import action -->
-    <v-menu
-      v-model="showDeleteMenu"
-      :close-on-content-click="false"
-      max-width="500"
-    >
-      <template #activator="{ props }">
-        <v-list-item
-          v-bind="props"
-          :title="t('deleteImport')"
-          :disabled="loading"
-          rounded
-        >
-          <template #prepend>
-            <v-icon
-              color="warning"
-              :icon="mdiDelete"
-            />
-          </template>
-        </v-list-item>
-      </template>
-      <v-card
-        rounded="lg"
-        variant="elevated"
-        :title="t('deleteImport')"
-        :loading="deleteImport.loading.value ? 'warning' : undefined"
-      >
-        <v-card-text class="pb-0">
-          {{ t('deleteImportConfirm') }}
-          <v-checkbox
-            v-model="deleteImportedDataset"
-            base-color="warning"
-            color="warning"
-            hide-details
-            :label="t('deleteImportedDataset')"
+  <!-- Notifications menu -->
+  <v-menu
+    v-if="eventsSubscribeUrl"
+    v-model="showNotifMenu"
+    :close-on-content-click="false"
+    max-width="500"
+  >
+    <template #activator="{ props }">
+      <v-list-item v-bind="props">
+        <template #prepend>
+          <v-icon
+            color="primary"
+            :icon="mdiBell"
           />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            :disabled="deleteImport.loading.value"
-            @click="showDeleteMenu = false; deleteImportedDataset = false"
-          >
-            {{ t('no') }}
-          </v-btn>
-          <v-btn
+        </template>
+        {{ t('notifications') }}
+      </v-list-item>
+    </template>
+    <v-card :title="t('notifications')">
+      <v-card-text class="pa-0">
+        <d-frame :src="eventsSubscribeUrl" />
+      </v-card-text>
+    </v-card>
+  </v-menu>
+
+  <!-- Re-import action -->
+  <v-menu
+    v-model="showReImportMenu"
+    :close-on-content-click="false"
+    max-width="500"
+  >
+    <template #activator="{ props }">
+      <v-list-item
+        v-bind="props"
+        :title="t('reImport')"
+        :disabled="loading"
+      >
+        <template #prepend>
+          <v-icon
             color="warning"
-            variant="flat"
-            :loading="deleteImport.loading.value"
-            @click="deleteImport.execute()"
-          >
-            {{ t('yes') }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-menu>
-  </v-list>
+            :icon="mdiDownload"
+          />
+        </template>
+      </v-list-item>
+    </template>
+    <v-card
+      :title="t('reImport')"
+      :loading="reImport.loading.value ? 'warning' : undefined"
+    >
+      <v-card-text class="pb-0">
+        {{ t('reImportConfirm') }}
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          :disabled="reImport.loading.value"
+          @click="showReImportMenu = false;"
+        >
+          {{ t('no') }}
+        </v-btn>
+        <v-btn
+          color="warning"
+          variant="flat"
+          :loading="reImport.loading.value"
+          @click="reImport.execute()"
+        >
+          {{ t('yes') }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-menu>
+
+  <!-- Delete import action -->
+  <v-menu
+    v-model="showDeleteMenu"
+    :close-on-content-click="false"
+    max-width="500"
+  >
+    <template #activator="{ props }">
+      <v-list-item
+        v-bind="props"
+        :title="t('deleteImport')"
+        :disabled="loading"
+      >
+        <template #prepend>
+          <v-icon
+            color="warning"
+            :icon="mdiDelete"
+          />
+        </template>
+      </v-list-item>
+    </template>
+    <v-card
+      :title="t('deleteImport')"
+      :loading="deleteImport.loading.value ? 'warning' : undefined"
+    >
+      <v-card-text class="pb-0">
+        {{ t('deleteImportConfirm') }}
+        <v-checkbox
+          v-model="deleteImportedDataset"
+          base-color="warning"
+          color="warning"
+          hide-details
+          :label="t('deleteImportedDataset')"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          :disabled="deleteImport.loading.value"
+          @click="showDeleteMenu = false; deleteImportedDataset = false"
+        >
+          {{ t('no') }}
+        </v-btn>
+        <v-btn
+          color="warning"
+          variant="flat"
+          :loading="deleteImport.loading.value"
+          @click="deleteImport.execute()"
+        >
+          {{ t('yes') }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-menu>
 </template>
 
 <script setup lang="ts">
@@ -184,9 +163,7 @@ import '@data-fair/frame/lib/d-frame.js'
 const { t } = useI18n()
 const router = useRouter()
 
-const { imp } = defineProps<{
-  imp: Import
-}>()
+const { imp } = defineProps<{ imp: Import }>()
 
 const showDeleteMenu = ref(false)
 const showReImportMenu = ref(false)

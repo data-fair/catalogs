@@ -1,180 +1,159 @@
 <template>
-  <v-list
-    v-if="publication"
-    data-iframe-height
-    density="compact"
-    style="background-color: transparent;"
+  <!-- Link to remote publication -->
+  <v-list-item
+    v-if="publication.remoteFolder?.url || publication.remoteResource?.url"
+    :href="publication.remoteFolder?.url || publication.remoteResource?.url"
+    target="_blank"
   >
-    <!-- Link to remote publication -->
-    <v-list-item
-      v-if="publication.remoteFolder?.url || publication.remoteResource?.url"
-      rounded
-      :href="publication.remoteFolder?.url || publication.remoteResource?.url"
-      target="_blank"
-    >
-      <template #prepend>
-        <v-icon
-          color="primary"
-          :icon="mdiOpenInNew"
-        />
-      </template>
-      {{ t('viewPublication') }}
-    </v-list-item>
+    <template #prepend>
+      <v-icon
+        color="primary"
+        :icon="mdiOpenInNew"
+      />
+    </template>
+    {{ t('viewPublication') }}
+  </v-list-item>
 
-    <!-- Link to source dataset -->
-    <v-list-item
-      v-if="publication.dataFairDataset"
-      rounded
-      :href="`${$sitePath}/data-fair/dataset/${publication.dataFairDataset.id}`"
-      target="_blank"
-    >
-      <template #prepend>
-        <v-icon
-          color="primary"
-          :icon="mdiOpenInNew"
-        />
-      </template>
-      {{ t('viewSourceDataset') }}
-    </v-list-item>
+  <!-- Link to source dataset -->
+  <v-list-item
+    v-if="publication.dataFairDataset"
+    :href="`${$sitePath}/data-fair/dataset/${publication.dataFairDataset.id}`"
+    target="_blank"
+  >
+    <template #prepend>
+      <v-icon
+        color="primary"
+        :icon="mdiOpenInNew"
+      />
+    </template>
+    {{ t('viewSourceDataset') }}
+  </v-list-item>
 
-    <!-- Notifications menu -->
-    <v-menu
-      v-if="eventsSubscribeUrl"
-      v-model="showNotifMenu"
-      :close-on-content-click="false"
-      max-width="500"
-    >
-      <template #activator="{ props }">
-        <v-list-item
-          v-bind="props"
-          rounded
-        >
-          <template #prepend>
-            <v-icon
-              color="primary"
-              :icon="mdiBell"
-            />
-          </template>
-          {{ t('notifications') }}
-        </v-list-item>
-      </template>
-      <v-card
-        :title="t('notifications')"
-        rounded="lg"
-      >
-        <v-card-text class="pa-0">
-          <d-frame :src="eventsSubscribeUrl" />
-        </v-card-text>
-      </v-card>
-    </v-menu>
-
-    <!-- Re-publish action -->
-    <v-menu
-      v-model="showRePublishMenu"
-      :close-on-content-click="false"
-      max-width="500"
-    >
-      <template #activator="{ props }">
-        <v-list-item
-          v-bind="props"
-          :title="t('rePublish')"
-          :disabled="loading"
-          rounded
-        >
-          <template #prepend>
-            <v-icon
-              color="warning"
-              :icon="mdiUpload"
-            />
-          </template>
-        </v-list-item>
-      </template>
-      <v-card
-        rounded="lg"
-        :title="t('rePublish')"
-        variant="elevated"
-        :loading="rePublish.loading.value ? 'warning' : undefined"
-      >
-        <v-card-text class="pb-0">
-          {{ t('rePublishConfirm') }}
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            :disabled="rePublish.loading.value"
-            @click="showRePublishMenu = false;"
-          >
-            {{ t('no') }}
-          </v-btn>
-          <v-btn
-            color="warning"
-            variant="flat"
-            :loading="rePublish.loading.value"
-            @click="rePublish.execute()"
-          >
-            {{ t('yes') }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-menu>
-
-    <!-- Delete publication action -->
-    <v-menu
-      v-model="showDeleteMenu"
-      :close-on-content-click="false"
-      max-width="500"
-    >
-      <template #activator="{ props }">
-        <v-list-item
-          v-bind="props"
-          :disabled="loading"
-          rounded
-        >
-          <template #prepend>
-            <v-icon
-              color="warning"
-              :icon="mdiDelete"
-            />
-          </template>
-          {{ t('deletePublication') }}
-        </v-list-item>
-      </template>
-      <v-card
-        rounded="lg"
-        variant="elevated"
-        :title="t('deletePublication')"
-        :loading="deletePublication.loading.value ? 'warning' : undefined"
-      >
-        <v-card-text class="pb-0">
-          {{ t('deletePublicationConfirm') }}
-          <v-checkbox
-            v-model="deleteRemotePublication"
-            base-color="warning"
-            color="warning"
-            hide-details
-            :label="t('deleteRemotePublication')"
+  <!-- Notifications menu -->
+  <v-menu
+    v-if="eventsSubscribeUrl"
+    v-model="showNotifMenu"
+    :close-on-content-click="false"
+    max-width="500"
+  >
+    <template #activator="{ props }">
+      <v-list-item v-bind="props">
+        <template #prepend>
+          <v-icon
+            color="primary"
+            :icon="mdiBell"
           />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            :disabled="deletePublication.loading.value"
-            @click="showDeleteMenu = false; deleteRemotePublication = false"
-          >
-            {{ t('no') }}
-          </v-btn>
-          <v-btn
+        </template>
+        {{ t('notifications') }}
+      </v-list-item>
+    </template>
+    <v-card :title="t('notifications')">
+      <v-card-text class="pa-0">
+        <d-frame :src="eventsSubscribeUrl" />
+      </v-card-text>
+    </v-card>
+  </v-menu>
+
+  <!-- Re-publish action -->
+  <v-menu
+    v-model="showRePublishMenu"
+    :close-on-content-click="false"
+    max-width="500"
+  >
+    <template #activator="{ props }">
+      <v-list-item
+        v-bind="props"
+        :title="t('rePublish')"
+        :disabled="loading"
+      >
+        <template #prepend>
+          <v-icon
             color="warning"
-            variant="flat"
-            :loading="deletePublication.loading.value"
-            @click="deletePublication.execute()"
-          >
-            {{ t('yes') }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-menu>
-  </v-list>
+            :icon="mdiUpload"
+          />
+        </template>
+      </v-list-item>
+    </template>
+    <v-card
+      :title="t('rePublish')"
+      :loading="rePublish.loading.value ? 'warning' : undefined"
+    >
+      <v-card-text class="pb-0">
+        {{ t('rePublishConfirm') }}
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          :disabled="rePublish.loading.value"
+          @click="showRePublishMenu = false;"
+        >
+          {{ t('no') }}
+        </v-btn>
+        <v-btn
+          color="warning"
+          variant="flat"
+          :loading="rePublish.loading.value"
+          @click="rePublish.execute()"
+        >
+          {{ t('yes') }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-menu>
+
+  <!-- Delete publication action -->
+  <v-menu
+    v-model="showDeleteMenu"
+    :close-on-content-click="false"
+    max-width="500"
+  >
+    <template #activator="{ props }">
+      <v-list-item
+        v-bind="props"
+        :disabled="loading"
+      >
+        <template #prepend>
+          <v-icon
+            color="warning"
+            :icon="mdiDelete"
+          />
+        </template>
+        {{ t('deletePublication') }}
+      </v-list-item>
+    </template>
+    <v-card
+      :title="t('deletePublication')"
+      :loading="deletePublication.loading.value ? 'warning' : undefined"
+    >
+      <v-card-text class="pb-0">
+        {{ t('deletePublicationConfirm') }}
+        <v-checkbox
+          v-model="deleteRemotePublication"
+          base-color="warning"
+          color="warning"
+          hide-details
+          :label="t('deleteRemotePublication')"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          :disabled="deletePublication.loading.value"
+          @click="showDeleteMenu = false; deleteRemotePublication = false"
+        >
+          {{ t('no') }}
+        </v-btn>
+        <v-btn
+          color="warning"
+          variant="flat"
+          :loading="deletePublication.loading.value"
+          @click="deletePublication.execute()"
+        >
+          {{ t('yes') }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-menu>
 </template>
 
 <script setup lang="ts">

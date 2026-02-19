@@ -1,14 +1,8 @@
 <template>
-  <v-list
-    v-if="catalog"
-    data-iframe-height
-    density="compact"
-    style="background-color: transparent;"
-  >
+  <template v-if="catalog">
     <v-list-item
       v-if="catalog.capabilities.includes('import')"
       :to="`/catalogs/${catalog._id}/imports/new`"
-      rounded
     >
       <template #prepend>
         <v-icon
@@ -22,7 +16,6 @@
     <v-list-item
       v-if="supportPublication"
       :to="`/catalogs/${catalog._id}/publications/new`"
-      rounded
     >
       <template #prepend>
         <v-icon
@@ -39,10 +32,7 @@
       max-width="500"
     >
       <template #activator="{ props }">
-        <v-list-item
-          v-bind="props"
-          rounded
-        >
+        <v-list-item v-bind="props">
           <template #prepend>
             <v-icon
               color="primary"
@@ -53,9 +43,7 @@
         </v-list-item>
       </template>
       <v-card
-        rounded="lg"
         :title="t('duplicateCatalog')"
-        variant="elevated"
         :loading="duplicateCatalog.loading.value ? 'warning' : undefined"
       >
         <v-card-text class="pb-0">
@@ -95,10 +83,7 @@
       max-width="500"
     >
       <template #activator="{ props }">
-        <v-list-item
-          v-bind="props"
-          rounded
-        >
+        <v-list-item v-bind="props">
           <template #prepend>
             <v-icon
               color="warning"
@@ -109,9 +94,7 @@
         </v-list-item>
       </template>
       <v-card
-        rounded="lg"
         :title="t('deleteCatalog')"
-        variant="elevated"
         :loading="deleteCatalog.loading.value ? 'warning' : undefined"
       >
         <v-card-text class="pb-0">
@@ -151,10 +134,7 @@
       max-width="500"
     >
       <template #activator="{ props }">
-        <v-list-item
-          v-bind="props"
-          rounded
-        >
+        <v-list-item v-bind="props">
           <template #prepend>
             <v-icon
               color="warning"
@@ -164,10 +144,7 @@
           {{ t('changeOwner') }}
         </v-list-item>
       </template>
-      <v-card
-        rounded="lg"
-        variant="elevated"
-      >
+      <v-card>
         <v-card-title primary-title>
           {{ t('changeOwner') }}
         </v-card-title>
@@ -219,7 +196,7 @@
       hide-details
       class="mt-2 mx-4 text-admin"
     />
-  </v-list>
+  </template>
 </template>
 
 <script setup lang="ts">

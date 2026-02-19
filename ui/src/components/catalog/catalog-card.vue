@@ -52,7 +52,7 @@
           <template #prepend>
             <v-icon :icon="mdiPowerPlug" />
           </template>
-          {{ pluginName || `${t('deleted')} - ${pluginId}` }}
+          {{ pluginName || `${t('deleted')} - ${catalog.plugin}` }}
         </v-list-item>
 
         <!-- Import counter -->
@@ -96,10 +96,9 @@ import ownerAvatar from '@data-fair/lib-vuetify/owner-avatar.vue'
 import { mdiPowerPlug } from '@mdi/js'
 
 const { t } = useI18n()
-const { catalog, showOwner, pluginName, pluginId } = defineProps<{
+const { catalog, showOwner, pluginName } = defineProps<{
   catalog: CatalogsGetRes['results'][number]
   pluginName?: string
-  pluginId?: string
   showOwner?: boolean
 }>()
 

@@ -8,11 +8,7 @@
     </span>
     <template v-else>
       <!-- Create new publication -->
-      <v-card
-        rounded="lg"
-        variant="elevated"
-        class="mb-4"
-      >
+      <v-card class="mb-4">
         <v-card-text>
           <v-autocomplete
             v-model="selectedCatalogId"

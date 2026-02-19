@@ -10,7 +10,7 @@
   >
     <!-- Skeleton loader-->
     <v-row
-      v-if="catalogsFetch.loading.value"
+      v-if="catalogsFetch.loading.value || pluginsFetch.loading.value"
       class="d-flex align-stretch"
     >
       <v-col
@@ -54,7 +54,6 @@
           <catalog-card
             :catalog="catalog"
             :plugin-name="pluginsFetch.data.value?.results.find(p => p.id === catalog.plugin)?.metadata.title"
-            :plugin-id="catalog.plugin"
             :show-owner="showAll || !!(catalog.owner.department && !session.state.account.department)"
           />
         </v-col>

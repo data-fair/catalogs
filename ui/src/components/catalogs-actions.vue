@@ -1,9 +1,6 @@
 <template>
   <!-- Create new Catalog -->
-  <v-list-item
-    to="/catalogs/new"
-    rounded
-  >
+  <v-list-item to="/catalogs/new">
     <template #prepend>
       <v-icon
         color="primary"
@@ -21,10 +18,7 @@
     max-width="500"
   >
     <template #activator="{ props }">
-      <v-list-item
-        v-bind="props"
-        rounded
-      >
+      <v-list-item v-bind="props">
         <template #prepend>
           <v-icon
             color="primary"
@@ -36,7 +30,6 @@
     </template>
     <v-card
       :title="t('notifications')"
-      rounded="lg"
     >
       <v-card-text class="pa-0">
         <d-frame :src="eventsSubscribeUrl" />
