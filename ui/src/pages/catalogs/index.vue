@@ -53,7 +53,8 @@
         >
           <catalog-card
             :catalog="catalog"
-            :plugin-name="pluginsFetch.data.value?.results.find(p => p.id === catalog.plugin)?.metadata.title || ''"
+            :plugin-name="pluginsFetch.data.value?.results.find(p => p.id === catalog.plugin)?.metadata.title"
+            :plugin-id="catalog.plugin"
             :show-owner="showAll || !!(catalog.owner.department && !session.state.account.department)"
           />
         </v-col>
