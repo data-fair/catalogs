@@ -126,20 +126,48 @@
       :loading="deletePublication.loading.value ? 'warning' : undefined"
     >
       <v-card-text class="pb-0">
-        {{ t('deletePublicationConfirm') }}
-        <v-checkbox
-          v-model="deleteRemotePublication"
-          base-color="warning"
-          color="warning"
+        <div class="mb-4">
+          {{ t('deletePublicationConfirm') }}
+        </div>
+        <v-radio-group
+          v-model="keepRemotePublication"
           hide-details
-          :label="t('deleteRemotePublication')"
-        />
+        >
+          <v-radio :value="false">
+            <template #label>
+              <div>
+                <div class="font-weight-medium">
+                  {{ t('deleteRemotePublication') }}
+                </div>
+                <div class="text-caption italic">
+                  {{ t('deleteRemotePublicationNote') }}
+                </div>
+              </div>
+            </template>
+          </v-radio>
+
+          <v-radio
+            :value="true"
+            class="mb-2"
+          >
+            <template #label>
+              <div>
+                <div class="font-weight-medium">
+                  {{ t('keepRemotePublication') }}
+                </div>
+                <div class="text-caption italic">
+                  {{ t('keepRemotePublicationNote') }}
+                </div>
+              </div>
+            </template>
+          </v-radio>
+        </v-radio-group>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
         <v-btn
           :disabled="deletePublication.loading.value"
-          @click="showDeleteMenu = false; deleteRemotePublication = false"
+          @click="showDeleteMenu = false; keepRemotePublication = true"
         >
           {{ t('no') }}
         </v-btn>
@@ -170,8 +198,8 @@ const { publication } = defineProps<{
 const showDeleteMenu = ref(false)
 const showRePublishMenu = ref(false)
 const showNotifMenu = ref(false)
-/** If true, delete the remote publication */
-const deleteRemotePublication = ref(false)
+/** If true, keep the remote publication (only remove sync link) */
+const keepRemotePublication = ref(false)
 
 const eventsSubscribeUrl = computed(() => {
   if (!publication?._id || !publication.catalog?.id) return ''
@@ -188,7 +216,7 @@ const eventsSubscribeUrl = computed(() => {
 
 const deletePublication = useAsyncAction(
   async () => {
-    await $fetch(`/publications/${publication?._id}?onlyLink=${!deleteRemotePublication.value}`, {
+    await $fetch(`/publications/${publication?._id}?onlyLink=${keepRemotePublication.value}`, {
       method: 'DELETE'
     })
 
@@ -220,11 +248,14 @@ const loading = computed(() => deletePublication.loading.value || rePublish.load
 <i18n lang="yaml">
 en:
   createPublicationError: 'Error recreating publication'
-  deleteRemotePublication: 'Delete also remote publication'
+  deletePublicationConfirm: 'What do you want to do with the publication on the remote catalog ?'
   deletePublication: 'Delete Publication'
-  deletePublicationConfirm: 'Are you sure you want to delete this publication?'
+  deleteRemotePublication: 'Also delete the publication on the remote catalog'
+  deleteRemotePublicationNote: '(The publication will be deleted in both DataFair and the remote catalog.)'
   deletePublicationError: 'Error deleting publication'
   error: 'Error'
+  keepRemotePublication: 'Keep the publication on the remote catalog'
+  keepRemotePublicationNote: '(Only the synchronization link between the dataset and the remote catalog will be removed. The publication will remain accessible on the catalog.)'
   lastPublicationDate: 'Last Publication Date'
   no: 'No'
   notifications: Notifications
@@ -237,11 +268,14 @@ en:
 
 fr:
   createPublicationError: 'Erreur lors de la republication'
-  deleteRemotePublication: 'Supprimer également la publication distante'
+  deletePublicationConfirm: 'Que souhaitez-vous faire pour la publication sur le catalogue distant ?'
   deletePublication: 'Supprimer la publication'
-  deletePublicationConfirm: 'Êtes-vous sûr de vouloir supprimer la publication ?'
   deletePublicationError: 'Erreur lors de la demande de suppression'
+  deleteRemotePublication: 'Supprimer aussi la publication sur le catalogue distant'
+  deleteRemotePublicationNote: '(La publication sera supprimée à la fois dans DataFair et sur le catalogue distant.)'
   error: 'Erreur'
+  keepRemotePublication: 'Conserver la publication sur le catalogue distant'
+  keepRemotePublicationNote: '(Seul le lien de synchronisation entre le jeu de données et le catalogue distant sera supprimé. La publication restera accessible sur le catalogue.)'
   lastPublicationDate: 'Date de la dernière publication'
   no: 'Non'
   notifications: Notifications
@@ -253,6 +287,3 @@ fr:
   yes: 'Oui'
 
 </i18n>
-
-<style scoped>
-</style>
