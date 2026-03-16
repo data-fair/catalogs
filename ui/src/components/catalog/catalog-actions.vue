@@ -191,9 +191,8 @@
     <v-switch
       v-if="session.state.user?.adminMode"
       v-model="showAll"
-      color="admin"
       :label="t('showAll')"
-      hide-details
+      color="admin"
       class="mt-2 mx-4 text-admin"
     />
   </template>

@@ -38,17 +38,9 @@
   </v-menu>
 
   <!-- Search field -->
-  <v-text-field
+  <search-field
     v-model="search"
-    :append-inner-icon="mdiMagnify"
-    class="mt-4 mx-4"
-    color="primary"
-    density="compact"
-    :placeholder="t('search')"
-    variant="outlined"
-    autofocus
-    hide-details
-    clearable
+    class="mt-2"
   />
 
   <!-- Plugin filters -->
@@ -57,14 +49,9 @@
     :items="pluginsItems"
     item-title="display"
     item-value="pluginKey"
-    class="mt-4 mx-4"
-    density="compact"
     :label="t('plugin')"
-    rounded="xl"
-    variant="outlined"
-    hide-details
+    class="mt-4 mx-4"
     chips
-    clearable
     closable-chips
     multiple
   />
@@ -74,9 +61,8 @@
     v-if="adminMode"
     v-model="showAll"
     color="admin"
-    :label="t('showAllCatalogs')"
-    hide-details
     class="mt-2 mx-4 text-admin"
+    :label="t('showAllCatalogs')"
   />
 
   <!-- Owner filters (only if showAll and admin) -->
@@ -87,21 +73,19 @@
     item-title="display"
     item-value="ownerKey"
     :label="t('owner')"
-    chips
+    color="admin"
     class="mt-2 mx-4 text-admin"
+    chips
     clearable
     closable-chips
-    density="compact"
-    hide-details
     multiple
-    rounded="xl"
-    variant="outlined"
   />
 </template>
 
 <script setup lang="ts">
 import type { Plugin } from '#api/types'
 import type { CatalogsFacets } from '#api/doc'
+import SearchField from '@data-fair/lib-vuetify/search-field.vue'
 import '@data-fair/frame/lib/d-frame.js'
 
 const { adminMode, plugins, facets } = defineProps<{
