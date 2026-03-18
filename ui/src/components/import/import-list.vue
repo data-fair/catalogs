@@ -17,14 +17,16 @@
       />
     </v-col>
   </v-row>
+
   <span
     v-else-if="!importsFetch.data.value?.count"
-    class="d-flex justify-center text-h6"
+    class="d-flex justify-center text-title-large"
   >
     {{ t('noImports') }}
   </span>
+
   <template v-else-if="importsFetch.data.value">
-    <h3 class="text-h5 mb-4">
+    <h3 class="text-headline-small mt-0 mb-4">
       {{ t('nbImports', importsFetch.data.value.count) }}
     </h3>
     <v-row class="d-flex align-stretch">
@@ -49,10 +51,10 @@ const { catalogId } = defineProps<{
 }>()
 
 const { t } = useI18n()
-const showAll = useBooleanSearchParam('showAll')
+const session = useSession()
 const importsFetch = useFetch<{ results: Import[], count: number }>(`${$apiPath}/imports`, {
   query: computed(() => ({
-    showAll: showAll.value ? 'true' : undefined,
+    showAll: session.state.user?.adminMode ? 'true' : undefined,
     catalogId
   }))
 })

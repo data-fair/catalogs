@@ -19,7 +19,7 @@
   </v-row>
   <span
     v-else-if="!publicationsStore.count.value"
-    class="d-flex justify-center text-h6"
+    class="d-flex justify-center text-title-large"
   >
     {{ !!catalogId
       ? t('noPublicationsFromCatalog')
@@ -27,7 +27,7 @@
     }}
   </span>
   <template v-else>
-    <h3 class="text-h5 mb-4">
+    <h3 class="text-headline-small mt-0 mb-4">
       {{ t('nbPublications', publicationsStore.count.value) }}
     </h3>
     <v-row class="d-flex align-stretch">

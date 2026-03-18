@@ -1,12 +1,13 @@
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
-import VueRouter from 'unplugin-vue-router/vite'
+import VueRouter from 'vue-router/vite'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Vuetify from 'vite-plugin-vuetify'
 import microTemplate from '@data-fair/lib-utils/micro-template.js'
+import { VueRouterAutoImports } from 'vue-router/unplugin'
 import { autoImports, settingsPath } from '@data-fair/lib-vuetify/vite.js'
 import { commonjsDeps } from '@koumoul/vjsf/utils/build.js'
 
@@ -31,7 +32,7 @@ export default defineConfig({
   },
   plugins: [
     VueRouter({
-      dts: './dts/typed-router.d.ts',
+      dts: './dts/route-map.d.ts',
       exclude: process.env.NODE_ENV === 'development' ? [] : ['src/pages/dev.vue']
     }),
     Vue({ template: { compilerOptions: { isCustomElement: (tag) => ['d-frame'].includes(tag) } } }),
@@ -42,6 +43,7 @@ export default defineConfig({
       vueTemplate: true,
       imports: [
         ...autoImports,
+        VueRouterAutoImports,
         {
           '~/context': ['$uiConfig', '$sitePath', '$cspNonce', '$apiPath', '$fetch'],
           '@mdi/js': [

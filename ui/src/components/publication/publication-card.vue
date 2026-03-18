@@ -10,7 +10,7 @@
     <v-card-text>
       <div
         v-if="publication.action === 'createResource' || publication.action === 'replaceResource'"
-        class="text-caption font-italic"
+        class="text-body-small font-italic"
       >
         <!-- TODO: Use a text provided by the plugin -->
         {{ t('publishAsResource') }}

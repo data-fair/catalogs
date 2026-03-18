@@ -4,9 +4,8 @@
     :title="t('errorFetchingCatalogTitle')"
     :text="t('errorFetchingCatalogText')"
   />
-  <layout-error
-    v-else-if="pluginFetch.error.value"
-  >
+
+  <layout-error v-else-if="pluginFetch.error.value">
     {{ t('errorFetchingPlugin') }}
     <v-spacer />
     <v-btn
@@ -20,6 +19,7 @@
       {{ t('delete') }}
     </v-btn>
   </layout-error>
+
   <v-container
     v-else-if="catalog"
     data-iframe-height

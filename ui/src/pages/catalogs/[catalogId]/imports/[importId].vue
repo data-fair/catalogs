@@ -4,7 +4,7 @@
     data-iframe-height
     style="min-height:500px"
   >
-    <h2 class="text-h5 mb-2">
+    <h2 class="text-headline-small mt-0 mb-2">
       Import {{ imp.remoteResource?.title ?? imp.remoteResource.id }}
     </h2>
     <v-defaults-provider
@@ -34,7 +34,7 @@
       </v-form>
     </v-defaults-provider>
 
-    <h3 class="text-h6 mt-4">
+    <h3 class="text-title-large mt-4 mb-0">
       {{ t('logSection') }}
     </h3>
     <logs

@@ -188,13 +188,6 @@
       </v-card>
     </v-menu>
 
-    <v-switch
-      v-if="session.state.user?.adminMode"
-      v-model="showAll"
-      :label="t('showAll')"
-      color="admin"
-      class="mt-2 mx-4 text-admin"
-    />
   </template>
 </template>
 
@@ -203,9 +196,6 @@ import ownerPick from '@data-fair/lib-vuetify/owner-pick.vue'
 
 const { t } = useI18n()
 const { catalog, supportPublication } = useCatalogStore()
-const session = useSession()
-const showAll = useBooleanSearchParam('showAll')
-
 const showDuplicateMenu = ref(false)
 const showDeleteMenu = ref(false)
 const showChangeOwnerMenu = ref(false)
@@ -295,7 +285,6 @@ const duplicateCatalog = useAsyncAction(
     no: No
     ownerChanged: Owner changed!
     sensitiveOperation: Sensitive operation
-    showAll: Show all
     yes: Yes
 
   fr:
@@ -322,7 +311,6 @@ const duplicateCatalog = useAsyncAction(
     no: Non
     ownerChanged: Propriétaire changé !
     sensitiveOperation: Opération sensible
-    showAll: Afficher tous
     yes: Oui
 
 </i18n>

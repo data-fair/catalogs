@@ -20,9 +20,9 @@
         cols="auto"
         :class="$vuetify.display.mdAndUp && src ? '' : 'px-4'"
       >
-        <h3 class="text-h5 my-3">
+        <h2 class="text-headline-small my-3">
           {{ title }}
-        </h3>
+        </h2>
         <p
           v-if="description"
           class="my-2"
