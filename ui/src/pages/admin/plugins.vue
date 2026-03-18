@@ -76,6 +76,7 @@
                 </v-btn>
                 <v-btn
                   color="warning"
+                  variant="flat"
                   :disabled="!!pluginLocked"
                   @click="uninstall.execute(plugin.id)"
                 >
@@ -177,6 +178,7 @@
             </v-btn>
             <v-btn
               color="warning"
+              variant="flat"
               :disabled="!!pluginLocked || !canForceInstall || install.loading.value"
               @click="install.execute()"
             >
