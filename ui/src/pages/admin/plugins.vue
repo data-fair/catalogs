@@ -30,6 +30,7 @@
           <v-avatar
             v-if="plugin.metadata.capabilities.includes('thumbnail')"
             :image="`${$apiPath}/plugins/${plugin.id}/thumbnail`"
+            variant="text"
             rounded="0"
             class="ml-2"
             size="24"
