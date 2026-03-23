@@ -14,13 +14,6 @@ import { commonjsDeps } from '@koumoul/vjsf/utils/build.js'
 // https://vitejs.dev/config/
 export default defineConfig({
   base: '/catalogs',
-  build: {
-    rollupOptions: {
-      output: {
-        experimentalMinChunkSize: 2000
-      }
-    }
-  },
   optimizeDeps: { include: ['debug', 'easymde', ...commonjsDeps] },
   resolve: {
     alias: {
