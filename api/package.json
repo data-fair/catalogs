@@ -3,7 +3,7 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development DEBUG=webhooks-* IGNORE_ASSERT_REQ_INTERNAL=true node --watch --experimental-strip-types index.ts"
+    "dev": "NODE_ENV=development DEBUG=webhooks-* IGNORE_ASSERT_REQ_INTERNAL=true node --watch index.ts"
   },
   "imports": {
     "#config": "./src/config.ts",
@@ -22,15 +22,15 @@
   },
   "dependencies": {
     "@data-fair/catalogs-shared": "*",
-    "@data-fair/lib-express": "^1.22.1",
-    "@data-fair/lib-node": "^2.10.2",
-    "@data-fair/lib-utils": "^1.8.0",
-    "config": "^4.0.0",
+    "@data-fair/lib-express": "^1.22.5",
+    "@data-fair/lib-node": "^2.12.1",
+    "@data-fair/lib-utils": "^1.10.1",
+    "config": "^4.4.1",
     "express": "^5.2.0",
     "fs-extra": "^11.3.0",
     "http-terminator": "^3.2.0",
     "memoizee": "^0.4.17",
-    "mongodb": "^6.16.0",
+    "mongodb": "^6.17.0",
     "multer": "^2.0.2",
     "nanoid": "^3.3.11",
     "prom-client": "^15.1.3",

@@ -30,14 +30,14 @@
     <!-- No catalogs created -->
     <span
       v-else-if="!catalogsFetch.data.value?.results.length"
-      class="d-flex justify-center text-h6 mt-4"
+      class="d-flex justify-center text-title-large mt-4"
     >
       {{ t('noCatalogsCreated') }}
     </span>
     <!-- No catalogs displayed (filters) -->
     <span
       v-else-if="!displayCatalogs.length"
-      class="d-flex justify-center text-h6 mt-4"
+      class="d-flex justify-center text-title-large mt-4"
     >
       {{ t('noCatalogsDisplayed') }}
     </span>

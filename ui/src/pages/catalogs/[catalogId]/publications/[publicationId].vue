@@ -4,11 +4,11 @@
     data-iframe-height
     style="min-height:500px"
   >
-    <h2 class="text-h5 mb-2">
+    <h2 class="text-headline-small mt-0 mb-2">
       Publication {{ publication.dataFairDataset?.title ?? publication.dataFairDataset.id }}
     </h2>
 
-    <h3 class="text-h6 mt-6">
+    <h3 class="text-title-large my-0 mt-6">
       {{ t('logSection') }}
     </h3>
     <logs

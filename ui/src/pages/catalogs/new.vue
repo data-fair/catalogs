@@ -61,7 +61,7 @@
               >
                 <template #title>
                   <span :class="newPlugin !== plugin.id ? 'text-primary' : ''">
-                    <!-- Remove 'Catalog ' from the title for retrocompatibility -->
+                    <!-- Remove 'Catalog ' from the title for compatibility -->
                     {{ t('catalog') }} {{ plugin.metadata.title.replace('Catalog ', '') }}
                   </span>
                 </template>

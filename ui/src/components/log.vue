@@ -19,7 +19,7 @@
       />
     </span>
     <v-spacer />
-    <span class="pl-2 text-no-wrap text-caption">
+    <span class="pl-2 text-no-wrap text-body-small">
       {{ formatDate(log.date) }}
       <span v-if="log.progressDate">- {{ formatDate(log.progressDate) }}</span>
     </span>

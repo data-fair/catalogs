@@ -140,6 +140,7 @@ export const getPlugin = async (pluginId: string): Promise<CatalogPlugin> => {
  */
 export const getPluginThumbnailPath = async (pluginId: string): Promise<string | null> => {
   const pluginJsonPath = path.join(pluginsDir, pluginId, 'plugin.json')
+  if (!fs.existsSync(pluginJsonPath)) return null
   const pluginJson = JSON.parse(fs.readFileSync(pluginJsonPath, 'utf8'))
   const plugin = await getPlugin(pluginId)
   const thumbnailPath = path.join(pluginsDir, pluginId, pluginJson.version, plugin.metadata.thumbnailPath)

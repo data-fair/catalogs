@@ -2,7 +2,7 @@
   <v-container data-iframe-height>
     <span
       v-if="!catalogsFetch.data.value?.results.length"
-      class="d-flex justify-center text-h6"
+      class="d-flex justify-center text-title-large"
     >
       {{ t('noCatalogs') }}
     </span>

@@ -133,13 +133,16 @@
           v-model="keepRemotePublication"
           hide-details
         >
-          <v-radio :value="false">
+          <v-radio
+            :value="false"
+            class="align-start mb-2"
+          >
             <template #label>
               <div>
                 <div class="font-weight-medium">
                   {{ t('deleteRemotePublication') }}
                 </div>
-                <div class="text-caption italic">
+                <div class="text-caption font-italic">
                   {{ t('deleteRemotePublicationNote') }}
                 </div>
               </div>
@@ -148,14 +151,14 @@
 
           <v-radio
             :value="true"
-            class="mb-2"
+            class="align-start"
           >
             <template #label>
               <div>
                 <div class="font-weight-medium">
                   {{ t('keepRemotePublication') }}
                 </div>
-                <div class="text-caption italic">
+                <div class="text-caption font-italic">
                   {{ t('keepRemotePublicationNote') }}
                 </div>
               </div>

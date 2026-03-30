@@ -19,7 +19,7 @@
   </v-row>
   <span
     v-else-if="!publicationsStore.count.value"
-    class="d-flex justify-center text-h6"
+    class="d-flex justify-center text-title-large"
   >
     {{ !!catalogId
       ? t('noPublicationsFromCatalog')
@@ -27,7 +27,7 @@
     }}
   </span>
   <template v-else>
-    <h3 class="text-h5 mb-4">
+    <h3 class="text-headline-small mt-0 mb-4">
       {{ t('nbPublications', publicationsStore.count.value) }}
     </h3>
     <v-row class="d-flex align-stretch">
@@ -67,12 +67,12 @@ const publicationsStore = providePublicationsStore(catalogId, dataFairDatasetId)
   en:
     nbPublications: 'No publications | 1 publication | {count} publications'
     noPublicationsFromDataset: This dataset is not yet published on any catalog
-    noPublicationsFromCatalog: This catalog does not contain any publications
+    noPublicationsFromCatalog: This catalog does not contain any publication yet
 
   fr:
     nbPublications: 'Aucune publication | 1 publication | {count} publications'
     noPublicationsFromDataset: Ce jeu de données n'est publié sur aucun catalogue
-    noPublicationsFromCatalog: Ce catalogue ne contient aucune publication
+    noPublicationsFromCatalog: Ce catalogue ne contient pas encore de publications
 
 </i18n>
 

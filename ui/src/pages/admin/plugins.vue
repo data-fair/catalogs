@@ -30,6 +30,7 @@
           <v-avatar
             v-if="plugin.metadata.capabilities.includes('thumbnail')"
             :image="`${$apiPath}/plugins/${plugin.id}/thumbnail`"
+            variant="text"
             rounded="0"
             class="ml-2"
             size="24"
@@ -75,6 +76,7 @@
                 </v-btn>
                 <v-btn
                   color="warning"
+                  variant="flat"
                   :disabled="!!pluginLocked"
                   @click="uninstall.execute(plugin.id)"
                 >
@@ -111,9 +113,10 @@
         <template #activator="{ props }">
           <v-btn
             v-bind="props"
-            class="ml-4"
-            size="x-small"
-            variant="tonal"
+            class="ml-2"
+            density="comfortable"
+            variant="flat"
+            color="primary"
             :disabled="!!pluginLocked"
           >
             {{ t('forceInstall') }}
@@ -126,7 +129,7 @@
         >
           <v-card-text class="pb-0">
             <div class="mb-4">
-              <p class="text-body-2 font-italic mb-2">
+              <p class="text-body-medium font-italic mb-2">
                 {{ t('installFromNpm') }}
               </p>
               <v-text-field
@@ -149,7 +152,7 @@
             </div>
 
             <div>
-              <p class="text-body-2 font-italic mb-2">
+              <p class="text-body-medium font-italic mb-2">
                 {{ t('installFromFile') }}
               </p>
               <v-file-input
@@ -175,6 +178,7 @@
             </v-btn>
             <v-btn
               color="warning"
+              variant="flat"
               :disabled="!!pluginLocked || !canForceInstall || install.loading.value"
               @click="install.execute()"
             >

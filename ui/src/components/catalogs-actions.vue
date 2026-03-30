@@ -162,7 +162,6 @@ const ownersItems = computed(() => {
     owner: Owner
     plugin: Plugin
     publicationError: A publication failed.
-    search: Search...
     showAllCatalogs: Show all catalogs
 
   fr:
@@ -173,7 +172,6 @@ const ownersItems = computed(() => {
     owner: Propriétaire
     plugin: Plugin
     publicationError: Une publication a échoué.
-    search: Rechercher...
     showAllCatalogs: Voir tous les catalogues
 
 </i18n>
