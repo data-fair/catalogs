@@ -125,7 +125,6 @@
         <v-card
           :title="t('forceInstall')"
           :loading="install.loading.value ? 'warning' : false"
-          width="500"
         >
           <v-card-text class="pb-0">
             <div class="mb-4">
