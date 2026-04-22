@@ -11,6 +11,7 @@
       <v-card class="mb-4">
         <v-card-text>
           <v-autocomplete
+            v-if="!onlyCatalog"
             v-model="selectedCatalogId"
             :label="t('selectCatalog')"
             :items="catalogsFetch.data.value?.results || []"
@@ -32,14 +33,14 @@
           />
 
           <v-btn
-            :disabled="!selectedCatalogId || (selectedCatalogRequiresPublicationSite && !hasPublicationSites)"
+            :disabled="!effectiveCatalogId || (selectedCatalogRequiresPublicationSite && !hasPublicationSites)"
             color="primary"
             variant="flat"
             class="mt-2"
-            :href="`/data-fair/catalogs/${selectedCatalogId}/publications/new?datasetId=${datasetId}`"
+            :href="`/data-fair/catalogs/${effectiveCatalogId}/publications/new?datasetId=${datasetId}`"
             target="_top"
           >
-            {{ t('createNewPublication') }}
+            {{ onlyCatalog ? t('createNewPublicationOn', { catalog: onlyCatalog.title }) : t('createNewPublication') }}
           </v-btn>
         </v-card-text>
       </v-card>
@@ -57,6 +58,15 @@ const { t } = useI18n()
 const datasetId = useStringSearchParam('dataset-id')
 
 const selectedCatalogId = ref<string | null>(null)
+
+const onlyCatalog = computed(() => {
+  const results = catalogsFetch.data.value?.results
+  return results?.length === 1 ? results[0] : null
+})
+
+const effectiveCatalogId = computed(() =>
+  onlyCatalog.value?._id ?? selectedCatalogId.value
+)
 
 const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, {
   query: {
@@ -78,13 +88,13 @@ const hasPublicationSites = computed(() => {
 
 // Check if the selected catalog requires a publication site
 const selectedCatalogRequiresPublicationSite = computed(() => {
-  if (!selectedCatalogId.value || !catalogsFetch.data.value?.results) return false
+  if (!effectiveCatalogId.value || !catalogsFetch.data.value?.results) return false
 
-  const selectedCatalog = catalogsFetch.data.value.results.find(
-    (catalog) => catalog._id === selectedCatalogId.value
+  const catalog = catalogsFetch.data.value.results.find(
+    (c) => c._id === effectiveCatalogId.value
   )
 
-  return selectedCatalog?.capabilities?.includes('requiresPublicationSite') ?? false
+  return catalog?.capabilities?.includes('requiresPublicationSite') ?? false
 })
 
 </script>
@@ -92,6 +102,7 @@ const selectedCatalogRequiresPublicationSite = computed(() => {
 <i18n lang="yaml">
   en:
     createNewPublication: Create a new publication
+    createNewPublicationOn: 'Create a publication on "{catalog}"'
     noCatalogs: You have not yet configured any catalog that supports dataset publication.
     publicationSiteRequired: This catalog requires that the dataset be published on a portal. Please publish it on a portal before publishing to this catalog.
     selectCatalog: Select a catalog
@@ -99,6 +110,7 @@ const selectedCatalogRequiresPublicationSite = computed(() => {
 
   fr:
     createNewPublication: Créer une nouvelle publication
+    createNewPublicationOn: 'Créer une publication sur "{catalog}"'
     noCatalogs: Vous n'avez pas encore configuré de catalogue qui supporte la publication de jeux de données.
     publicationSiteRequired: Ce catalogue nécessite que le jeu de données soit publié sur un portail. Veuillez le publier sur un portail avant de le publier sur ce catalogue.
     selectCatalog: Sélectionner un catalogue
