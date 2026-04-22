@@ -1,7 +1,7 @@
 <template>
-  <layout-error
+  <df-layout-fetch-error
     v-if="session.state.accountRole !== 'admin' && !session.state.user.adminMode"
-    :text="t('noPermissions')"
+    :error="{ statusCode: 403 }"
   />
   <v-container
     v-else
@@ -28,19 +28,20 @@
       </v-col>
     </v-row>
     <!-- No catalogs created -->
-    <span
+    <df-layout-empty-state
       v-else-if="!catalogsFetch.data.value?.results.length"
-      class="d-flex justify-center text-title-large mt-4"
-    >
-      {{ t('noCatalogsCreated') }}
-    </span>
+      :can-create="session.state.accountRole === 'admin' || !!session.state.user.adminMode"
+      :icon="mdiTransitConnection"
+      :no-data-text="t('noCatalogsCreated')"
+      :btn-text="t('createCatalog')"
+      btn-to="/catalogs/new"
+    />
     <!-- No catalogs displayed (filters) -->
-    <span
+    <df-layout-empty-state
       v-else-if="!displayCatalogs.length"
-      class="d-flex justify-center text-title-large mt-4"
-    >
-      {{ t('noCatalogsDisplayed') }}
-    </span>
+      has-search
+      :no-result-text="t('noCatalogsDisplayed')"
+    />
     <!-- List of catalogs -->
     <template v-else>
       <v-row class="d-flex align-stretch">
@@ -76,7 +77,10 @@
 <script setup lang="ts">
 import type { CatalogsGetRes, PluginsGetRes } from '#api/doc'
 import { getAccountRole } from '@data-fair/lib-vue/session'
+import DfLayoutEmptyState from '@data-fair/lib-vuetify/layout-empty-state.vue'
+import DfLayoutFetchError from '@data-fair/lib-vuetify/layout-fetch-error.vue'
 import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
+import { mdiTransitConnection } from '@mdi/js'
 
 const session = useSessionAuthenticated()
 const showAll = useBooleanSearchParam('showAll')
@@ -117,15 +121,14 @@ watch(
 <i18n lang="yaml">
   en:
     catalogDisplayed: No catalogs | {displayed}/{count} catalog displayed | {displayed}/{count} catalogs displayed
+    createCatalog: Create a catalog
     noCatalogsCreated: You haven't created any catalogs yet.
     noCatalogsDisplayed: No results match the search criteria.
-    noPermissions: You don't have permission to access this page.
-
   fr:
     catalogDisplayed: Aucun catalogue | {displayed}/{count} catalogue affiché | {displayed}/{count} catalogues affichés
+    createCatalog: Créer un catalogue
     noCatalogsCreated: Vous n'avez pas encore créé de catalogue.
     noCatalogsDisplayed: Aucun résultat ne correspond aux critères de recherche.
-    noPermissions: Vous n'avez pas la permission d'accéder à cette page.
 
 </i18n>
 

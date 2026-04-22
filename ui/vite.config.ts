@@ -45,6 +45,7 @@ export default defineConfig({
             'mdiAlertCircle',
             'mdiBell',
             'mdiCheckCircle',
+            'mdiChevronLeft',
             'mdiClock',
             'mdiCodeJson',
             'mdiCog',

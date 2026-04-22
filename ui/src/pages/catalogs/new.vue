@@ -1,7 +1,9 @@
 <template>
-  <layout-error
+  <df-layout-fetch-error
     v-if="session.state.accountRole !== 'admin' && !session.state.user.adminMode"
-    :text="t('noRightsToCreateCatalog')"
+    :error="{ statusCode: 403 }"
+    back-to="/catalogs"
+    :back-label="t('catalogs')"
   />
   <v-container
     v-else
@@ -137,6 +139,7 @@ import type { CatalogPostReq } from '#api/doc'
 
 import { computedAsync } from '@vueuse/core'
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
+import DfLayoutFetchError from '@data-fair/lib-vuetify/layout-fetch-error.vue'
 import OwnerPick from '@data-fair/lib-vuetify/owner-pick.vue'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog'
@@ -223,7 +226,6 @@ const vjsfOptions: VjsfOptions = {
     errorCreatingCatalog: Error while creating the catalog
     information: Information
     next: Next
-    noRightsToCreateCatalog: You don't have the rights to create a catalog
     previous: Previous
     selectCatalogType: Select catalog type
     selectOwner: Select owner
@@ -237,7 +239,6 @@ const vjsfOptions: VjsfOptions = {
     errorCreatingCatalog: Erreur lors de la création du catalogue
     information: Informations
     next: Suivant
-    noRightsToCreateCatalog: Vous n'avez pas les droits pour créer un catalogue
     previous: Précédent
     selectCatalogType: Sélection du type de catalogue
     selectOwner: Sélection du propriétaire
