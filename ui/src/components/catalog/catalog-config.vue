@@ -1,6 +1,6 @@
 <template>
   <v-defaults-provider
-    v-if="hasPluginConfig && catalogSchema"
+    v-if="catalogSchema"
     :defaults="{
       global: {
         hideDetails: 'auto'
@@ -48,10 +48,11 @@ const hasPluginConfig = computed(() => {
 })
 
 const catalogSchema = computed(() => {
-  return jsonSchema(catalogSchemaBase)
-    .removeReadonlyProperties()
-    .addProperty('config', { ...plugin.value?.configSchema, title: t('configuration') })
-    .schema
+  const builder = jsonSchema(catalogSchemaBase).removeReadonlyProperties()
+  if (hasPluginConfig.value) {
+    builder.addProperty('config', { ...plugin.value!.configSchema, title: t('configuration') })
+  }
+  return builder.schema
 })
 
 const patch = useAsyncAction(
