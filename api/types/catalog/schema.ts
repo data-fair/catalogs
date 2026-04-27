@@ -75,7 +75,7 @@ export default {
     },
     config: {
       type: 'object',
-      description: 'Plugin-specific configuration : this content varies dewaiting on the used plugin'
+      // description: 'Plugin-specific configuration, varies depending on the used plugin'
     },
     secrets: {
       type: 'object',
