@@ -101,6 +101,7 @@
           >
             <v-form v-model="valid">
               <vjsf
+                v-if="catalogSchema"
                 v-model="newCatalog"
                 class="mr-2"
                 :schema="catalogSchema"
@@ -165,15 +166,21 @@ const hasDepartments = computedAsync(async (): Promise<boolean> => {
 }, false)
 
 const catalogSchema = computed(() => {
-  const configSchema = installedPluginsFetch.data.value?.results.find(p => p.id === newPlugin.value)?.configSchema
-  if (!configSchema) return
-  catalogSchemaBase.layout.children = ['title', 'description', 'config'] // Remove activity layout
+  const plugin = installedPluginsFetch.data.value?.results.find(p => p.id === newPlugin.value)
+  if (!plugin) return
+  const props = plugin.configSchema?.properties as Record<string, unknown> | undefined
+  const hasConfig = !!props && Object.keys(props).length > 0
 
-  const schema = jsonSchema(catalogSchemaBase)
-    .addProperty('config', { ...configSchema, title: t('configuration') })
-    .schema
+  catalogSchemaBase.layout.children = hasConfig
+    ? ['title', 'description', 'config']
+    : ['title', 'description']
 
-  schema.required = ['title', 'config']
+  const builder = jsonSchema(catalogSchemaBase)
+  if (hasConfig) {
+    builder.addProperty('config', { ...plugin.configSchema, title: t('configuration') })
+  }
+  const schema = builder.schema
+  schema.required = hasConfig ? ['title', 'config'] : ['title']
   return schema
 })
 
@@ -184,7 +191,8 @@ const createCatalog = useAsyncAction(
       body: {
         owner: newOwner.value,
         plugin: newPlugin.value,
-        ...newCatalog.value
+        ...newCatalog.value,
+        config: newCatalog.value.config ?? {}
       },
     })
 
