@@ -32,6 +32,7 @@
       <div class="d-flex align-center">
         <v-breadcrumbs
           :items="breadcrumbItems"
+          active-color="primary"
           class="pa-0 ml-4"
           divider="/"
         >
@@ -41,13 +42,6 @@
               class="mb-1 mr-2"
               @click="navigate(null)"
             />/
-          </template>
-          <template #item="{ item, index }">
-            <v-breadcrumbs-item
-              :title="item.title"
-              :color="item.disabled ? 'primary' : undefined"
-              @click="navigate(breadcrumbItems[index].path)"
-            />
           </template>
         </v-breadcrumbs>
         <v-spacer />
@@ -271,12 +265,18 @@ const levelData = computed(() => {
 
 /** Computed property for breadcrumb items */
 const breadcrumbItems = computed(() => {
-  if (!fetchFolders.data.value?.path) return []
-  return fetchFolders.data.value?.path.map((item, index) => ({
-    title: item.title,
-    path: item.id,
-    disabled: index === fetchFolders.data.value!.path.length - 1
-  }))
+  const path = fetchFolders.data.value?.path
+  if (!path) return []
+  return path.map((item, index) => {
+    // Current item: opt out of auto-disable (to keep full opacity) and mark active to apply active-color
+    if (index === path.length - 1) {
+      return { title: item.title, active: true, disabled: false }
+    }
+    return {
+      title: item.title,
+      onClick: () => navigate(item.id)
+    }
+  })
 })
 
 const headers = computed(() => {
@@ -332,4 +332,10 @@ fr:
 </i18n>
 
 <style scoped>
+:deep(.v-breadcrumbs-item:not(.v-breadcrumbs-item--active)) {
+  cursor: pointer;
+}
+:deep(.v-breadcrumbs-item:not(.v-breadcrumbs-item--active):hover) {
+  text-decoration: underline;
+}
 </style>
