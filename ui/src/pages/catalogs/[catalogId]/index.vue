@@ -47,6 +47,30 @@
       :src="assetsUrl"
       :tabs="tabs"
     >
+      <template
+        v-if="hasDiff"
+        #actions
+      >
+        <v-btn
+          color="warning"
+          variant="tonal"
+          :disabled="save.loading.value"
+          @click="resetEdit"
+        >
+          {{ t('cancel') }}
+        </v-btn>
+        <v-btn
+          class="ml-2"
+          color="accent"
+          variant="flat"
+          :disabled="!valid"
+          :loading="save.loading.value"
+          @click="save.execute()"
+        >
+          {{ t('save') }}
+        </v-btn>
+      </template>
+
       <template #windows>
         <v-tabs-window-item value="imports">
           <import-list
@@ -63,7 +87,10 @@
         </v-tabs-window-item>
 
         <v-tabs-window-item value="configuration">
-          <catalog-config />
+          <catalog-config
+            v-model="editCatalog"
+            v-model:valid="valid"
+          />
         </v-tabs-window-item>
       </template>
     </df-section-tabs>
@@ -75,9 +102,12 @@
 </template>
 
 <script setup lang="ts">
+import type { Catalog } from '#api/types'
 import DfLayoutFetchError from '@data-fair/lib-vuetify/layout-fetch-error.vue'
 import DfSectionTabs from '@data-fair/lib-vuetify/section-tabs.vue'
 import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
+import clone from '@data-fair/lib-utils/clone.js'
+import equal from 'fast-deep-equal'
 
 const route = useRoute<'/catalogs/[catalogId]/'>()
 const router = useRouter()
@@ -85,6 +115,55 @@ const session = useSessionAuthenticated()
 const { t } = useI18n()
 const { catalog, catalogFetch, plugin, pluginFetch, supportPublication } = provideCatalogStore(route.params.catalogId)
 const activeTab = useStringSearchParam('tab', { default: 'imports' })
+
+const valid = ref<boolean | null>(false)
+const editCatalog: Ref<Partial<Catalog> | null> = ref(null)
+
+const buildEdit = (source: Catalog): Partial<Catalog> => {
+  const edit: Partial<Catalog> = {
+    title: source.title,
+    config: clone(source.config)
+  }
+  if (source.description) edit.description = source.description
+  return edit
+}
+
+const resetEdit = () => {
+  if (catalog.value) editCatalog.value = buildEdit(catalog.value)
+}
+
+watch(catalog, (newCatalog, oldCatalog) => {
+  // Initialize editCatalog on first load only; preserve user edits on subsequent
+  // catalog refreshes (e.g. websocket updates).
+  if (newCatalog && !oldCatalog) resetEdit()
+}, { immediate: true })
+
+const hasDiff = computed(() => {
+  if (!editCatalog.value || !catalog.value) return false
+  return !equal(editCatalog.value, buildEdit(catalog.value))
+})
+
+useLeaveGuard(hasDiff, { locale: session.lang })
+
+const save = useAsyncAction(
+  async () => {
+    if (!editCatalog.value || !valid.value || !catalog.value) return
+    const res = await $fetch(`/catalogs/${catalog.value._id}`, {
+      method: 'PATCH',
+      body: {
+        ...editCatalog.value,
+        ...(!editCatalog.value.description ? { description: null } : {})
+      }
+    })
+
+    Object.assign(catalog.value, res)
+    resetEdit()
+  },
+  {
+    success: t('catalogSaved'),
+    error: t('errorSavingCatalog')
+  }
+)
 
 const tabs = computed(() => {
   const capabilities = catalog.value?.capabilities ?? []
@@ -127,20 +206,28 @@ const assetsUrl = computed(() => {
 <i18n lang="yaml">
   en:
     backToCatalogs: Back to catalogs
+    cancel: Cancel
     catalogDeleted: Catalog deleted!
+    catalogSaved: Configuration saved!
     catalogs: Catalogs
     delete: Delete Catalog
     errorDeletingCatalog: Error deleting the catalog.
+    errorSavingCatalog: Error while saving the catalog
+    save: Save
     tab:
       configuration: Configuration
       imports: Imports
       publications: Publications
   fr:
     backToCatalogs: Retour aux catalogues
+    cancel: Annuler
     catalogDeleted: Catalogue supprimé !
+    catalogSaved: Configuration enregistrée !
     catalogs: Catalogues
     delete: Supprimer le catalogue
     errorDeletingCatalog: Erreur lors de la suppression du catalogue.
+    errorSavingCatalog: Erreur lors de la modification du catalogue
+    save: Enregistrer
     tab:
       configuration: Configuration
       imports: Imports
