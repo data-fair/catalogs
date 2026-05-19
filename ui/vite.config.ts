@@ -70,6 +70,7 @@ export default defineConfig({
             'mdiPlusCircle',
             'mdiPlusCircleOutline',
             'mdiPuzzle',
+            'mdiCalendarText',
             'mdiUpdate',
             'mdiUpload',
             'mdiZipBox'

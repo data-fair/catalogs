@@ -4,17 +4,23 @@
     data-iframe-height
     style="min-height:500px"
   >
-    <h2 class="text-headline-small mt-0 mb-2">
-      Publication {{ publication.dataFairDataset?.title ?? publication.dataFairDataset.id }}
-    </h2>
+    <df-section-tabs
+      id="publication"
+      v-model="activeTab"
+      :title="publication.dataFairDataset?.title ?? publication.dataFairDataset.id"
+      :src="publicationIllustration"
+      :tabs="tabs"
+    >
+      <template #windows>
+        <v-tabs-window-item value="logs">
+          <logs
+            type="publication"
+            :item="publication"
+          />
+        </v-tabs-window-item>
+      </template>
+    </df-section-tabs>
 
-    <h3 class="text-title-large my-0 mt-6">
-      {{ t('logSection') }}
-    </h3>
-    <logs
-      type="publication"
-      :item="publication"
-    />
     <navigation-right>
       <publication-actions :publication />
     </navigation-right>
@@ -24,13 +30,18 @@
 <script setup lang="ts">
 import type { Log } from '@data-fair/types-catalogs'
 import type { Publication } from '#api/types'
+
+import DfSectionTabs from '@data-fair/lib-vuetify/section-tabs.vue'
 import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
 
 const { t } = useI18n()
 const route = useRoute<'/catalogs/[catalogId]/publications/[publicationId]'>()
 const ws = useWS('/catalogs/api/')
+const activeTab = useStringSearchParam('tab', { default: 'logs' })
 
 const publication = ref<Publication | null>(null)
+
+const publicationIllustration = new URL('~/assets/publication.svg', import.meta.url).href
 
 const publicationFetch = useFetch<Publication>(`${$apiPath}/publications/${route.params.publicationId}`)
 watch(publicationFetch.data, (newPublication) => {
@@ -59,38 +70,24 @@ ws?.subscribe<Log>(`publication/${route.params.publicationId}/logs`, (log) => {
   publication.value.logs.push(log)
 })
 
+const tabs = computed(() => [
+  { key: 'logs', title: t('tab.logs'), icon: mdiCalendarText }
+])
+
 </script>
 
 <i18n lang="yaml">
 en:
   catalogs: Catalogs
-  logSection: Publication log
   publications: Publications
-  publicationStatus:
-    waiting: Waiting for publication
-    running: Publication in progress
-    done: Last publication completed
-    error: Last publication failed
-  publicationStatusDelete:
-    waiting: Waiting for deletion
-    running: Deletion in progress
-    done: Deletion completed
-    error: Deletion failed
+  tab:
+    logs: Execution log
 
 fr:
   catalogs: Catalogues
-  logSection: Journal de publication
   publications: Publications
-  publicationStatus:
-    waiting: En attente de publication
-    running: Publication en cours
-    done: Dernière publication terminée
-    error: Dernière publication en erreur
-  publicationStatusDelete:
-    waiting: En attente de suppression
-    running: Suppression en cours
-    done: Suppression terminée
-    error: Suppression en erreur
+  tab:
+    logs: Journal d'exécution
 
 </i18n>
 

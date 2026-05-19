@@ -4,43 +4,75 @@
     data-iframe-height
     style="min-height:500px"
   >
-    <h2 class="text-headline-small mt-0 mb-2">
-      Import {{ imp.remoteResource?.title ?? imp.remoteResource.id }}
-    </h2>
-    <v-defaults-provider
-      :defaults="{
-        global: {
-          hideDetails: 'auto'
-        },
-        VNumberInput: {
-          inset: true
-        }
-      }"
+    <df-section-tabs
+      id="import"
+      v-model="activeTab"
+      :title="imp.remoteResource?.title ?? imp.remoteResource.id"
+      :src="importIllustration"
+      :tabs="tabs"
     >
-      <v-form v-model="valid">
-        <vjsf
-          v-if="importSchema && editImport"
-          v-model="editImport"
-          :schema="importSchema"
-          :options="vjsfOptions"
-          @update:model-value="patch.execute()"
+      <template
+        v-if="activeTab === 'configuration' && hasDiff"
+        #actions
+      >
+        <v-btn
+          color="warning"
+          variant="tonal"
+          :disabled="save.loading.value"
+          @click="resetEdit"
         >
-          <template #scheduling-summary="{ node }">
-            {{ t(`frequency.${node.data.type}`) }}
-            {{ cronstrue.toString(toCRON(node.data), { locale: session.lang.value }) }}
-            {{ timezoneLabel(node.data.timeZone) }}
-          </template>
-        </vjsf>
-      </v-form>
-    </v-defaults-provider>
+          {{ t('cancel') }}
+        </v-btn>
+        <v-btn
+          class="ml-2"
+          color="accent"
+          variant="flat"
+          :disabled="!valid"
+          :loading="save.loading.value"
+          @click="save.execute()"
+        >
+          {{ t('save') }}
+        </v-btn>
+      </template>
 
-    <h3 class="text-title-large mt-4 mb-0">
-      {{ t('logSection') }}
-    </h3>
-    <logs
-      type="import"
-      :item="imp"
-    />
+      <template #windows>
+        <v-tabs-window-item value="logs">
+          <logs
+            type="import"
+            :item="imp"
+          />
+        </v-tabs-window-item>
+
+        <v-tabs-window-item value="configuration">
+          <v-defaults-provider
+            :defaults="{
+              global: {
+                hideDetails: 'auto'
+              },
+              VNumberInput: {
+                inset: true
+              }
+            }"
+          >
+            <v-form v-model="valid">
+              <vjsf
+                v-if="importSchema && editImport"
+                v-model="editImport"
+                :schema="importSchema"
+                :options="vjsfOptions"
+              >
+                <template #scheduling-summary="{ node }">
+                  {{ t(`frequency.${node.data.type}`) }}
+                  {{ cronstrue.toString(toCRON(node.data), { locale: session.lang.value }) }}
+                  {{ timezoneLabel(node.data.timeZone) }}
+                </template>
+              </vjsf>
+            </v-form>
+          </v-defaults-provider>
+        </v-tabs-window-item>
+      </template>
+    </df-section-tabs>
+
     <navigation-right>
       <import-actions :imp />
     </navigation-right>
@@ -51,6 +83,7 @@
 import type { Log } from '@data-fair/types-catalogs'
 import type { Import } from '#api/types'
 
+import DfSectionTabs from '@data-fair/lib-vuetify/section-tabs.vue'
 import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
 import timeZones from 'timezones.json'
 import cronstrue from 'cronstrue'
@@ -59,6 +92,8 @@ import 'cronstrue/locales/fr'
 
 import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
+import clone from '@data-fair/lib-utils/clone.js'
+import equal from 'fast-deep-equal'
 import { toCRON } from '@data-fair/catalogs-shared/cron.ts'
 import { resolvedSchema as importSchemaBase } from '#api/types/import'
 
@@ -67,22 +102,38 @@ const route = useRoute<'/catalogs/[catalogId]/imports/[importId]'>()
 const session = useSessionAuthenticated()
 const ws = useWS('/catalogs/api/')
 const { catalog, plugin } = createCatalogStore(route.params.catalogId)
+const activeTab = useStringSearchParam('tab', { default: 'logs' })
 
 const valid = ref(false)
 const imp = ref<Import | null>(null)
 const editImport: Ref<Partial<Import> | null> = ref(null)
 
+const importIllustration = new URL('~/assets/import.svg', import.meta.url).href
+
+const buildEdit = (source: Import): Partial<Import> => ({
+  config: clone(source.config),
+  scheduling: clone(source.scheduling),
+  isSchedulingActive: source.isSchedulingActive,
+  shouldUpdateMetadata: source.shouldUpdateMetadata,
+  shouldUpdateSchema: source.shouldUpdateSchema
+})
+
+const resetEdit = () => {
+  if (imp.value) editImport.value = buildEdit(imp.value)
+}
+
+const hasDiff = computed(() => {
+  if (!editImport.value || !imp.value) return false
+  return !equal(editImport.value, buildEdit(imp.value))
+})
+
+useLeaveGuard(hasDiff, { locale: session.lang })
+
 const importFetch = useFetch<Import>(`${$apiPath}/imports/${route.params.importId}`)
-watch(importFetch.data, (newImp) => {
+watch(importFetch.data, (newImp, oldImp) => {
   if (!newImp) return
   imp.value = newImp
-  editImport.value = {
-    config: newImp.config,
-    scheduling: newImp.scheduling,
-    isSchedulingActive: newImp.isSchedulingActive,
-    shouldUpdateMetadata: newImp.shouldUpdateMetadata,
-    shouldUpdateSchema: newImp.shouldUpdateSchema
-  }
+  if (!oldImp) resetEdit()
 
   setBreadcrumbs([
     { text: t('catalogs'), to: '/catalogs' },
@@ -106,22 +157,19 @@ ws?.subscribe<Log>(`import/${route.params.importId}/logs`, (log) => {
   imp.value.logs.push(log)
 })
 
-const patch = useAsyncAction(
+const save = useAsyncAction(
   async () => {
-    // TODO: In VJSF, when we add a new item in an array, here like a scheduling,
-    // valid stay true but the item added in the array is null (witout defaults values)
-    // So we need to wait a bit to ensure the item is filled with defaults values
-    await new Promise(resolve => setTimeout(resolve, 1))
-
-    if (!valid.value) return
+    if (!editImport.value || !valid.value || !imp.value) return
     const res = await $fetch<Import>(`${$apiPath}/imports/${route.params.importId}`, {
       method: 'PATCH',
       body: editImport.value,
     })
 
-    if (imp.value) Object.assign(imp.value, res)
+    Object.assign(imp.value, res)
+    resetEdit()
   },
   {
+    success: t('importSaved'),
     error: t('errorSavingImport')
   }
 )
@@ -136,6 +184,11 @@ const importSchema = computed(() => {
   }
   return base.schema
 })
+
+const tabs = computed(() => [
+  { key: 'logs', title: t('tab.logs'), icon: mdiCalendarText },
+  { key: 'configuration', title: t('tab.configuration'), icon: mdiCog }
+])
 
 const timezoneLabel = (timeZone: string) => {
   if (timeZone === 'Europe/Paris') return ''
@@ -170,6 +223,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
 
 <i18n lang="yaml">
   en:
+    cancel: Cancel
     catalogs: Catalogs
     errorSavingImport: Error while saving the import
     frequency:
@@ -177,11 +231,16 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
       hourly: ''
       monthly: Every month,
       weekly: Every week,
+    importSaved: Import configuration saved!
     imports: Imports
-    logSection: Execution log of the last import
+    save: Save
+    tab:
+      configuration: Import configuration
+      logs: Execution log
     timezone: 'Timezone:'
 
   fr:
+    cancel: Annuler
     catalogs: Catalogues
     errorSavingImport: Erreur lors de la modification de l'import
     frequency:
@@ -189,8 +248,12 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
       hourly: ''
       monthly: Tous les mois,
       weekly: Toutes les semaines,
+    importSaved: Configuration de l'import enregistrée !
     imports: Imports
-    logSection: Journal d'execution
+    save: Enregistrer
+    tab:
+      configuration: Configuration de l'import
+      logs: Journal d'exécution
     timezone: 'Fuseau horaire :'
 
 </i18n>
