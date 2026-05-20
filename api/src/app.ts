@@ -33,6 +33,11 @@ app.use('/api/plugins', pluginRouter)
 app.use('/api/publications', publicationsRouter)
 app.use('/api/admin', adminRouter)
 
+if (process.env.NODE_ENV === 'development') {
+  // test-env endpoints used by the Playwright suite to reset state
+  app.use('/api/test-env', (await import('./misc/routers/test-env.ts')).default)
+}
+
 app.get('/api/ping', async (req, res) => {
   const status = await getStatus(req)
   if (status.status === 'error') res.status(500)
@@ -41,7 +46,8 @@ app.get('/api/ping', async (req, res) => {
 
 app.use('/api', (req, res) => { res.status(404).send('unknown api endpoint') })
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'development') {
+  // in development the UI is served by the Vite dev server through nginx
   const cspDirectives = { ...defaultNonceCSPDirectives }
   // necessary to use vjsf without pre-compilation
   cspDirectives['script-src'] = "'unsafe-eval' " + defaultNonceCSPDirectives['script-src']
