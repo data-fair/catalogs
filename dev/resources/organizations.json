@@ -86,5 +86,53 @@
         "name": "Fivechat"
       }
     ]
+  },
+  {
+    "id": "test_org1",
+    "name": "Test Org 1",
+    "departments": [
+      {
+        "id": "dep1",
+        "name": "Department 1"
+      },
+      {
+        "id": "dep2",
+        "name": "Department 2"
+      }
+    ],
+    "members": [
+      {
+        "id": "test_admin1",
+        "role": "admin"
+      },
+      {
+        "id": "test_contrib1",
+        "role": "contrib"
+      },
+      {
+        "id": "test_user1",
+        "role": "user"
+      },
+      {
+        "id": "test_dep_admin",
+        "role": "admin",
+        "department": "dep1"
+      },
+      {
+        "id": "test_dep_contrib",
+        "role": "contrib",
+        "department": "dep1"
+      }
+    ]
+  },
+  {
+    "id": "test_org2",
+    "name": "Test Org 2",
+    "members": [
+      {
+        "id": "test_admin2",
+        "role": "admin"
+      }
+    ]
   }
 ]

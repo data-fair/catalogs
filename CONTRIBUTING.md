@@ -20,13 +20,25 @@ npm i
 npm run build-types
 ```
 
+3. Create a local `.env` file with random ports for this checkout :
+
+```sh
+./dev/init-env.sh
+```
+
+4. Install the Playwright browser used by the end-to-end tests :
+
+```sh
+npx playwright install chromium
+```
+
 ## Start the development environment
 
 ```sh
 npm run dev-zellij
 ```
 
-*Note : This command will start a Zellij session with 4 panes, each one running a part of the project. You can also run the environment manually by running the commands below in 4 different terminals.*
+*Note : This command will start a Zellij session with several panes, each one running a part of the project. The dev server URL (with the random ports from `.env`) is printed in the bottom banner. You can also run the environment manually by running the commands below in different terminals.*
 
 <details>
 <summary>Services</summary>
@@ -51,25 +63,45 @@ docker build --progress=plain --target=main -t data-fair/catalogs:dev .
 docker build --progress=plain --target=worker -t data-fair/catalogs/worker:dev .
 ```
 
+## Working on several branches at once
+
+Each checkout has its own `.env` with random ports, so you can run multiple worktrees side
+by side without port collisions :
+
+```sh
+./dev/worktree.sh feat-xyz        # create ../catalogs_feat-xyz, install and build it
+./dev/delete-worktree.sh feat-xyz # stop its docker compose services and remove it
+```
+
+You can check the health of the current environment at any time :
+
+```sh
+bash dev/status.sh
+```
+
 ## Running the tests
 
-First, you need to start the development dependancies
+The test suite uses [Playwright](https://playwright.dev/) and runs against the **running
+dev environment** — the dev environment is the test environment. Start it first
+(`npm run dev-zellij`), then :
 
 ```sh
-npm run dev-deps
+npm test            # all tests (unit + api + e2e)
+npm run test-unit   # unit tests only (no running services needed)
+npm run test-api    # API tests only
+npm run test-e2e    # browser e2e tests only
 ```
 
-Then, you can run the tests.
+To run a specific file :
 
 ```sh
-npm run test
+npx playwright test tests/features/plugins/registry.api.spec.ts
 ```
 
-To run a specific test, you can mark it with `it.only` or `describe.only` in the test file, then run the tests with :
-
-```sh
-npm run test-only test-it/file-name.ts
-```
+Tests live under `tests/features/<topic>/<name>.{unit,api,e2e}.spec.ts`. They reset state
+through the `test_*`-prefixed accounts (see `dev/resources/users.json` and
+`dev/resources/organizations.json`); interactive data under other accounts is left
+untouched.
 
 ## Zellij installation
 
@@ -106,6 +138,8 @@ nvm install
 ## Setup the development environment
 
 > To work on the dataset publication feature, you first need to add a publication site and setup an API Key on Data Fair.
+
+*Note : the snippets below use `http://localhost:5600` as the Data Fair URL. Replace it with your actual dev server URL — the host and ports are randomized per checkout and printed in the zellij banner (see `.env`).*
 
 A. Congifure the publication site
 
@@ -167,7 +201,6 @@ export default {
 ### package.json scripts description
 
 - `"prepare": "husky || true"` : Initializes Husky hooks before the first `npm install`. The `|| true` ensures the command doesn't fail if Husky is not installed or encounters an error.
-- `EVENTS_LOG_LEVEL=alert` : Disable the lib express events log in the console, to avoid too much noise.
 
 </details>
 
