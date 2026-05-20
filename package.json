@@ -6,10 +6,10 @@
   "scripts": {
     "build-types": "df-build-types ./",
     "check-types": "tsc",
-    "dev-api": "mkdir -p dev/logs && npm -w api run dev 2>&1 | tee dev/logs/dev-api.log",
+    "dev-api": "npm -w api run dev",
     "dev-deps": "mkdir -p dev/logs && docker compose --profile dev up -d --wait && docker compose --profile dev logs -f 2>&1 | tee dev/logs/docker-compose.log",
-    "dev-ui": "mkdir -p dev/logs && npm -w ui run dev 2>&1 | tee dev/logs/dev-ui.log",
-    "dev-worker": "mkdir -p dev/logs && npm -w worker run dev 2>&1 | tee dev/logs/dev-worker.log",
+    "dev-ui": "npm -w ui run dev",
+    "dev-worker": "npm -w worker run dev",
     "dev-zellij": "export DEV_SHELL=$(basename \"$SHELL\") && dotenv -- zellij --layout .zellij.kdl",
     "lint": "eslint . && npm -w ui run lint",
     "lint-fix": "eslint --fix . && npm -w ui run lint-fix",
