@@ -10,8 +10,10 @@ export default {
   },
   privateDataFairUrl: 'PRIVATE_DATA_FAIR_URL',
   privateEventsUrl: 'PRIVATE_EVENTS_URL',
+  privateRegistryUrl: 'PRIVATE_REGISTRY_URL',
   secretKeys: {
-    events: 'SECRET_EVENTS'
+    events: 'SECRET_EVENTS',
+    registry: 'SECRET_REGISTRY'
   },
   tmpDir: 'TMP_DIR',
   worker: {

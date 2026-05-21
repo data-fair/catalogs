@@ -10,8 +10,10 @@ export default {
   },
   privateDataFairUrl: undefined,
   privateEventsUrl: undefined,
+  privateRegistryUrl: 'http://registry:8080',
   secretKeys: {
-    events: undefined
+    events: undefined,
+    registry: undefined
   },
   tmpDir: null,
   upgradeRoot: '/app/',
