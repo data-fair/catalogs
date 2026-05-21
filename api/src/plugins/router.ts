@@ -1,87 +1,25 @@
 import type { Plugin } from '#types'
-import type { Request } from 'express'
 
 import { Router } from 'express'
-import fs from 'fs-extra'
-import path from 'path'
-import { assertAccountRole, httpError, session } from '@data-fair/lib-express'
-import { getPlugin, installPlugin, getTarball, getPluginThumbnailPath } from './service.ts'
-import mongo from '#mongo'
-import config from '#config'
+import { assertAccountRole, session } from '@data-fair/lib-express'
+import { getPlugin } from './service.ts'
 
 const router = Router()
 export default router
 
-const pluginsDir = path.resolve(config.dataDir, 'plugins')
-fs.ensureDirSync(pluginsDir)
-
-// Install a new plugin or update an existing one
-router.post('/', getTarball, async (req: Request & { file?: Express.Multer.File }, res) => {
-  await session.reqAdminMode(req)
-  const result = await installPlugin(req)
-  res.send(result)
-})
-
-// List installed plugins
-router.get('/', async (req, res) => {
-  const sessionState = await session.reqAuthenticated(req)
-  assertAccountRole(sessionState, sessionState.account, 'admin')
-
-  const dirs = await fs.readdir(pluginsDir)
-  const results: Plugin[] = []
-  const errors: { dir: string; error: string }[] = []
-
-  for (const dir of dirs) {
-    try {
-      const pluginInfo = await fs.readJson(path.join(pluginsDir, dir, 'plugin.json'))
-      const plugin = await getPlugin(dir)
-      results.push({
-        id: pluginInfo.id,
-        name: pluginInfo.name,
-        description: pluginInfo.description,
-        version: pluginInfo.version,
-        configSchema: plugin.configSchema,
-        metadata: plugin.metadata
-      } as Plugin)
-    } catch (e: any) {
-      errors.push({ dir, error: e.toString() })
-    }
-  }
-
-  const aggregationResult = (
-    await mongo.catalogs
-      .aggregate([{ $group: { _id: '$plugin', count: { $sum: 1 } } }])
-      .toArray()
-  ).reduce((acc:any, { _id, count }: any) => {
-    acc[_id] = count
-    return acc
-  }, {})
-
-  res.send({
-    count: results.length,
-    results,
-    errors,
-    facets: { usages: aggregationResult || {} }
-  })
-})
-
-// Get a plugin with its metadata
+// Get a plugin descriptor (schemas + metadata) resolved from the registry.
+// The plugin list itself is read by the UI directly from the registry API.
 router.get('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   assertAccountRole(sessionState, sessionState.account, 'admin')
-  let pluginInfo
-  try {
-    pluginInfo = await fs.readJson(path.join(pluginsDir, req.params.id, 'plugin.json'))
-  } catch (e: any) {
-    throw httpError(404, 'Plugin not found')
-  }
-  const plugin = await getPlugin(req.params.id)
+
+  const { plugin, pkg } = await getPlugin(req.params.id, sessionState.account)
 
   res.send({
-    id: pluginInfo.id,
-    name: pluginInfo.name,
-    description: pluginInfo.description,
-    version: pluginInfo.version,
+    id: req.params.id,
+    name: pkg.name,
+    description: pkg.description,
+    version: pkg.version,
     configSchema: plugin.configSchema,
     listFiltersSchema: plugin.listFiltersSchema,
     importFiltersSchema: plugin.importFiltersSchema,
@@ -89,22 +27,4 @@ router.get('/:id', async (req, res) => {
     importConfigSchema: plugin.importConfigSchema,
     metadata: plugin.metadata
   } as Plugin)
-})
-
-router.delete('/:id', async (req, res) => {
-  await session.reqAdminMode(req)
-  if (!req.params.id) throw httpError(400, 'Plugin ID is required')
-
-  const pluginPath = path.join(pluginsDir, req.params.id)
-  if (!fs.existsSync(pluginPath)) throw httpError(404, 'Plugin not found')
-
-  await fs.remove(pluginPath)
-  res.status(204).send()
-})
-
-// Serve plugin thumbnails
-router.get('/:id/thumbnail', async (req, res) => {
-  const thumbnailPath = await getPluginThumbnailPath(req.params.id)
-  if (!thumbnailPath) throw httpError(404, 'Thumbnail not found')
-  res.sendFile(thumbnailPath)
 })

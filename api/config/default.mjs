@@ -1,6 +1,6 @@
 export default {
   cipherPassword: undefined,
-  dataDir: '/app/data',
+  dataDir: null,
   mongoUrl: 'mongodb://localhost:27017/data-fair-catalogs',
   npm: {
     httpsProxy: null

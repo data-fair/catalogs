@@ -69,7 +69,7 @@ router.post('/', async (req, res) => {
   catalog.owner = catalog.owner ?? sessionState.account
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
-  const plugin = await getPlugin(catalog.plugin)
+  const { plugin } = await getPlugin(catalog.plugin, catalog.owner)
   catalog.capabilities = plugin.metadata.capabilities
 
   catalog._id = nanoid()
@@ -201,7 +201,7 @@ router.get('/:id/resources', async (req, res) => {
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
   // Execute the plugin function
-  const plugin = await getPlugin(catalog.plugin)
+  const { plugin } = await getPlugin(catalog.plugin, catalog.owner)
   const datasets = await plugin.list({
     catalogConfig: catalog.config,
     secrets: decipherSecrets(catalog.secrets, config.cipherPassword),

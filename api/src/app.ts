@@ -8,7 +8,6 @@ import catalogsRouter from './catalogs/router.ts'
 import datasetsRouter from './misc/routers/datasets.ts'
 import identitiesRouter from './misc/routers/identities.ts'
 import importsRouter from './imports/router.ts'
-import pluginsRegistryRouter from './plugins/registry/router.ts'
 import pluginRouter from './plugins/router.ts'
 import publicationsRouter from './publications/router.ts'
 import adminRouter from './admin/router.ts'
@@ -28,7 +27,6 @@ app.use('/api/catalogs', catalogsRouter)
 app.use('/api/datasets', datasetsRouter)
 app.use('/api/identities', identitiesRouter)
 app.use('/api/imports', importsRouter)
-app.use('/api/plugins-registry', pluginsRegistryRouter)
 app.use('/api/plugins', pluginRouter)
 app.use('/api/publications', publicationsRouter)
 app.use('/api/admin', adminRouter)

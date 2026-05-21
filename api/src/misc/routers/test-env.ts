@@ -1,8 +1,6 @@
 import express from 'express'
 import fs from 'fs-extra'
-import path from 'node:path'
 import mongo from '#mongo'
-import config from '#config'
 
 // This router is only mounted when NODE_ENV=development (see app.ts).
 // It lets the Playwright test suite reset state on the running dev API.
@@ -33,11 +31,11 @@ router.delete('/', async (req, res, next) => {
   }
 })
 
-// Wipe the installed plugins directory (used between test runs).
+// Wipe the local registry artefact cache (used between test runs).
 router.delete('/plugins', async (req, res, next) => {
   try {
-    const pluginsDir = path.resolve(config.dataDir, 'plugins')
-    await fs.emptyDir(pluginsDir)
+    const { registryCacheDir } = await import('#config')
+    await fs.emptyDir(registryCacheDir)
     res.json({ ok: true })
   } catch (err) {
     next(err)

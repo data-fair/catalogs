@@ -1,9 +1,7 @@
 import type { AxiosAuthOptions } from '@data-fair/lib-node/axios-auth.js'
-import fs from 'node:fs'
-import path from 'node:path'
-import FormData from 'form-data'
 import { axiosBuilder } from '@data-fair/lib-node/axios.js'
 import { axiosAuth as _axiosAuth } from '@data-fair/lib-node/axios-auth.js'
+import { publishMockPlugin } from './registry.ts'
 
 /**
  * Test users and orgs are defined in:
@@ -45,13 +43,9 @@ export const cleanPlugins = async () => {
 }
 
 /**
- * Install the mock catalog plugin used by the API tests.
+ * Publish the mock catalog plugin used by the API tests to the dev registry.
  * Mock project: https://github.com/data-fair/catalog-mock
  */
 export const installMockPlugin = async () => {
-  const superadmin = await axiosAuth('test_superadmin@test.com')
-  const tarballPath = path.join(import.meta.dirname, '..', 'fixtures', 'catalog-mock.tgz')
-  const formData = new FormData()
-  formData.append('file', fs.createReadStream(tarballPath))
-  await superadmin.post('/api/plugins', formData, { headers: formData.getHeaders() })
+  await publishMockPlugin()
 }
