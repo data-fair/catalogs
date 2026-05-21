@@ -1,6 +1,6 @@
 export default {
   cipherPassword: undefined,
-  dataDir: '/app/data',
+  dataDir: null,
   dataFairAPIKey: undefined,
   host: undefined,
   mongoUrl: 'mongodb://localhost:27017/data-fair-catalogs',

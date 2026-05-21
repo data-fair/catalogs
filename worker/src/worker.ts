@@ -4,15 +4,16 @@ import type CatalogPlugin from '@data-fair/types-catalogs'
 import Debug from 'debug'
 import fs from 'fs'
 import resolvePath from 'resolve-path'
-import path from 'path'
 import { emit as wsEmit, init as wsInit } from '@data-fair/lib-node/ws-emitter.js'
 import { startObserver, stopObserver, internalError } from '@data-fair/lib-node/observer.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
+import { ensureArtefact } from '@data-fair/lib-node-registry'
+import { importPluginModule } from '@data-fair/catalogs-shared/plugin-load.ts'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import importTask from './lib/import.ts'
 import publicationTask from './lib/publication.ts'
-import config from '#config'
+import config, { registryCacheDir } from '#config'
 import mongo from '#mongo'
 import locks from '#locks'
 
@@ -29,7 +30,7 @@ type Task = Import | Publication
 
 // Start the worker (start the mail loop and all dependencies)
 export const start = async () => {
-  if (!fs.existsSync(config.dataDir)) throw new Error(`Data directory ${resolvePath(config.dataDir)} was not mounted`)
+  if (config.dataDir && !fs.existsSync(config.dataDir)) throw new Error(`Data directory ${resolvePath(config.dataDir)} was not mounted`)
 
   await mongo.init()
   const db = mongo.db
@@ -126,18 +127,39 @@ async function iter (task: Task, type: typeof types[number]) {
   }
   debug(`From catalog ${catalog.title} (${catalog._id})`)
 
-  const pluginJsonPath = path.resolve(config.dataDir, 'plugins', catalog.plugin, 'plugin.json')
-  const pluginJson = JSON.parse(fs.readFileSync(pluginJsonPath, 'utf8'))
-  const pluginPath = path.resolve(config.dataDir, 'plugins', catalog.plugin, pluginJson.version, 'index.ts')
-  const plugin: CatalogPlugin = (await import(pluginPath)).default
-  if (!plugin) {
+  // Resolve the plugin from the registry: ensureArtefact downloads + extracts
+  // the tarball into the local cache on a miss, returns the cached path on a
+  // hit. The catalog owner is forwarded so the registry enforces its access.
+  let plugin: CatalogPlugin
+  try {
+    const ensured = await ensureArtefact({
+      registryUrl: config.privateRegistryUrl,
+      secretKey: config.secretKeys.registry,
+      artefactId: catalog.plugin,
+      cacheDir: registryCacheDir,
+      architecture: process.arch,
+      account: {
+        type: catalog.owner.type,
+        id: catalog.owner.id,
+        ...(catalog.owner.department ? { department: catalog.owner.department } : {})
+      }
+    })
+    const mod = await importPluginModule<{ default: CatalogPlugin }>(ensured.path)
+    plugin = mod.default
+    if (plugin.listResources && !plugin.list) plugin.list = plugin.listResources
+  } catch (e: any) {
+    const status = e.status ?? e.statusCode ?? e.response?.status
+    const msg = (status === 404 || status === 403)
+      ? `Le plugin ${catalog.plugin} n'est plus disponible (supprimé ou accès retiré).`
+      : `Erreur lors du chargement du plugin ${catalog.plugin}`
     await collection.updateOne(
       { _id: task._id },
-      { $set: { status: 'error', logs: [{ type: 'error', msg: 'Plugin not found', date: new Date().toISOString() }] } }
+      { $set: { status: 'error', logs: [{ type: 'error', msg, date: new Date().toISOString() }] } }
     )
-    return internalError('worker-missing-plugin', `found a task using the missing plugin ${catalog.plugin} (${pluginJson.version}), weird`)
+    await wsEmit(`${type}/${task._id}`, { status: 'error' })
+    return internalError('worker-missing-plugin', `${msg} (task ${task._id})`)
   }
-  debug(`Using plugin ${pluginJson.name} (${pluginJson.version})`)
+  debug(`Using plugin ${catalog.plugin}`)
 
   try {
     if (type === 'import') {

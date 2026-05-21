@@ -3,7 +3,6 @@ import type { CatalogPlugin, Resource } from '@data-fair/types-catalogs'
 
 import { promisify } from 'util'
 import fs from 'fs-extra'
-import path from 'path'
 import FormData from 'form-data'
 import tmp from 'tmp-promise'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
@@ -15,7 +14,8 @@ import prepareLog from './logs.ts'
 import config from '#config'
 import mongo from '#mongo'
 
-const baseTmpDir = config.tmpDir || path.join(config.dataDir, 'tmp')
+// config.ts guarantees tmpDir is always set.
+const baseTmpDir = config.tmpDir
 fs.ensureDirSync(baseTmpDir)
 tmp.setGracefulCleanup()
 
