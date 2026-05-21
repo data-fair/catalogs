@@ -69,8 +69,12 @@ against the running dev registry — a `description: { fr, en }` PATCH returns
 
 ### 1 — Extraction helpers
 
-Two pure functions, added to the upgrade script as **named exports** so they
-can be unit-tested in isolation.
+Two pure functions in a **new config-free sibling module**
+`upgrade/1.0.0/plugin-metadata.ts`. They cannot live in the upgrade script
+itself: that script imports `worker/src/config.ts`, which runs `assertValid()`
+at module load and throws outside a fully-configured worker environment — so a
+unit test importing the script would fail to load. A standalone module has no
+config dependency and is trivially testable.
 
 ```ts
 type PluginMetadata = {
@@ -134,7 +138,8 @@ summary are unchanged.
 
 New unit spec `tests/features/upgrade/plugin-metadata.unit.spec.ts`
 (Playwright `test`/`expect`, matching `tests/features/shared/plugin-load.unit.spec.ts`),
-importing `pluginTitle` and `pluginDescription` from the upgrade script.
+importing `pluginTitle` and `pluginDescription` from
+`upgrade/1.0.0/plugin-metadata.ts`.
 
 Cases:
 
@@ -156,7 +161,9 @@ registry-integration plan).
 
 ## Files touched
 
-- `upgrade/1.0.0/01-publish-plugins-to-registry.ts` — add the two exported
-  helpers; move the module import ahead of the PATCH; fold title/description
-  into the PATCH body.
+- `upgrade/1.0.0/plugin-metadata.ts` — new config-free module with the
+  `PluginMetadata` type and the `pluginTitle` / `pluginDescription` helpers.
+- `upgrade/1.0.0/01-publish-plugins-to-registry.ts` — import the helpers; move
+  the module import ahead of the PATCH; fold title/description into the PATCH
+  body.
 - `tests/features/upgrade/plugin-metadata.unit.spec.ts` — new unit spec.
