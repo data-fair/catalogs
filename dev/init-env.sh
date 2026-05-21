@@ -21,6 +21,7 @@ ES_PORT=$((RANDOM_NB + 21))
 SD_PORT=$((RANDOM_NB + 30))
 EVENTS_PORT=$((RANDOM_NB + 31))
 DF_PORT=$((RANDOM_NB + 32))
+REGISTRY_PORT=$((RANDOM_NB + 33))
 EOF
 
 echo ".env file created"

@@ -58,4 +58,11 @@ server {
   location /events/ {
     proxy_pass http://localhost:${EVENTS_PORT};
   }
+
+  # registry — same domain so the catalogs UI lists artefacts directly with
+  # the SimpleDirectory session cookie. The registry expects the /registry
+  # prefix in the URL (PUBLIC_URL=...registry).
+  location /registry/ {
+    proxy_pass http://localhost:${REGISTRY_PORT};
+  }
 }

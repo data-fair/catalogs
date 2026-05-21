@@ -17,6 +17,7 @@ services:
       - SD_PORT=${SD_PORT}
       - DF_PORT=${DF_PORT}
       - EVENTS_PORT=${EVENTS_PORT}
+      - REGISTRY_PORT=${REGISTRY_PORT}
     volumes:
       - ./dev/resources/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
 
@@ -93,6 +94,30 @@ services:
       - SECRET_EVENTS=secret-events
       - SECRET_SENDMAILS=secret-sendmails
       - OBSERVER_ACTIVE=false
+
+  # registry-side dev container — same domain as catalogs under /registry
+  # so the UI lists artefacts directly using the SimpleDirectory session cookie.
+  registry:
+    profiles:
+      - dev
+    image: ghcr.io/data-fair/registry:main
+    network_mode: host
+    depends_on:
+      - mongo
+      - simple-directory
+    environment:
+      - PORT=${REGISTRY_PORT}
+      - MONGO_URL=mongodb://localhost:${MONGO_PORT}/data-fair-registry
+      - PRIVATE_DIRECTORY_URL=http://localhost:${SD_PORT}
+      - PUBLIC_URL=http://${DEV_HOST}:${NGINX_PORT}/registry
+      - SECRET_INTERNAL_SERVICES=secret-registry-internal
+      - CIPHER_PASSWORD=1234567890123456789012345678901234567890
+      - API_KEYS_SALT=1234567890123456789012345678901234567890
+      - OBSERVER_ACTIVE=false
+      - FILES_STORAGE=fs
+      # /tmp is world-writable in the registry image; tarballs are throwaway in
+      # dev/test so they stay inside the container with no named volume.
+      - DATA_DIR=/tmp/registry-data
 
   #####
   # db and search engine
