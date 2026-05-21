@@ -119,7 +119,7 @@ watch(() => catalog.value?.title, (title) => {
 
 const assetsUrl = computed(() => {
   if (catalog.value?.capabilities.includes('thumbnailUrl') && catalog.value?.thumbnailUrl) return catalog.value.thumbnailUrl
-  if (catalog.value?.capabilities.includes('thumbnail')) return `${$apiPath}/plugins/${catalog.value.plugin}/thumbnail`
+  if (catalog.value?.capabilities.includes('thumbnail')) return `${$sitePath}/registry/api/v1/artefacts/${encodeURIComponent(catalog.value.plugin)}/thumbnail`
   return new URL('~/assets/www.svg', import.meta.url).href
 })
 </script>

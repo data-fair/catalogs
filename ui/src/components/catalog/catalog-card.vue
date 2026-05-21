@@ -17,7 +17,7 @@
         />
         <v-avatar
           v-else-if="thumbnailCapability === 'path'"
-          :image="`${$apiPath}/plugins/${catalog.plugin}/thumbnail`"
+          :image="`${$sitePath}/registry/api/v1/artefacts/${encodeURIComponent(catalog.plugin)}/thumbnail`"
           rounded="0"
           size="32"
         />

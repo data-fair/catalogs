@@ -83,14 +83,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Plugin } from '#api/types'
 import type { CatalogsFacets } from '#api/doc'
 import SearchField from '@data-fair/lib-vuetify/search-field.vue'
 import '@data-fair/frame/lib/d-frame.js'
 
 const { adminMode, plugins, facets } = defineProps<{
   adminMode: boolean
-  plugins: Plugin[]
+  plugins: { id: string, title: string }[]
   facets: CatalogsFacets
 }>()
 
@@ -121,7 +120,7 @@ const pluginsItems = computed(() => {
     .map(
       ([pluginKey, count]) => {
         // Remove 'Catalog ' from the title for compatibility
-        const title = plugins.find((plugin) => plugin.id === pluginKey)?.metadata.title.replace('Catalog ', '')
+        const title = plugins.find((plugin) => plugin.id === pluginKey)?.title.replace('Catalog ', '')
         return {
           display: `${title || t('deletedPlugin', { key: pluginKey })} (${count})`,
           pluginKey
