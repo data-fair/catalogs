@@ -37,7 +37,7 @@ export const cleanDb = async () => {
   await anonymousAx.delete('/api/test-env')
 }
 
-/** Wipe the installed plugins directory on the running dev API. */
+/** Wipe the local registry artefact cache on the running dev API. */
 export const cleanPlugins = async () => {
   await anonymousAx.delete('/api/test-env/plugins')
 }
