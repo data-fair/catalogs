@@ -54,7 +54,7 @@
         >
           <catalog-card
             :catalog="catalog"
-            :plugin-name="pluginsList.find(p => p.id === catalog.plugin)?.title"
+            :plugin="pluginsList.find(p => p.id === catalog.plugin)"
             :show-owner="showAll || !!(catalog.owner.department && !session.state.account.department)"
           />
         </v-col>
@@ -101,12 +101,13 @@ const catalogsParams = computed(() => {
 
 const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, { query: catalogsParams, notifError: false })
 
-/** Subset of a registry artefact document used to label catalogs by plugin. */
+/** Subset of a registry artefact document used to label and illustrate catalogs by plugin. */
 interface RegistryArtefact {
   _id: string
   name: string
   packageName?: string
   title?: { fr?: string, en?: string }
+  thumbnail?: { id: string }
 }
 const pluginsFetch = useFetch<{ results: RegistryArtefact[] }>(
   `${$sitePath}/registry/api/v1/artefacts?format=npm&category=catalog&size=100`,
@@ -114,7 +115,8 @@ const pluginsFetch = useFetch<{ results: RegistryArtefact[] }>(
 )
 const pluginsList = computed(() => (pluginsFetch.data.value?.results ?? []).map(a => ({
   id: a._id,
-  title: a.title?.[session.lang.value as 'fr' | 'en'] || a.title?.fr || a.packageName || a.name
+  title: a.title?.[session.lang.value as 'fr' | 'en'] || a.title?.fr || a.packageName || a.name,
+  thumbnail: a.thumbnail
 })))
 
 const displayCatalogs = computed(() => {

@@ -191,7 +191,7 @@ const artefactTitle = (a: RegistryArtefact) =>
 const artefactDescription = (a: RegistryArtefact) =>
   a.description?.[session.lang.value as 'fr' | 'en'] || a.description?.fr || ''
 const artefactThumbnail = (a: RegistryArtefact) =>
-  `${$sitePath}/registry/api/v1/artefacts/${encodeURIComponent(a._id)}/thumbnail`
+  `${$sitePath}/registry/api/v1/thumbnails/${a.thumbnail!.id}/data`
 
 /** `True` if the active account isn't in a department and his organization has departments */
 const hasDepartments = computedAsync(async (): Promise<boolean> => {

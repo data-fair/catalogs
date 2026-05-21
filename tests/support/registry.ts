@@ -16,14 +16,27 @@ const secretKey = 'secret-registry-internal'
 /** Registry artefact id of the mock catalog plugin (matches catalog.plugin). */
 export const mockPluginId = '@data-fair-catalog-mock-0'
 
+/**
+ * Thumbnail uploaded for the mock plugin. The registry never derives a thumbnail
+ * from an npm upload — one must be posted explicitly — so without this the
+ * picker and catalog cards have no icon to render. Mirrors the
+ * lib/resources/thumbnail.svg file shipped inside catalog-mock.tgz.
+ */
+const mockThumbnailSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#4CAF50" rx="8"/>
+  <circle cx="32" cy="32" r="20" fill="#ffffff" opacity="0.2"/>
+  <text x="32" y="38" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">MOCK</text>
+</svg>`
+
 // The registry's reqIsInternal() rejects requests that arrive via nginx (which
 // adds X-Forwarded-Host). Internal-secret endpoints must be called directly.
 const internalAx = axiosBuilder({ baseURL: directRegistryUrl, headers: { 'x-secret-key': secretKey } })
 
 /**
  * Publish the mock catalog plugin tarball to the dev registry, public, with a
- * title — idempotent (a repeat upload replaces the arch tarball slot).
- * Upload and metadata PATCH both accept the registry internal secret.
+ * title and a thumbnail — idempotent (a repeat upload replaces the arch tarball
+ * slot and the thumbnail). Upload, metadata PATCH and thumbnail POST all accept
+ * the registry internal secret.
  * Mock project: https://github.com/data-fair/catalog-mock
  */
 export const publishMockPlugin = async () => {
@@ -38,6 +51,13 @@ export const publishMockPlugin = async () => {
   await internalAx.patch(`/api/v1/artefacts/${encodeURIComponent(mockPluginId)}`, {
     public: true,
     title: { fr: 'Mock', en: 'Mock' }
+  })
+  // The registry stores thumbnails separately from the npm tarball — upload one
+  // so the picker and catalog cards have an icon to fetch.
+  const thumbnailForm = new FormData()
+  thumbnailForm.append('file', new Blob([mockThumbnailSvg], { type: 'image/svg+xml' }), 'thumbnail.svg')
+  await internalAx.post(`/api/v1/artefacts/${encodeURIComponent(mockPluginId)}/thumbnail`, thumbnailForm, {
+    validateStatus: s => s === 201
   })
 }
 
