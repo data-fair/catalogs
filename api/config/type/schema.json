@@ -30,14 +30,6 @@
     "mongoUrl": {
       "type": "string"
     },
-    "npm": {
-      "type": "object",
-      "properties": {
-        "httpsProxy": {
-          "type": "string"
-        }
-      }
-    },
     "observer": {
       "type": "object",
       "properties": {

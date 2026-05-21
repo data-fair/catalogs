@@ -2,9 +2,6 @@ export default {
   cipherPassword: undefined,
   dataDir: null,
   mongoUrl: 'mongodb://localhost:27017/data-fair-catalogs',
-  npm: {
-    httpsProxy: null
-  },
   observer: {
     active: true,
     port: 9090

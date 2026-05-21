@@ -28,7 +28,7 @@ export type PluginPackage = { name: string, description?: string, version: strin
  */
 export const getPlugin = async (
   artefactId: string,
-  account?: PluginAccount
+  account: PluginAccount
 ): Promise<{ plugin: CatalogPlugin, pkg: PluginPackage }> => {
   if (!artefactId) throw httpError(400, 'Plugin ID is required')
 
@@ -40,9 +40,7 @@ export const getPlugin = async (
       artefactId,
       cacheDir: registryCacheDir,
       architecture: process.arch,
-      account: account
-        ? { type: account.type, id: account.id, ...(account.department ? { department: account.department } : {}) }
-        : undefined
+      account: { type: account.type, id: account.id, ...(account.department ? { department: account.department } : {}) }
     })
   } catch (e: any) {
     const status = e.status ?? e.statusCode ?? e.response?.status

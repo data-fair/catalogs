@@ -2,9 +2,6 @@ export default {
   cipherPassword: 'CIPHER_PASSWORD',
   dataDir: 'DATA_DIR',
   mongoUrl: 'MONGO_URL',
-  npm: {
-    httpsProxy: 'NPM_HTTPS_PROXY'
-  },
   observer: {
     active: 'OBSERVER_ACTIVE',
     port: 'OBSERVER_PORT'

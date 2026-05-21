@@ -7,13 +7,10 @@ import { init as wsEmitterInit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { startObserver, stopObserver, internalError } from '@data-fair/lib-node/observer.js'
 import { createHttpTerminator } from 'http-terminator'
-import { exec as execCallback } from 'child_process'
-import { promisify } from 'util'
 import http from 'http'
 import config from '#config'
 import mongo from '#mongo'
 
-const exec = promisify(execCallback)
 const server = http.createServer(app)
 const httpTerminator = createHttpTerminator({ server })
 
@@ -66,8 +63,6 @@ export const start = async () => {
 
   server.listen(config.port)
   await new Promise(resolve => server.once('listening', resolve))
-  const npmHttpsProxy = config.npm?.httpsProxy || process.env.HTTPS_PROXY || process.env.https_proxy
-  if (npmHttpsProxy) await exec('npm --workspaces=false --include-workspace-root config set https-proxy ' + npmHttpsProxy)
 
   console.log(`API server listening on port ${config.port}`)
 }
