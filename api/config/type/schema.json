@@ -17,6 +17,7 @@
     "observer",
     "port",
     "privateDirectoryUrl",
+    "privateRegistryUrl",
     "secretKeys"
   ],
   "properties": {
@@ -58,11 +59,17 @@
     "privateEventsUrl": {
       "type": "string"
     },
+    "privateRegistryUrl": {
+      "type": "string",
+      "pattern": "^https?://",
+      "description": "Internal URL used by the API to call the registry server-to-server. The UI hits /registry on the same domain."
+    },
     "secretKeys": {
       "type": "object",
       "required": [
         "catalogs",
-        "identities"
+        "identities",
+        "registry"
       ],
       "properties": {
         "catalogs": {
@@ -73,6 +80,10 @@
         },
         "identities": {
           "type": "string"
+        },
+        "registry": {
+          "type": "string",
+          "description": "x-secret-key shared with the registry (matches the registry's secretKeys.internalServices)."
         }
       }
     },

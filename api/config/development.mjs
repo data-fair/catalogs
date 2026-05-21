@@ -2,6 +2,7 @@ const apiPort = parseInt(process.env.DEV_API_PORT ?? '8082')
 const mongoPort = process.env.MONGO_PORT ?? '27017'
 const sdPort = process.env.SD_PORT ?? '8080'
 const eventsPort = process.env.EVENTS_PORT ?? '8088'
+const registryPort = process.env.REGISTRY_PORT ?? '8089'
 
 export default {
   cipherPassword: 'dev',
@@ -13,9 +14,11 @@ export default {
   port: apiPort,
   privateDirectoryUrl: `http://localhost:${sdPort}`,
   privateEventsUrl: `http://localhost:${eventsPort}`,
+  privateRegistryUrl: `http://localhost:${registryPort}`,
   secretKeys: {
     catalogs: 'secret-catalogs',
     events: 'secret-events',
-    identities: 'secret-identities'
+    identities: 'secret-identities',
+    registry: 'secret-registry-internal'
   }
 }

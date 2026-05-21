@@ -12,10 +12,12 @@ export default {
   port: 8080,
   privateDirectoryUrl: 'http://simple-directory:8080',
   privateEventsUrl: undefined,
+  privateRegistryUrl: 'http://registry:8080',
   secretKeys: {
     catalogs: undefined,
     events: undefined,
-    identities: undefined
+    identities: undefined,
+    registry: undefined
   },
   tmpDir: undefined,
 }
