@@ -1,10 +1,14 @@
 <template>
   <v-card
     :title="t('importTitle', { title: imp.remoteResource?.title ?? imp.remoteResource?.id })"
-    :subtitle="t(`importStatus.${imp.status}`)"
     :to="`/catalogs/${imp.catalog.id}/imports/${imp._id}`"
     class="h-100 d-flex flex-column"
   >
+    <template #subtitle>
+      <span :class="{ 'text-error': imp.status === 'error' }">
+        {{ t(`importStatus.${imp.status}`) }}
+      </span>
+    </template>
     <v-card-text>
       <!-- TODO: Show the last error if present -->
       <div v-if="imp.lastImportDate">

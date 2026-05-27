@@ -1,12 +1,16 @@
 <template>
   <v-card
     :title="fromCatalog ? t('publicationTitle.catalog', { title: publication.dataFairDataset.title ?? publication.dataFairDataset.id }) : t('publicationTitle.dataset', { title: publication.catalog.title ?? publication.catalog.id })"
-    :subtitle="publication.action === 'delete' ? t(`publicationStatusDelete.${publication.status}`) : t(`publicationStatus.${publication.status}`)"
     :to="fromCatalog ? `/catalogs/${publication.catalog.id}/publications/${publication._id}` : undefined"
     :href="fromCatalog ? undefined : `/data-fair/catalogs/${publication.catalog.id}/publications/${publication._id}`"
     target="_top"
     class="h-100 d-flex flex-column"
   >
+    <template #subtitle>
+      <span :class="{ 'text-error': publication.status === 'error' }">
+        {{ publication.action === 'delete' ? t(`publicationStatusDelete.${publication.status}`) : t(`publicationStatus.${publication.status}`) }}
+      </span>
+    </template>
     <v-card-text>
       <div
         v-if="publication.action === 'createResource' || publication.action === 'replaceResource'"
