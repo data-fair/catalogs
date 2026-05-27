@@ -41,7 +41,8 @@ export const sendCatalogEvent = (
  */
 export const validateCatalog = async (catalog: Partial<Catalog>) => {
   const validCatalog = (await import('#types/catalog/index.ts')).returnValid(catalog)
-  const plugin: CatalogPlugin = await getPlugin(validCatalog.plugin)
+  const resolved = await getPlugin(validCatalog.plugin, validCatalog.owner)
+  const plugin: CatalogPlugin = resolved.plugin
   plugin.assertConfigValid(validCatalog.config)
   return validCatalog
 }
@@ -49,7 +50,7 @@ export const validateCatalog = async (catalog: Partial<Catalog>) => {
 export const prepareCatalog = async (catalog: Catalog) => {
   const ret: Partial<Pick<Catalog, 'config' | 'secrets' | 'capabilities' | 'thumbnailUrl'>> = {}
 
-  const plugin = await getPlugin(catalog.plugin)
+  const { plugin } = await getPlugin(catalog.plugin, catalog.owner)
   let prepareRes
   try {
     prepareRes = await plugin.prepare({

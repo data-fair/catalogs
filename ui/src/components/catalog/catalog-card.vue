@@ -6,18 +6,11 @@
     <v-card-item class="text-primary">
       <!-- Plugin thumbnail -->
       <template
-        v-if="thumbnailCapability"
+        v-if="thumbnailUrl"
         #prepend
       >
         <v-avatar
-          v-if="thumbnailCapability === 'url'"
-          :image="catalog.thumbnailUrl"
-          rounded="0"
-          size="32"
-        />
-        <v-avatar
-          v-else-if="thumbnailCapability === 'path'"
-          :image="`${$apiPath}/plugins/${catalog.plugin}/thumbnail`"
+          :image="thumbnailUrl"
           rounded="0"
           size="32"
         />
@@ -48,11 +41,11 @@
         style="background-color: inherit;"
       >
         <!-- Catalog plugin -->
-        <v-list-item :class="{ 'text-error': !pluginName }">
+        <v-list-item :class="{ 'text-error': !plugin }">
           <template #prepend>
             <v-icon :icon="mdiPowerPlug" />
           </template>
-          {{ pluginName || `${t('deleted')} - ${catalog.plugin}` }}
+          {{ plugin?.title || `${t('deleted')} - ${catalog.plugin}` }}
         </v-list-item>
 
         <!-- Import counter -->
@@ -96,15 +89,18 @@ import ownerAvatar from '@data-fair/lib-vuetify/owner-avatar.vue'
 import { mdiPowerPlug } from '@mdi/js'
 
 const { t } = useI18n()
-const { catalog, showOwner, pluginName } = defineProps<{
+const { catalog, showOwner, plugin } = defineProps<{
   catalog: CatalogsGetRes['results'][number]
-  pluginName?: string
+  /** Registry artefact of this catalog's plugin — absent if it was removed from the registry. */
+  plugin?: { title: string, thumbnail?: { id: string } }
   showOwner?: boolean
 }>()
 
-const thumbnailCapability = computed(() => {
-  if (catalog.capabilities.includes('thumbnailUrl')) return 'url'
-  if (catalog.capabilities.includes('thumbnail')) return 'path'
+// Thumbnail to display, if any: a plugin-provided dynamic URL takes precedence,
+// otherwise the registry-hosted thumbnail uploaded for the plugin artefact.
+const thumbnailUrl = computed(() => {
+  if (catalog.capabilities.includes('thumbnailUrl') && catalog.thumbnailUrl) return catalog.thumbnailUrl
+  if (plugin?.thumbnail) return `${$sitePath}/registry/api/v1/thumbnails/${plugin.thumbnail.id}/data`
   return null
 })
 

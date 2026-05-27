@@ -1,6 +1,6 @@
 export default {
   cipherPassword: undefined,
-  dataDir: '/app/data',
+  dataDir: null,
   dataFairAPIKey: undefined,
   host: undefined,
   mongoUrl: 'mongodb://localhost:27017/data-fair-catalogs',
@@ -10,8 +10,10 @@ export default {
   },
   privateDataFairUrl: undefined,
   privateEventsUrl: undefined,
+  privateRegistryUrl: 'http://registry:8080',
   secretKeys: {
-    events: undefined
+    events: undefined,
+    registry: undefined
   },
   tmpDir: null,
   upgradeRoot: '/app/',

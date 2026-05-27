@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
-import { axios, axiosAuth, cleanDb, cleanPlugins, installMockPlugin } from '../../support/axios.ts'
+import { axios, axiosAuth, cleanDb, cleanPlugins } from '../../support/axios.ts'
+import { publishMockPlugin } from '../../support/registry.ts'
 
 /**
  * This file is based on the permission rules described in CONTRIBUTING.md.
@@ -31,7 +32,7 @@ const createCatalogPayload = (owner: any) => ({
 test.describe('Permissions', () => {
   test.beforeAll(async () => {
     await cleanPlugins()
-    await installMockPlugin()
+    await publishMockPlugin()
     superadmin = await axiosAuth('test_superadmin@test.com')
     adminOtherOrg = await axiosAuth({ email: 'test_admin2@test.com', org: 'test_org2' })
     adminOrg = await axiosAuth({ email: 'test_admin1@test.com', org: 'test_org1' })

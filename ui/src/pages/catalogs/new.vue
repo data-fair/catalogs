@@ -50,33 +50,33 @@
         >
           <v-row class="d-flex align-stretch">
             <v-col
-              v-for="plugin in installedPluginsFetch.data.value?.results"
-              :key="plugin.id"
+              v-for="artefact in pluginsFetch.data.value?.results"
+              :key="artefact._id"
               md="4"
               sm="6"
               cols="12"
             >
               <v-card
                 class="h-100"
-                :color="newPlugin === plugin.id ? 'primary' : ''"
-                @click="newPlugin = plugin.id; step = hasDepartments ? '2' : '3'"
+                :color="newPlugin === artefact._id ? 'primary' : ''"
+                @click="newPlugin = artefact._id; step = hasDepartments ? '2' : '3'"
               >
                 <template #title>
-                  <span :class="newPlugin !== plugin.id ? 'text-primary' : ''">
+                  <span :class="newPlugin !== artefact._id ? 'text-primary' : ''">
                     <!-- Remove 'Catalog ' from the title for compatibility -->
-                    {{ t('catalog') }} {{ plugin.metadata.title.replace('Catalog ', '') }}
+                    {{ t('catalog') }} {{ artefactTitle(artefact).replace('Catalog ', '') }}
                   </span>
                 </template>
                 <template #append>
                   <v-avatar
-                    v-if="plugin.metadata.capabilities.includes('thumbnail')"
-                    :image="`${$apiPath}/plugins/${plugin.id}/thumbnail`"
+                    v-if="artefact.thumbnail"
+                    :image="artefactThumbnail(artefact)"
                     rounded="0"
                     class="ml-2"
                     size="32"
                   />
                 </template>
-                <v-card-text>{{ plugin.metadata.i18n?.[session.lang.value].description || plugin.metadata.description }}</v-card-text>
+                <v-card-text>{{ artefactDescription(artefact) }}</v-card-text>
               </v-card>
             </v-col>
           </v-row>
@@ -145,11 +145,28 @@ import OwnerPick from '@data-fair/lib-vuetify/owner-pick.vue'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog'
 
+/** Subset of a registry artefact document used by the picker. */
+interface RegistryArtefact {
+  _id: string
+  name: string
+  packageName?: string
+  version?: string
+  title?: { fr?: string, en?: string }
+  description?: { fr?: string, en?: string }
+  thumbnail?: { id: string }
+}
+
 const session = useSessionAuthenticated()
 const router = useRouter()
 const { t } = useI18n()
 
-const installedPluginsFetch = useFetch<{ results: Plugin[], count: number }>(`${$apiPath}/plugins`, { notifError: false })
+// List catalog plugins straight from the registry — same domain, so the
+// browser sends the SimpleDirectory session cookie and the registry
+// access-filters the results.
+const pluginsFetch = useFetch<{ results: RegistryArtefact[], count: number }>(
+  `${$sitePath}/registry/api/v1/artefacts?format=npm&category=catalog&size=100`,
+  { notifError: false }
+)
 
 const step = ref('1')
 const newCatalog = ref<Partial<CatalogPostReq['body']>>({})
@@ -158,15 +175,33 @@ const newOwner = ref<Account | undefined>(session.state.account)
 const ownersReady = ref(false)
 const valid = ref(false)
 
+// The registry list carries no config schema or metadata — fetch the full
+// plugin descriptor from the catalogs API once a plugin is picked.
+const pluginFetch = useFetch<Plugin>(() => `${$apiPath}/plugins/${newPlugin.value}`, {
+  immediate: false,
+  watch: false
+})
+watch(newPlugin, async (id) => {
+  if (id) await pluginFetch.refresh()
+})
+
+/** Localized title/description of a registry artefact, with sensible fallbacks. */
+const artefactTitle = (a: RegistryArtefact) =>
+  a.title?.[session.lang.value as 'fr' | 'en'] || a.title?.fr || a.packageName || a.name
+const artefactDescription = (a: RegistryArtefact) =>
+  a.description?.[session.lang.value as 'fr' | 'en'] || a.description?.fr || ''
+const artefactThumbnail = (a: RegistryArtefact) =>
+  `${$sitePath}/registry/api/v1/thumbnails/${a.thumbnail!.id}/data`
+
 /** `True` if the active account isn't in a department and his organization has departments */
 const hasDepartments = computedAsync(async (): Promise<boolean> => {
   if (session.state.account.department || session.state.account.type === 'user') return false
-  const org = await $fetch(`/simple-directory/api/organizations/${session.state.account.id}`, { baseURL: $sitePath }) // Fetch the organization departments
-  return !!org.departments?.length // Check if the organization has departments
+  const org = await $fetch(`/simple-directory/api/organizations/${session.state.account.id}`, { baseURL: $sitePath })
+  return !!org.departments?.length
 }, false)
 
 const catalogSchema = computed(() => {
-  const plugin = installedPluginsFetch.data.value?.results.find(p => p.id === newPlugin.value)
+  const plugin = pluginFetch.data.value
   if (!plugin) return
   const props = plugin.configSchema?.properties as Record<string, unknown> | undefined
   const hasConfig = !!props && Object.keys(props).length > 0
@@ -221,7 +256,6 @@ const vjsfOptions: VjsfOptions = {
   validateOn: 'blur',
   xI18n: true
 }
-
 </script>
 
 <i18n lang="yaml">

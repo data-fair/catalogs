@@ -117,9 +117,20 @@ watch(() => catalog.value?.title, (title) => {
   ])
 })
 
+// The registry artefact carries the id of its uploaded thumbnail (if any),
+// which is needed to build the registry thumbnail URL.
+const artefactFetch = useFetch<{ thumbnail?: { id: string } }>(
+  () => `${$sitePath}/registry/api/v1/artefacts/${encodeURIComponent(catalog.value?.plugin ?? '')}`,
+  { immediate: false, watch: false, notifError: false }
+)
+watch(() => catalog.value?.plugin, async (plugin) => {
+  if (plugin) await artefactFetch.refresh()
+})
+
 const assetsUrl = computed(() => {
   if (catalog.value?.capabilities.includes('thumbnailUrl') && catalog.value?.thumbnailUrl) return catalog.value.thumbnailUrl
-  if (catalog.value?.capabilities.includes('thumbnail')) return `${$apiPath}/plugins/${catalog.value.plugin}/thumbnail`
+  const thumbnailId = artefactFetch.data.value?.thumbnail?.id
+  if (thumbnailId) return `${$sitePath}/registry/api/v1/thumbnails/${thumbnailId}/data`
   return new URL('~/assets/www.svg', import.meta.url).href
 })
 </script>

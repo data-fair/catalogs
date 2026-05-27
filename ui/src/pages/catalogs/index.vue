@@ -54,7 +54,7 @@
         >
           <catalog-card
             :catalog="catalog"
-            :plugin-name="pluginsFetch.data.value?.results.find(p => p.id === catalog.plugin)?.metadata.title"
+            :plugin="pluginsList.find(p => p.id === catalog.plugin)"
             :show-owner="showAll || !!(catalog.owner.department && !session.state.account.department)"
           />
         </v-col>
@@ -68,14 +68,14 @@
         v-model:owners-selected="owners"
         :admin-mode="session.state.user?.adminMode === 1"
         :facets="catalogsFetch.data.value?.facets || {}"
-        :plugins="pluginsFetch.data.value?.results || []"
+        :plugins="pluginsList"
       />
     </navigation-right>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import type { CatalogsGetRes, PluginsGetRes } from '#api/doc'
+import type { CatalogsGetRes } from '#api/doc'
 import { getAccountRole } from '@data-fair/lib-vue/session'
 import DfLayoutEmptyState from '@data-fair/lib-vuetify/layout-empty-state.vue'
 import DfLayoutFetchError from '@data-fair/lib-vuetify/layout-fetch-error.vue'
@@ -100,7 +100,24 @@ const catalogsParams = computed(() => {
 })
 
 const catalogsFetch = useFetch<CatalogsGetRes>(`${$apiPath}/catalogs`, { query: catalogsParams, notifError: false })
-const pluginsFetch = useFetch<PluginsGetRes>(`${$apiPath}/plugins`, { notifError: false })
+
+/** Subset of a registry artefact document used to label and illustrate catalogs by plugin. */
+interface RegistryArtefact {
+  _id: string
+  name: string
+  packageName?: string
+  title?: { fr?: string, en?: string }
+  thumbnail?: { id: string }
+}
+const pluginsFetch = useFetch<{ results: RegistryArtefact[] }>(
+  `${$sitePath}/registry/api/v1/artefacts?format=npm&category=catalog&size=100`,
+  { notifError: false }
+)
+const pluginsList = computed(() => (pluginsFetch.data.value?.results ?? []).map(a => ({
+  id: a._id,
+  title: a.title?.[session.lang.value as 'fr' | 'en'] || a.title?.fr || a.packageName || a.name,
+  thumbnail: a.thumbnail
+})))
 
 const displayCatalogs = computed(() => {
   const catalogs = (catalogsFetch.data.value?.results ?? [])

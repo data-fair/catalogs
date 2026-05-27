@@ -5,6 +5,9 @@ import fs from 'node:fs/promises'
 
 const mongoStatus = async () => { await mongo.db.command({ ping: 1 }) }
 const volumeStatus = async () => {
+  // dataDir is optional once plugins live in the registry — skip the check
+  // when it is not configured.
+  if (!config.dataDir) return
   await fs.writeFile(`${config.dataDir}/check-access.txt`, 'ok')
 }
 

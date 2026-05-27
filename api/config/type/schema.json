@@ -12,11 +12,11 @@
   "additionalProperties": false,
   "required": [
     "cipherPassword",
-    "dataDir",
     "mongoUrl",
     "observer",
     "port",
     "privateDirectoryUrl",
+    "privateRegistryUrl",
     "secretKeys"
   ],
   "properties": {
@@ -24,18 +24,11 @@
       "type": "string"
     },
     "dataDir": {
-      "type": "string"
+      "type": ["string", "null"],
+      "description": "Optional. When set, the legacy plugins volume at <dataDir>/plugins is read by the v1.0.0 boot migration. Removed in v2.0.0."
     },
     "mongoUrl": {
       "type": "string"
-    },
-    "npm": {
-      "type": "object",
-      "properties": {
-        "httpsProxy": {
-          "type": "string"
-        }
-      }
     },
     "observer": {
       "type": "object",
@@ -58,11 +51,17 @@
     "privateEventsUrl": {
       "type": "string"
     },
+    "privateRegistryUrl": {
+      "type": "string",
+      "pattern": "^https?://",
+      "description": "Internal URL used by the API to call the registry server-to-server. The UI hits /registry on the same domain."
+    },
     "secretKeys": {
       "type": "object",
       "required": [
         "catalogs",
-        "identities"
+        "identities",
+        "registry"
       ],
       "properties": {
         "catalogs": {
@@ -73,6 +72,10 @@
         },
         "identities": {
           "type": "string"
+        },
+        "registry": {
+          "type": "string",
+          "description": "x-secret-key shared with the registry (matches the registry's secretKeys.internalServices)."
         }
       }
     },

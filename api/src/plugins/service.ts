@@ -1,149 +1,59 @@
 import type CatalogPlugin from '@data-fair/types-catalogs'
-import type { Request } from 'express'
 
-import { exec } from 'child_process'
-import path from 'path'
+import path from 'node:path'
 import fs from 'fs-extra'
-import { promisify } from 'util'
-import semver from 'semver'
-import tmp from 'tmp-promise'
-import multer from 'multer'
 import { httpError } from '@data-fair/lib-express'
-import config from '#config'
+import { ensureArtefact } from '@data-fair/lib-node-registry'
+import { importPluginModule } from '@data-fair/catalogs-shared/plugin-load.ts'
+import config, { registryCacheDir } from '#config'
 
-const execAsync = promisify(exec)
+fs.ensureDirSync(registryCacheDir)
 
-const pluginsDir = path.resolve(config.dataDir, 'plugins')
-fs.ensureDirSync(pluginsDir)
-const tmpDir = config.tmpDir || path.resolve(config.dataDir, 'tmp')
-fs.ensureDirSync(tmpDir)
+/** Minimal account shape forwarded to the registry for access control. */
+export type PluginAccount = { type: 'user' | 'organization', id: string, department?: string }
 
-tmp.setGracefulCleanup()
+/** Subset of the plugin's package.json the API surfaces to the UI. */
+export type PluginPackage = { name: string, description?: string, version: string }
 
 /**
- * Install a new plugin or update an existing one
+ * Resolve a plugin from the registry.
+ *
+ * `ensureArtefact` downloads + extracts the artefact tarball into the local
+ * cache on a miss (the cache is keyed by the artefact's dataUpdatedAt), and
+ * returns the cached path on a hit. `account` is forwarded so the registry can
+ * enforce private-artefact access; its 403/404 surface unchanged.
+ *
+ * Returns the imported `CatalogPlugin` module default export plus the plugin's
+ * package.json fields (name/description/version).
  */
-export const installPlugin = async (req: Request & { file?: Express.Multer.File }) => {
-  const dir = await tmp.dir({ unsafeCleanup: true, tmpdir: tmpDir, prefix: 'plugin-install' })
-  let id: string
-  let tarballPath: string
-  let pluginJson: {
-    id: string,
-    name: string,
-    description: string,
-    version: string
-  }
+export const getPlugin = async (
+  artefactId: string,
+  account: PluginAccount
+): Promise<{ plugin: CatalogPlugin, pkg: PluginPackage }> => {
+  if (!artefactId) throw httpError(400, 'Plugin ID is required')
 
+  let ensured
   try {
-    if (req.file) { // File upload mode - use the uploaded .tgz file
-      tarballPath = req.file.path
-    } else { // NPM mode - validate body and download from npm
-      const { body } = (await import('../../doc/plugins/post-req/index.ts')).returnValid(req)
-
-      // download the plugin package using npm pack
-      const { stdout } = await execAsync(`npm pack ${body.name}@${body.version}`, { cwd: dir.path })
-      tarballPath = path.join(dir.path, stdout.trim())
-    }
-
-    // extract the tarball
-    await execAsync(`tar -xzf "${tarballPath}" -C "${dir.path}"`)
-    const extractedPath = path.join(dir.path, 'package')
-
-    // install dependencies of the plugin
-    await execAsync('npm i --omit=dev --no-audit --no-fund', { cwd: extractedPath })
-
-    // generate plugin.json from package.json
-    const packageJson = await fs.readJson(path.join(extractedPath, 'package.json'))
-    id = packageJson.name.replace('/', '-') + '-' + semver.major(packageJson.version)
-    pluginJson = {
-      id,
-      name: packageJson.name,
-      description: packageJson.description,
-      version: packageJson.version
-    }
-
-    // move the extracted plugin to the final destination :
-    // 'pluginsDir/pluginId/pluginVersion
-    const pluginDir = path.join(pluginsDir, id)
-    await fs.remove(pluginDir) // Remove old version if exists
-    await fs.move(extractedPath, path.join(pluginDir, packageJson.version))
-
-    // Write metadata to 'pluginsDir/pluginId/plugin.json'
-    await fs.writeFile(
-      path.join(pluginDir, 'plugin.json'),
-      JSON.stringify(pluginJson, null, 2)
-    )
-
-    await dir.cleanup() // Delete the temporary directory
-    if (req.file) await fs.remove(req.file.path) // Delete the uploaded file if exists
-
-    return {
-      id,
-      name: pluginJson.name,
-      version: pluginJson.version
-    }
-  } catch (error: any) {
-    await dir.cleanup() // Delete the temporary directory
-    if (req.file) await fs.remove(req.file.path) // Delete the uploaded file if exists
-    throw httpError(400, `Failed to install plugin: ${error.message || error}`)
-  }
-}
-
-/**
- * Middleware to handle file uploads for plugins.
- * It stores files directly in the temporary directory and only allows .tgz files.
- */
-export const getTarball = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, tmpDir)
-    },
-    filename: (req, file, cb) => {
-      cb(null, `plugin-${Date.now()}-${file.originalname}`)
-    }
-  }),
-  fileFilter: (req, file, cb) => {
-    if (path.extname(file.originalname) === '.tgz') cb(null, true)
-    else cb(httpError(400, 'Only .tgz files are allowed'))
-  },
-  limits: { fileSize: 1 * 1024 * 1024 } // 1MB max
-}).single('file')
-
-/**
- * Get/import a plugin by its ID.
- * It reads the plugin.json file and imports the plugin's main file.
- * Invalidate the cache if a new version is installed.
- * Throws an error if the plugin is not found or if there is an issue with the plugin.
- */
-export const getPlugin = async (pluginId: string): Promise<CatalogPlugin> => {
-  try {
-    if (!pluginId) throw httpError(400, 'Plugin ID is required')
-
-    const pluginJsonPath = path.join(pluginsDir, pluginId, 'plugin.json')
-    const pluginJson = JSON.parse(fs.readFileSync(pluginJsonPath, 'utf8'))
-    const pluginPath = path.join(pluginsDir, pluginId, pluginJson.version, 'index.ts')
-    if (!pluginPath) throw httpError(404, `No version found in plugin ${pluginId}`)
-    const plugin = (await import(pluginPath)).default
-
-    // For compatibility
-    if (plugin.listResources && !plugin.list) plugin.list = plugin.listResources
-
-    return plugin
+    ensured = await ensureArtefact({
+      registryUrl: config.privateRegistryUrl,
+      secretKey: config.secretKeys.registry,
+      artefactId,
+      cacheDir: registryCacheDir,
+      account: { type: account.type, id: account.id, ...(account.department ? { department: account.department } : {}) }
+    })
   } catch (e: any) {
-    if (e.message.includes('Cannot find module')) throw httpError(404, `Plugin ${pluginId} not found (or error in plugin : ${e.message})`)
-    throw e // Rethrow other errors
+    const status = e.status ?? e.statusCode ?? e.response?.status
+    if (status === 404) throw httpError(404, `Plugin ${artefactId} not found`)
+    if (status === 403) throw httpError(403, `Access denied to plugin ${artefactId}`)
+    throw e
   }
-}
 
-/**
- * Get the thumbnail image path for a plugin
- */
-export const getPluginThumbnailPath = async (pluginId: string): Promise<string | null> => {
-  const pluginJsonPath = path.join(pluginsDir, pluginId, 'plugin.json')
-  if (!fs.existsSync(pluginJsonPath)) return null
-  const pluginJson = JSON.parse(fs.readFileSync(pluginJsonPath, 'utf8'))
-  const plugin = await getPlugin(pluginId)
-  const thumbnailPath = path.join(pluginsDir, pluginId, pluginJson.version, plugin.metadata.thumbnailPath)
-  if (!fs.existsSync(thumbnailPath)) return null
-  return thumbnailPath
+  const pkg = await fs.readJson(path.join(ensured.path, 'package.json')) as PluginPackage
+  const mod = await importPluginModule<{ default: CatalogPlugin }>(ensured.path)
+  const plugin = mod.default
+
+  // For compatibility with older plugins
+  if (plugin.listResources && !plugin.list) plugin.list = plugin.listResources
+
+  return { plugin, pkg }
 }
