@@ -8,7 +8,7 @@ import { pipeline } from 'node:stream/promises'
 import * as tarStream from 'tar-stream'
 import { axiosBuilder } from '@data-fair/lib-node/axios.js'
 import { importPluginModule } from '@data-fair/catalogs-shared/plugin-load.ts'
-import { pluginTitle, pluginDescription, type PluginMetadata } from './plugin-metadata.ts'
+import { pluginTitle, pluginDescription, type PluginMetadata } from '../plugin-metadata.ts'
 import config from '../../worker/src/config.ts'
 
 type PluginJson = { id: string, name: string, version: string, description?: string }

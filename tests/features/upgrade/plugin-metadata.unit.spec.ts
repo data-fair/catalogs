@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { pluginTitle, pluginDescription } from '../../../upgrade/1.0.0/plugin-metadata.ts'
+import { pluginTitle, pluginDescription } from '../../../upgrade/plugin-metadata.ts'
 
 test.describe('pluginTitle', () => {
   test('replicates the single title string to fr and en', () => {
