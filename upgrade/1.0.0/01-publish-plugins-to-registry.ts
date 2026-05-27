@@ -8,6 +8,7 @@ import { pipeline } from 'node:stream/promises'
 import * as tarStream from 'tar-stream'
 import { axiosBuilder } from '@data-fair/lib-node/axios.js'
 import { importPluginModule } from '@data-fair/catalogs-shared/plugin-load.ts'
+import { pluginTitle, pluginDescription, type PluginMetadata } from './plugin-metadata.ts'
 import config from '../../worker/src/config.ts'
 
 type PluginJson = { id: string, name: string, version: string, description?: string }
@@ -132,15 +133,39 @@ export default {
           await ax.post(`/api/v1/artefacts/npm/${encodeURIComponent(artefactId)}`, form, {
             validateStatus: s => s === 201
           })
-          // Preserve today's "every account-admin can use every plugin".
-          await ax.patch(`/api/v1/artefacts/${encodeURIComponent(artefactId)}`, { public: true })
+
+          // Best-effort: read the plugin module's metadata for its title,
+          // description and thumbnail. A failure here must not block
+          // publication — the artefact is still made public below.
+          let metadata: PluginMetadata | undefined
+          try {
+            const mod = await importPluginModule<{ default: { metadata?: PluginMetadata } }>(versionDir)
+            metadata = mod.default?.metadata
+          } catch (err: any) {
+            debug(`${dir}: plugin metadata unreadable (${err?.message ?? err})`)
+          }
+
+          // Preserve today's "every account-admin can use every plugin", and
+          // carry over the plugin's own title/description so the registry
+          // picker shows them.
+          const patch: {
+            public: true
+            title?: { fr: string, en: string }
+            description?: { fr?: string, en?: string }
+          } = { public: true }
+          if (metadata) {
+            const title = pluginTitle(metadata)
+            if (title) patch.title = title
+            const description = pluginDescription(metadata)
+            if (description) patch.description = description
+          }
+          await ax.patch(`/api/v1/artefacts/${encodeURIComponent(artefactId)}`, patch)
           debug(`${dir}: published`)
 
           // Best-effort: publish the in-tarball thumbnail to the registry so
           // the picker shows an icon for migrated plugins.
           try {
-            const mod = await importPluginModule<{ default: { metadata?: { thumbnailPath?: string } } }>(versionDir)
-            const thumbnailPath = mod.default?.metadata?.thumbnailPath
+            const thumbnailPath = metadata?.thumbnailPath
             if (thumbnailPath) {
               const thumbAbs = path.join(versionDir, thumbnailPath)
               if (existsSync(thumbAbs)) {
