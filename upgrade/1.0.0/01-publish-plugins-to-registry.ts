@@ -42,7 +42,19 @@ async function packPluginDir (pluginDir: string, tarballPath: string): Promise<v
     if (st.isDirectory()) {
       for (const child of await readdir(fullPath)) await walk(`${relPath}/${child}`)
     } else if (st.isFile()) {
-      await addEntry({ name: tarName, size: st.size, mode: st.mode, mtime: st.mtime, type: 'file' })
+      // Rewrite the root package.json to force AGPL-3.0-only — the new base
+      // licence for all historical catalog plugins migrated to the registry.
+      // The registry derives artefact.licence from the manifest at upload
+      // time and exposes no patch field for it, so the override happens here.
+      if (relPath === 'package.json') {
+        const pkg = JSON.parse(await readFile(fullPath, 'utf8'))
+        delete pkg.licence
+        pkg.license = 'AGPL-3.0-only'
+        const body = JSON.stringify(pkg, null, 2)
+        await addEntry({ name: tarName, size: Buffer.byteLength(body), mode: st.mode, mtime: st.mtime, type: 'file' }, body)
+      } else {
+        await addEntry({ name: tarName, size: st.size, mode: st.mode, mtime: st.mtime, type: 'file' })
+      }
     } else if (st.isSymbolicLink()) {
       await addEntry({ name: tarName, type: 'symlink', linkname: await readlink(fullPath), mode: st.mode, mtime: st.mtime })
     }
