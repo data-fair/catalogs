@@ -34,15 +34,14 @@ const internalAx = axiosBuilder({ baseURL: directRegistryUrl, headers: { 'x-secr
 
 /**
  * Publish the mock catalog plugin tarball to the dev registry, public, with a
- * title and a thumbnail — idempotent (a repeat upload replaces the arch tarball
- * slot and the thumbnail). Upload, metadata PATCH and thumbnail POST all accept
- * the registry internal secret.
+ * title and a thumbnail — idempotent (a repeat upload replaces the tarball and
+ * the thumbnail). Upload, metadata PATCH and thumbnail POST all accept the
+ * registry internal secret.
  * Mock project: https://github.com/data-fair/catalog-mock
  */
 export const publishMockPlugin = async () => {
   const tarballPath = path.join(import.meta.dirname, '..', 'fixtures', 'catalog-mock.tgz')
   const form = new FormData()
-  form.append('architecture', process.arch)
   form.append('category', 'catalog')
   form.append('file', new Blob([fs.readFileSync(tarballPath)]), 'catalog-mock.tgz')
   await internalAx.post(`/api/v1/artefacts/npm/${encodeURIComponent(mockPluginId)}`, form, {

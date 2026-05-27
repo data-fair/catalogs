@@ -1,7 +1,6 @@
 import type { AxiosAuthOptions } from '@data-fair/lib-node/axios-auth.js'
 import { axiosBuilder } from '@data-fair/lib-node/axios.js'
 import { axiosAuth as _axiosAuth } from '@data-fair/lib-node/axios-auth.js'
-import { publishMockPlugin } from './registry.ts'
 
 /**
  * Test users and orgs are defined in:
@@ -40,12 +39,4 @@ export const cleanDb = async () => {
 /** Wipe the local registry artefact cache on the running dev API. */
 export const cleanPlugins = async () => {
   await anonymousAx.delete('/api/test-env/plugins')
-}
-
-/**
- * Publish the mock catalog plugin used by the API tests to the dev registry.
- * Mock project: https://github.com/data-fair/catalog-mock
- */
-export const installMockPlugin = async () => {
-  await publishMockPlugin()
 }
