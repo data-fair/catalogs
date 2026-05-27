@@ -169,8 +169,18 @@ export default {
             if (thumbnailPath) {
               const thumbAbs = path.join(versionDir, thumbnailPath)
               if (existsSync(thumbAbs)) {
+                // The registry preserves SVGs only when the multipart part's
+                // Content-Type is image/svg+xml — otherwise it rasterizes via Sharp.
+                // Blob defaults to type '' (→ application/octet-stream), so derive
+                // the type from the file extension.
+                const ext = path.extname(thumbnailPath).toLowerCase()
+                let mime = 'application/octet-stream'
+                if (ext === '.svg') mime = 'image/svg+xml'
+                else if (ext === '.png') mime = 'image/png'
+                else if (ext === '.jpg' || ext === '.jpeg') mime = 'image/jpeg'
+                else if (ext === '.webp') mime = 'image/webp'
                 const tform = new FormData()
-                tform.append('file', new Blob([await readFile(thumbAbs)]), path.basename(thumbnailPath))
+                tform.append('file', new Blob([await readFile(thumbAbs)], { type: mime }), path.basename(thumbnailPath))
                 await ax.post(`/api/v1/artefacts/${encodeURIComponent(artefactId)}/thumbnail`, tform, {
                   validateStatus: s => s === 201
                 })
