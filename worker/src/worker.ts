@@ -137,7 +137,6 @@ async function iter (task: Task, type: typeof types[number]) {
       secretKey: config.secretKeys.registry,
       artefactId: catalog.plugin,
       cacheDir: registryCacheDir,
-      architecture: process.arch,
       account: {
         type: catalog.owner.type,
         id: catalog.owner.id,

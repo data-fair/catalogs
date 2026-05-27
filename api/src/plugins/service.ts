@@ -39,7 +39,6 @@ export const getPlugin = async (
       secretKey: config.secretKeys.registry,
       artefactId,
       cacheDir: registryCacheDir,
-      architecture: process.arch,
       account: { type: account.type, id: account.id, ...(account.department ? { department: account.department } : {}) }
     })
   } catch (e: any) {

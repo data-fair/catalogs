@@ -3,7 +3,6 @@ import { existsSync, createReadStream, createWriteStream } from 'node:fs'
 import { readdir, readFile, lstat, readlink, mkdtemp, rm } from 'node:fs/promises'
 import path from 'node:path'
 import os from 'node:os'
-import { arch as hostArch } from 'node:process'
 import { createGzip } from 'node:zlib'
 import { pipeline } from 'node:stream/promises'
 import * as tarStream from 'tar-stream'
@@ -99,12 +98,13 @@ export default {
           continue
         }
 
-        // Probe: skip if this arch slot is already published (idempotent).
+        // Probe: skip if the artefact already has a tarball uploaded. The
+        // registry uses a single flat `path` per npm artefact.
         const probe = await ax.get(`/api/v1/artefacts/${encodeURIComponent(artefactId)}`, {
           validateStatus: s => s === 200 || s === 404
         })
-        if (probe.status === 200 && probe.data?.tarballs?.[hostArch]) {
-          debug(`${dir}: already published for ${hostArch}, skipping`)
+        if (probe.status === 200 && probe.data?.path) {
+          debug(`${dir}: already published, skipping`)
           continue
         }
 
@@ -114,10 +114,9 @@ export default {
           await packPluginDir(versionDir, tarballPath)
 
           const form = new FormData()
-          form.append('architecture', hostArch)
           form.append('category', 'catalog')
           form.append('file', new Blob([await readFile(tarballPath)]), 'package.tgz')
-          debug(`${dir}: uploading ${pluginJson.name}@${pluginJson.version} as ${artefactId} (${hostArch})`)
+          debug(`${dir}: uploading ${pluginJson.name}@${pluginJson.version} as ${artefactId}`)
           await ax.post(`/api/v1/artefacts/npm/${encodeURIComponent(artefactId)}`, form, {
             validateStatus: s => s === 201
           })
