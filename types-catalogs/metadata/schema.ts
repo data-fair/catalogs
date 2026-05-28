@@ -8,11 +8,12 @@ export default {
   additionalProperties: false,
   properties: {
     title: {
-      description: 'The title of the plugin to be displayed in the UI (e.g., "UData", "Mock", etc.)',
+      description: 'The title of the plugin (e.g., "UData", "Mock", etc.)',
       type: 'string'
     },
     description: {
-      description: 'The default description of the plugin to be displayed in the UI. Prefer using localized descriptions in the i18n object.',
+      description: 'DEPRECATED since the Registry migration (catalogs v1.0.0): the plugin description is now managed in the Registry UI, not in the plugin code. Kept only for backwards compatibility with pre-Registry installs.',
+      deprecated: true,
       type: 'string'
     },
     capabilities: {
@@ -23,7 +24,8 @@ export default {
       }
     },
     thumbnailPath: {
-      description: 'Optional path of the thumbnail image from the root of the plugin to be displayed in the UI.',
+      description: 'DEPRECATED since the Registry migration (catalogs v1.0.0): the plugin thumbnail is now uploaded to and served by the Registry, not bundled with the plugin code. Kept only for backwards compatibility with pre-Registry installs.',
+      deprecated: true,
       type: 'string',
     },
     i18n: {
@@ -35,7 +37,8 @@ export default {
         properties: {
           description: {
             type: 'string',
-            description: 'The translated description of the plugin to be displayed in the UI. When provided, this is used instead of the default description property.'
+            description: 'DEPRECATED since the Registry migration (catalogs v1.0.0): localized descriptions are now managed in the Registry UI. Kept only for backwards compatibility.',
+            deprecated: true
           },
           actionLabels: {
             type: 'object',
