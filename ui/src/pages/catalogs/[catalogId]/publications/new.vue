@@ -134,7 +134,7 @@ watch(dataFairDatasetFetch.data, (newData) => {
 
 // Get the list of publication sites (used to get the title, full url and dataset url template)
 const publicationSites = useFetch<object[]>(`${$sitePath}/data-fair/api/v1/settings/${session.state.account.type}/${session.state.account.id}:*/publication-sites`)
-const formatedPublicationSites = computed(() => {
+const formattedPublicationSites = computed(() => {
   if (!publicationSites.data.value) return {}
 
   return publicationSites.data.value.reduce((acc: Record<string, any>, site: any) => {
@@ -209,7 +209,7 @@ const createPublication = useAsyncAction(async () => {
   }
 
   // Create the publication via API
-  await $fetch('/publications', {
+  const pub = await $fetch('/publications', {
     method: 'POST',
     body: newPublication
   })
@@ -217,8 +217,7 @@ const createPublication = useAsyncAction(async () => {
   selectedFolderOrResource.value = null
   validPublicationConfig.value = false
   publicationConfig.value = {}
-  // await router.replace({ path: `/catalogs/${catalog.value?._id}/publications/${pub._id}` }) // TODO: redirect to publication detail page
-  await router.replace({ path: `/catalogs/${catalog.value?._id}`, query: { tab: 'publications' } })
+  await router.replace({ path: `/catalogs/${catalog.value?._id}/publications/${pub._id}` })
 })
 
 const handleNext = (next: () => void) => {
@@ -249,7 +248,7 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
       title: dataFairDatasetFetch.data.value?.title
     },
     origin: window.location.origin,
-    publicationSites: formatedPublicationSites.value,
+    publicationSites: formattedPublicationSites.value,
     ownerFilter: `${catalog.value?.owner.type}:${catalog.value?.owner.id}${catalog.value?.owner.department ? `:${catalog.value?.owner.department}` : ''}`
   },
   density: 'comfortable',
