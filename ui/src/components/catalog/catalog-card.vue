@@ -59,6 +59,12 @@
             />
           </template>
           {{ t('imports', catalog.importsCount || 0) }}
+          <span
+            v-if="catalog.importsErrorCount"
+            class="text-error"
+          >
+            ({{ t('importsError', catalog.importsErrorCount) }})
+          </span>
         </v-list-item>
 
         <!-- Publication counter -->
@@ -72,6 +78,12 @@
             />
           </template>
           {{ t('publications', catalog.publicationsCount || 0) }}
+          <span
+            v-if="catalog.publicationsErrorCount"
+            class="text-error"
+          >
+            ({{ t('publicationsError', catalog.publicationsErrorCount) }})
+          </span>
         </v-list-item>
 
         <!-- Description -->
@@ -111,11 +123,15 @@ const thumbnailUrl = computed(() => {
     deleted: Deleted
     imports: 'No import | {count} import | {count} imports'
     publications: 'No publication | {count} publication | {count} publications'
+    importsError: '{count} import in error | {count} imports in error'
+    publicationsError: '{count} publication in error | {count} publications in error'
 
   fr:
     deleted: Supprimé
     imports: 'Aucun import | {count} import | {count} imports'
     publications: 'Aucune publication | {count} publication | {count} publications'
+    importsError: '{count} import en erreur | {count} imports en erreur'
+    publicationsError: '{count} publication en erreur | {count} publications en erreur'
 
 </i18n>
 

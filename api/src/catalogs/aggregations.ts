@@ -21,7 +21,9 @@ export const catalogsWithCounts = (queryWithFilters: Record<string, any>, sort: 
     {
       $addFields: {
         importsCount: { $size: '$imports' },
-        publicationsCount: { $size: '$publications' }
+        publicationsCount: { $size: '$publications' },
+        importsErrorCount: { $size: { $filter: { input: '$imports', as: 'i', cond: { $eq: ['$$i.status', 'error'] } } } },
+        publicationsErrorCount: { $size: { $filter: { input: '$publications', as: 'p', cond: { $eq: ['$$p.status', 'error'] } } } }
       }
     },
     {

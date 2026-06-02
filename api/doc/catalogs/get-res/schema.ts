@@ -31,6 +31,12 @@ export default {
               },
               publicationsCount: {
                 type: 'number'
+              },
+              importsErrorCount: {
+                type: 'number'
+              },
+              publicationsErrorCount: {
+                type: 'number'
               }
             }
           }
