@@ -8,12 +8,14 @@ import { readFile, access } from 'node:fs/promises'
  * type-stripping (main: "index.ts"). Callers must not hard-code an extension —
  * read main and trust it. Defaults to "index.js" when main is absent.
  *
- * `cacheBust` appends a query string so the same module path can be re-imported
- * fresh in the same process.
+ * No in-process cache busting is needed: @data-fair/lib-node-registry extracts a
+ * changed artefact into a content-versioned directory, so an updated plugin
+ * always resolves to a brand-new absolute path. That forces Node's ESM registry
+ * to reload the whole module graph (entry + siblings + bundled deps) — something
+ * a `?query` suffix on the entry point could never do.
  */
 export const importPluginModule = async <T = unknown> (
-  pluginDir: string,
-  opts: { cacheBust?: boolean } = {}
+  pluginDir: string
 ): Promise<T> => {
   const pkg = JSON.parse(await readFile(path.join(pluginDir, 'package.json'), 'utf8'))
   const mainRel = typeof pkg.main === 'string' && pkg.main.length > 0 ? pkg.main : 'index.js'
@@ -23,6 +25,5 @@ export const importPluginModule = async <T = unknown> (
   } catch {
     throw new Error(`plugin entry point missing: ${mainAbs}`)
   }
-  const url = opts.cacheBust ? `${mainAbs}?imported=${Date.now()}` : mainAbs
-  return (await import(url)) as T
+  return (await import(mainAbs)) as T
 }
