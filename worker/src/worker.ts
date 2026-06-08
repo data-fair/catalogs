@@ -106,7 +106,11 @@ const mainLoop = async () => {
 
     lastActivity = new Date().getTime()
 
+    // release the task lock once iter settles, whatever the exit path
+    // (success, processing error, or an early return such as a missing
+    // catalog/plugin) so the lock is never leaked
     const iterPromise = iter(task, type)
+      .finally(() => locks.release(`${type}:${task._id}`))
     promisePool[freeSlot] = iterPromise
     // empty the slot after the promise is finished
     // do not catch failure, they should trigger a restart of the loop
@@ -204,8 +208,6 @@ async function iter (task: Task, type: typeof types[number]) {
         itemId: task._id
       }
     })
-  } finally {
-    await locks.release(`${type}:${task._id}`)
   }
 }
 
@@ -240,6 +242,8 @@ async function acquireNext (type: typeof types[number]): Promise<Task | undefine
         }
       })
       await wsEmit(`${type}/${task._id}`, { status: 'error' })
+      // the task is not returned to the main loop, release the lock we just took
+      await locks.release(`${type}:${task._id}`)
       continue
     }
 
