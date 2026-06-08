@@ -3,7 +3,7 @@ import type CatalogPlugin from '@data-fair/types-catalogs'
 import type { AxiosRequestConfig } from 'axios'
 
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
-import { internalError } from '@data-fair/lib-node/observer.js'
+import { taskInternalError } from './internal-error.ts'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 import axios from '@data-fair/lib-node/axios.js'
@@ -71,18 +71,18 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
         itemId: pub._id
       }
     })
-    return internalError('worker-missing-permissions', errorMsg)
+    return taskInternalError(pub, 'publication', 'worker-missing-permissions', errorMsg)
   }
 
   if (!dataFairDataset) {
     await mongo.publications.deleteOne({ _id: pub._id })
-    return internalError('worker-missing-dataset', 'found a publication without associated dataset, weird')
+    return taskInternalError(pub, 'publication', 'worker-missing-dataset', 'found a publication without associated dataset, weird')
   }
 
   // Check if the plugin has the capability to publish (and delete) datasets
   if (!plugin.metadata.capabilities.some(c => ['createFolderInRoot', 'createFolder', 'createResource', 'replaceFolder', 'replaceResource'].includes(c))) {
     await mongo.publications.deleteOne({ _id: pub._id })
-    return internalError('worker-missing-capabilities', 'found a publication without the capability to publish datasets, weird')
+    return taskInternalError(pub, 'publication', 'worker-missing-capabilities', 'found a publication without the capability to publish datasets, weird')
   }
 
   await publish(catalog, plugin, pub, dataFairDataset)
@@ -95,7 +95,7 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
     const errorMsg = 'Publication site is required for this catalog'
     await mongo.publications.updateOne({ _id: pub._id }, { $set: { status: 'error', error: errorMsg } })
     await wsEmit(`publication/${pub._id}`, { status: 'error', error: errorMsg })
-    return internalError('worker-missing-publication-site', errorMsg)
+    return taskInternalError(pub, 'publication', 'worker-missing-publication-site', errorMsg)
   }
 
   // 4. Publish the dataset
@@ -142,7 +142,7 @@ const publish = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication
 
 const deletePublication = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publication) => {
   if (!pub.remoteFolder && !pub.remoteResource) {
-    internalError('worker-missing-remote', 'try do delete a publication without remote folder or resource, weird')
+    taskInternalError(pub, 'publication', 'worker-missing-remote', 'try do delete a publication without remote folder or resource, weird')
   } else {
     try {
       await plugin.deletePublication({
@@ -153,7 +153,7 @@ const deletePublication = async (catalog: Catalog, plugin: CatalogPlugin, pub: P
         log: prepareLog(pub, 'publication')
       })
     } catch (error: any) {
-      internalError('worker-delete-publication-error', `Error while deleting publication: ${error.message}`, error)
+      taskInternalError(pub, 'publication', 'worker-delete-publication-error', 'Error while deleting publication', error)
       // Ignore errors during deletion, we will delete the publication anyway
     }
   }

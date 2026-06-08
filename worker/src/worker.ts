@@ -13,6 +13,7 @@ import { importPluginModule } from '@data-fair/catalogs-shared/plugin-load.ts'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import importTask from './lib/import.ts'
 import publicationTask from './lib/publication.ts'
+import { taskInternalError } from './lib/internal-error.ts'
 import config, { registryCacheDir } from '#config'
 import mongo from '#mongo'
 import locks from '#locks'
@@ -42,7 +43,7 @@ export const start = async () => {
   // Configure events queue
   if (config.privateEventsUrl) {
     if (!config.secretKeys?.events) {
-      internalError('catalogs', 'Missing secretKeys.events in config')
+      internalError('catalogs-missing-events-secret', 'Missing secretKeys.events in config')
     } else {
       await eventsQueue.start({ eventsUrl: config.privateEventsUrl, eventsSecret: config.secretKeys.events })
     }
@@ -123,7 +124,7 @@ async function iter (task: Task, type: typeof types[number]) {
   const catalog = await mongo.catalogs.findOne({ _id: task.catalog.id })
   if (!catalog) { // A task without catalog should not exist, log an error and delete the task
     await collection.deleteOne({ _id: task._id })
-    return internalError('worker-missing-catalog', 'found a task without associated catalog, weird')
+    return taskInternalError(task, type, 'worker-missing-catalog', 'found a task without associated catalog, weird')
   }
   debug(`From catalog ${catalog.title} (${catalog._id})`)
 
@@ -156,7 +157,7 @@ async function iter (task: Task, type: typeof types[number]) {
       { $set: { status: 'error', logs: [{ type: 'error', msg, date: new Date().toISOString() }] } }
     )
     await wsEmit(`${type}/${task._id}`, { status: 'error' })
-    return internalError('worker-missing-plugin', `${msg} (task ${task._id})`)
+    return taskInternalError(task, type, 'worker-plugin-load-failed', msg, e)
   }
   debug(`Using plugin ${catalog.plugin}`)
 
@@ -168,7 +169,7 @@ async function iter (task: Task, type: typeof types[number]) {
     }
   } catch (e: any) {
     // Normally we should not have errors here, they should be caught before
-    internalError('worker-task-failed', `Failed to process ${type} task : ${task._id}`, e)
+    taskInternalError(task, type, 'worker-task-failed', 'Failed to process the task', e)
     await collection.updateOne({ _id: task._id }, {
       $set: { status: 'error' },
       $push: {

@@ -6,7 +6,7 @@ import fs from 'fs-extra'
 import FormData from 'form-data'
 import tmp from 'tmp-promise'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
-import { internalError } from '@data-fair/lib-node/observer.js'
+import { taskInternalError } from './internal-error.ts'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 import axios from '@data-fair/lib-node/axios.js'
@@ -32,7 +32,7 @@ const handleImportError = async (type: 'upload' | 'download', imp: Import, err: 
   await errorLog(`Failed to ${type} resource file: ` + (err instanceof Error ? err.message : String(err)), err.name !== 'AxiosRequestError' ? err : undefined)
   await mongo.imports.updateOne({ _id: imp._id }, { $set: { status: 'error', finishedAt: new Date().toISOString() } })
   await wsEmit(`import/${imp._id}`, { status: 'error', finishedAt: new Date().toISOString() })
-  internalError(`worker-${type}-failed`, `Failed to ${type} resource file`, imp)
+  taskInternalError(imp, 'import', `worker-${type}-failed`, `Failed to ${type} resource file`, err)
   eventsQueue.pushEvent({
     title: `L'import de la resource ${imp.remoteResource.title} à échoué`,
     topic: { key: `catalogs:import-error:${imp._id}` },

@@ -30,7 +30,7 @@ export const start = async () => {
   // Configure events queue
   if (config.privateEventsUrl) {
     if (!config.secretKeys.events) {
-      internalError('catalogs', 'Missing secretKeys.events in config')
+      internalError('catalogs-missing-events-secret', 'Missing secretKeys.events in config')
     } else {
       await eventsQueue.start({ eventsUrl: config.privateEventsUrl, eventsSecret: config.secretKeys.events })
     }
