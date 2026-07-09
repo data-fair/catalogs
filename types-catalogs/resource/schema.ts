@@ -58,6 +58,11 @@ export default {
         type: 'string'
       }
     },
+    modified: {
+      type: 'string',
+      format: 'date',
+      description: 'The date when the resource was last modified, if available'
+    },
     origin: {
       type: 'string',
       description: 'The URL where the original data can be found'
