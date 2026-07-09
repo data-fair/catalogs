@@ -215,6 +215,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
     datasetResource.keywords = resource.keywords
     datasetResource.origin = resource.origin
     datasetResource.topics = resource.topics
+    datasetResource.modified = resource.modified
 
     // Others metadata (cannot be set with UI)
     datasetResource.analysis = resource.analysis
