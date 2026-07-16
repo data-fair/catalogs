@@ -115,13 +115,17 @@ const router = useRouter()
 const session = useSessionAuthenticated()
 const datasetId = useStringSearchParam('datasetId')
 
-const { catalog, plugin } = createCatalogStore(route.params.catalogId)
+const { catalog, plugin, pluginFetch } = createCatalogStore(route.params.catalogId)
 
 const validPublicationConfig = ref(false)
 const selectedFolderOrResource = ref<{ id: string, title: string, type: 'resource' | 'folder' } | null>(null)
 const publicationConfig = ref<Partial<Pick<Publication, 'action' | 'dataFairDataset' | 'publicationSite' | 'remoteFolder' | 'remoteResource'>>>({})
-const defaultAction = ref<Publication['action'] | null>(null)
 const step = ref<'1' | '2'>('1')
+
+// the plugin can override the action labels through its own i18n messages, and vjsf rebuilds
+// its whole state tree whenever the schema changes identity. Building the schema before those
+// messages are merged would show the generic labels first, then swap them in a visible flicker.
+const pluginI18nSettled = ref(false)
 
 // Get datafair dataset info if datasetId is provided
 const dataFairDatasetFetch = useFetch<{ id: string; title: string }>(
@@ -147,23 +151,27 @@ const formattedPublicationSites = computed(() => {
   }, {})
 })
 
-const publicationSchema = computed(() => {
-  if (!catalog.value) return null
-
-  const availableActions = [
+const availableActions = computed(() => {
+  if (!catalog.value) return []
+  return [
     { title: t('actionLabels.createFolderInRoot'), value: 'createFolderInRoot' },
     { title: t('actionLabels.createFolder'), value: 'createFolder' },
     { title: t('actionLabels.createResource'), value: 'createResource' },
     { title: t('actionLabels.replaceFolder'), value: 'replaceFolder' },
     { title: t('actionLabels.replaceResource'), value: 'replaceResource' }
   ].filter(action => catalog.value?.capabilities.includes(action.value as Capability))
+})
+
+// a single available action is implicit, it is not offered as a form field
+const defaultAction = computed(() => availableActions.value.length === 1
+  ? availableActions.value[0].value as Publication['action']
+  : null)
+
+const publicationSchema = computed(() => {
+  if (!catalog.value || !pluginI18nSettled.value) return null
 
   const propertiesToPick = ['dataFairDataset']
-  if (availableActions.length > 1) {
-    propertiesToPick.push('action')
-  } else if (availableActions.length === 1) {
-    defaultAction.value = availableActions[0].value as Publication['action']
-  }
+  if (availableActions.value.length > 1) propertiesToPick.push('action')
 
   if (catalog.value.capabilities.includes('requiresPublicationSite')) {
     if (!publicationSites.data.value) return null
@@ -174,7 +182,7 @@ const publicationSchema = computed(() => {
     .pickProperties(propertiesToPick)
     .schema
 
-  if (base.properties.action) base.properties.action.layout.items = availableActions
+  if (base.properties.action) base.properties.action.layout.items = availableActions.value
   if (catalog.value.capabilities.includes('requiresPublicationSite')) base.required.push('publicationSite')
 
   return base
@@ -229,6 +237,12 @@ const handleNext = (next: () => void) => {
 watch(plugin, (newPlugin) => {
   if (!newPlugin) return
   if (newPlugin.metadata.i18n?.[session.lang.value]) mergeLocaleMessage(session.lang.value, newPlugin.metadata.i18n[session.lang.value])
+  pluginI18nSettled.value = true
+})
+
+// without a plugin there are no overrides to wait for, fall back to the generic labels
+watch(pluginFetch.error, (error) => {
+  if (error) pluginI18nSettled.value = true
 })
 
 watch(catalog, (newCatalog) => {
