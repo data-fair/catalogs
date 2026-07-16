@@ -1,6 +1,6 @@
 {
   "name": "@data-fair/catalogs",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Import/publish datasets between Data Fair and other services.",
   "type": "module",
   "scripts": {
