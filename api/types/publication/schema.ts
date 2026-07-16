@@ -165,7 +165,8 @@ export default {
           },
           itemsResults: 'data.publicationSites ?? []',
           itemValue: 'context.publicationSites[item]',
-          itemTitle: '`${context.publicationSites[item]?.title} (${context.publicationSites[item]?.url})`',
+          itemKey: 'item.url ?? context.publicationSites[item]?.url',
+          itemTitle: '`${item.title ?? context.publicationSites[item]?.title} (${item.url ?? context.publicationSites[item]?.url})`',
         },
         props: {
           noDataText: 'This dataset is not published on any site, you cannot publish it to a catalog.',
