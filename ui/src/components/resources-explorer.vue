@@ -13,6 +13,7 @@
     :loading="isLoading ? 'primary' : false"
     :loading-text="t('loading')"
     :row-props="(data: any) => ({
+      class: isRowSelected(data.item) ? 'text-primary' : undefined,
       onClick: () => handleRowClick(data.item),
       style: !shouldSelectFolder && data.item.type === 'resource' ? 'cursor: pointer' : 'cursor: default'
     })"
@@ -62,10 +63,12 @@
       </div>
     </template>
 
+    <!-- A radio, not a checkbox: only one resource can be selected at a time -->
     <template #item.data-table-select="{ internalItem, isSelected, toggleSelect }">
-      <v-checkbox-btn
+      <v-radio
         v-if="internalItem.selectable"
         :model-value="isSelected(internalItem)"
+        :value="true"
         color="primary"
         @update:model-value="toggleSelect(internalItem)"
       />
@@ -217,6 +220,9 @@ const existingImports = useFetch<{ results: Pick<Import, 'remoteResource'>[] }>(
 const isResourceImported = (resourceId: string): boolean => {
   return existingImports.data.value?.results.some(imp => imp.remoteResource.id === resourceId)!!
 }
+
+/** Whether a row is the currently selected resource */
+const isRowSelected = (item: any) => !shouldSelectFolder.value && item.type === 'resource' && selected.value.includes(item.id)
 
 /** Function to handle row click for resource selection */
 const handleRowClick = (item: any) => {
