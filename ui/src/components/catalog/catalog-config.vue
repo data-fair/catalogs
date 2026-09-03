@@ -42,9 +42,10 @@ const hasPluginConfig = computed(() => {
 })
 
 const catalogSchema = computed(() => {
+  if (!plugin.value) return
   const builder = jsonSchema(catalogSchemaBase).removeReadonlyProperties()
   if (hasPluginConfig.value) {
-    builder.addProperty('config', { ...plugin.value!.configSchema, title: t('configuration') })
+    builder.addProperty('config', { ...plugin.value.configSchema, title: t('configuration') })
   }
   return builder.schema
 })
