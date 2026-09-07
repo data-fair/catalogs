@@ -23,12 +23,12 @@ async function packPluginDir (pluginDir: string, tarballPath: string): Promise<v
   const pack = tarStream.pack()
   const writeDone = pipeline(pack, createGzip(), createWriteStream(tarballPath))
 
-  const addEntry = (header: tarStream.Headers, body?: string): Promise<void> =>
+  const addEntry = (header: Parameters<tarStream.Pack['entry']>[0], body?: string): Promise<void> =>
     new Promise<void>((resolve, reject) => {
       const cb = (err?: Error | null) => err ? reject(err) : resolve()
       if (body !== undefined) { pack.entry(header, body, cb); return }
       // Non-file entries (symlinks) carry no body — the linkname is in the header.
-      if (header.type && header.type !== 'file') { pack.entry(header, cb).end(); return }
+      if (header.type && header.type !== 'file') { pack.entry(header, cb).end(undefined); return }
       const entry = pack.entry(header, cb)
       entry.on('error', reject)
       createReadStream(path.join(pluginDir, header.name.replace(/^package\//, '')))
