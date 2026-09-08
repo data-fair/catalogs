@@ -1,11 +1,18 @@
 # =============================
 # Base Node image
 # =============================
-FROM node:24.11.1-alpine3.22 AS base
+FROM node:24.20.0-alpine3.24 AS base
 
 WORKDIR /app
 ENV NODE_ENV=production
 ENV DEBUG=upgrade*
+
+# =============================
+# Runtime base, patched against alpine releases newer than the node image
+# =============================
+FROM base AS runtime
+
+RUN apk upgrade --no-cache
 
 # =============================
 # Package preparation (stripping version for caching)
@@ -74,7 +81,7 @@ RUN mkdir -p /app/shared/node_modules
 # =============================
 # Final Worker Image
 # =============================
-FROM base AS worker
+FROM runtime AS worker
 
 COPY --from=worker-installer /app/node_modules node_modules
 COPY worker worker
@@ -106,7 +113,7 @@ RUN mkdir -p /app/api/node_modules
 # =============================
 # Final API Image
 # =============================
-FROM base AS main
+FROM runtime AS main
 
 COPY --from=api-installer /app/node_modules node_modules
 COPY shared shared
