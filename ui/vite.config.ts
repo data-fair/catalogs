@@ -14,7 +14,7 @@ import { commonjsDeps } from '@koumoul/vjsf/utils/build.js'
 // https://vitejs.dev/config/
 export default defineConfig({
   base: '/catalogs',
-  optimizeDeps: { include: ['debug', 'easymde', ...commonjsDeps] },
+  optimizeDeps: { include: ['debug', ...commonjsDeps] },
   resolve: {
     alias: {
       '~': path.resolve(__dirname, 'src/')
