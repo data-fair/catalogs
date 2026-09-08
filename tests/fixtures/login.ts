@@ -11,8 +11,8 @@ async function performLogin (page: any, context: any, url: string, user: string)
   const password = user === 'test_superadmin' ? 'superpasswd' : 'passwd'
   const loginUrl = `${baseUrl}/simple-directory/login?redirect=${encodeURIComponent(fullUrl)}`
   await page.goto(loginUrl)
-  await page.getByLabel('Adresse mail').fill(`${user}@test.com`)
-  await page.getByLabel('Mot de passe').fill(password)
+  await page.fill('input[name="email"]', `${user}@test.com`)
+  await page.fill('input[name="password"]', password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
   await page.waitForURL(fullUrl, { timeout: 10000 })
   cookieCache.set(user, await context.cookies())
