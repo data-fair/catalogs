@@ -8,13 +8,6 @@ ENV NODE_ENV=production
 ENV DEBUG=upgrade*
 
 # =============================
-# Runtime base, patched against alpine releases newer than the node image
-# =============================
-FROM base AS runtime
-
-RUN apk upgrade --no-cache
-
-# =============================
 # Package preparation (stripping version for caching)
 # =============================
 FROM base AS package-strip
@@ -81,7 +74,7 @@ RUN mkdir -p /app/shared/node_modules
 # =============================
 # Final Worker Image
 # =============================
-FROM runtime AS worker
+FROM base AS worker
 
 COPY --from=worker-installer /app/node_modules node_modules
 COPY worker worker
@@ -113,7 +106,7 @@ RUN mkdir -p /app/api/node_modules
 # =============================
 # Final API Image
 # =============================
-FROM runtime AS main
+FROM base AS main
 
 COPY --from=api-installer /app/node_modules node_modules
 COPY shared shared
