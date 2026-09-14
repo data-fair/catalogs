@@ -69,6 +69,14 @@ export default createIdentitiesRouter(
     // Delete all catalogs, imports and publications for this identity
     await deleteFromAllCollections({ 'owner.type': identity.type, 'owner.id': identity.id })
 
+    if (identity.type === 'user') {
+      // what the user authored on the resources of others keeps the trace of the action without the name
+      await Promise.all([
+        updateAllCollections({ 'created.id': identity.id }, { $unset: { 'created.name': 1 } }),
+        updateAllCollections({ 'updated.id': identity.id }, { $unset: { 'updated.name': 1 } })
+      ])
+    }
+
     // Remote datasets are not deleted, only the links to them
     // When departments are deleted, do nothing
   }

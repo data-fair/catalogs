@@ -6,12 +6,12 @@
   />
   <v-list-item
     :prepend-icon="mdiPencil"
-    :title="catalog?.updated.name"
+    :title="catalog?.updated.name ?? t('formerUser')"
     :subtitle="dayjs(catalog?.updated.date).format(t('dateFormat'))"
   />
   <v-list-item
     :prepend-icon="mdiPlusCircleOutline"
-    :title="catalog?.created.name"
+    :title="catalog?.created.name ?? t('formerUser')"
     :subtitle="dayjs(catalog?.created.date).format(t('dateFormat'))"
   />
   <v-list-item
@@ -44,8 +44,10 @@ const avatarUrl = computed(() => {
 <i18n lang="yaml">
   en:
     dateFormat: 'D MMM YYYY at HH:mm'
+    formerUser: Former user
   fr:
     dateFormat: 'D MMM YYYY à HH:mm'
+    formerUser: Ancien utilisateur
 </i18n>
 
 <style scoped>

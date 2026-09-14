@@ -51,7 +51,6 @@ export default {
       additionalProperties: false,
       required: [
         'id',
-        'name',
         'date'
       ],
       readOnly: true,
