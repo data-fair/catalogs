@@ -60,6 +60,12 @@ export default createIdentitiesRouter(
         )
       )
       await Promise.all(departmentUpdates)
+      // the directory sends the complete list of departments: a department missing from it was
+      // deleted, its resources keep the id (still reachable by the organization admins) but not the name
+      await updateAllCollections(
+        { 'owner.type': identity.type, 'owner.id': identity.id, 'owner.department': { $exists: true, $nin: identity.departments.map(d => d.id) } },
+        { $unset: { 'owner.departmentName': 1 } }
+      )
     }
   },
 
@@ -69,7 +75,14 @@ export default createIdentitiesRouter(
     // Delete all catalogs, imports and publications for this identity
     await deleteFromAllCollections({ 'owner.type': identity.type, 'owner.id': identity.id })
 
+    if (identity.type === 'user') {
+      // what the user authored on the resources of others keeps the trace of the action without the name
+      await Promise.all([
+        updateAllCollections({ 'created.id': identity.id }, { $unset: { 'created.name': 1 } }),
+        updateAllCollections({ 'updated.id': identity.id }, { $unset: { 'updated.name': 1 } })
+      ])
+    }
+
     // Remote datasets are not deleted, only the links to them
-    // When departments are deleted, do nothing
   }
 )

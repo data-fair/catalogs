@@ -30,7 +30,7 @@
       <template #append>
         <owner-avatar
           v-if="showOwner"
-          :owner="catalog.owner"
+          :owner="displayOwner(catalog.owner)"
         />
       </template>
     </v-card-item>
@@ -101,6 +101,7 @@ import ownerAvatar from '@data-fair/lib-vuetify/owner-avatar.vue'
 import { mdiPowerPlug } from '@mdi/js'
 
 const { t } = useI18n()
+const { displayOwner } = useDisplayOwner()
 const { catalog, showOwner, plugin } = defineProps<{
   catalog: CatalogsGetRes['results'][number]
   /** Registry artefact of this catalog's plugin — absent if it was removed from the registry. */

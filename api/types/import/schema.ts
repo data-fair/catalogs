@@ -37,7 +37,6 @@ export default {
       additionalProperties: false,
       required: [
         'id',
-        'name',
         'date'
       ],
       readOnly: true,
@@ -63,7 +62,6 @@ export default {
       readOnly: true,
       required: [
         'id',
-        'name',
         'date'
       ],
       properties: {
