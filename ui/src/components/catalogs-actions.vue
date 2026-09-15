@@ -94,6 +94,7 @@ const { adminMode, plugins, facets } = defineProps<{
 }>()
 
 const { t } = useI18n()
+const { departmentLabel } = useDisplayOwner()
 const search = defineModel('search', { type: String, default: '' })
 const showAll = defineModel('showAll', { type: Boolean, default: false })
 const pluginsSelected = defineModel('pluginsSelected', { type: Array, required: true })
@@ -138,7 +139,7 @@ const ownersItems = computed(() => {
       const items = []
       owner.departments?.forEach(department => {
         items.push({
-          display: `${owner.name} - ${department.departmentName || department.department} (${department.count})`,
+          display: `${owner.name} - ${departmentLabel(department.department, department.departmentName)} (${department.count})`,
           ownerKey: `organization:${owner.id}:${department.department}`
         })
       })

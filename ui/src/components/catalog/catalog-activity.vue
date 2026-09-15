@@ -24,12 +24,13 @@
 
 const { dayjs } = useLocaleDayjs()
 const { t } = useI18n()
+const { departmentLabel } = useDisplayOwner()
 const { catalog, plugin } = useCatalogStore()
 
 const ownerName = computed(() => {
   if (!catalog.value) return ''
   const baseName = catalog.value.owner.name || catalog.value.owner.id
-  const departmentInfo = catalog.value.owner.departmentName || catalog.value.owner.department
+  const departmentInfo = departmentLabel(catalog.value.owner.department, catalog.value.owner.departmentName)
   return departmentInfo
     ? `${baseName} - ${departmentInfo}`
     : baseName

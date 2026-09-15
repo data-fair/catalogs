@@ -36,6 +36,12 @@ test.describe('identity webhooks', () => {
     fresh = (await superadmin.get(`/api/catalogs/${catalog._id}`)).data
     expect(fresh.owner.name).toBe('Renamed Org 1')
     expect(fresh.owner.departmentName).toBe('Renamed Department')
+
+    // dep1 is missing from the complete list of departments: it was deleted, only its id remains
+    await axIdentities.post('/api/identities/organization/test_org1', { name: 'Renamed Org 1', departments: [{ id: 'dep2', name: 'Department 2' }] })
+    fresh = (await superadmin.get(`/api/catalogs/${catalog._id}`)).data
+    expect(fresh.owner.department).toBe('dep1')
+    expect(fresh.owner.departmentName).toBeUndefined()
   })
 
   test('should keep only the id of a former user', async () => {
