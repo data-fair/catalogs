@@ -64,6 +64,8 @@
     "typescript": "^5.8.3"
   },
   "relativeDependencies": {
-    "@data-fair/types-catalogs": "./types-catalogs"
+    "@data-fair/types-catalogs": "./types-catalogs",
+    "@data-fair/lib-vue": "../lib/packages/vue",
+    "@data-fair/lib-vuetify": "../lib/packages/vuetify"
   }
 }
