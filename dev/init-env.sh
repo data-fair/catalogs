@@ -22,6 +22,10 @@ SD_PORT=$((RANDOM_NB + 30))
 EVENTS_PORT=$((RANDOM_NB + 31))
 DF_PORT=$((RANDOM_NB + 32))
 REGISTRY_PORT=$((RANDOM_NB + 33))
+
+# all dev services listen on the loopback, the SSRF protection of the default http agents
+# would refuse them (cf @data-fair/lib-node http-agents)
+SSRF_PUBLIC_IPS=127.0.0.1,::1
 EOF
 
 echo ".env file created"
