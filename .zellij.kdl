@@ -9,6 +9,10 @@ layout {
         command "${DEV_SHELL}"
         args "-ic" "npm run dev-deps"
       }
+      pane name="bridge" {
+        command "${DEV_SHELL}"
+        args "-ic" "nvm use > /dev/null 2>&1 && npm run dev-bridge"
+      }
     }
     pane {
       split_direction "vertical"

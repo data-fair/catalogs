@@ -6,6 +6,7 @@
   "scripts": {
     "build-types": "df-build-types ./",
     "check-types": "tsc",
+    "dev-bridge": "mkdir -p dev/logs && dotenv -- df-agents-bridge 2>&1 | tee dev/logs/dev-bridge.log",
     "dev-api": "mkdir -p dev/logs && npm -w api run dev 2>&1 | tee dev/logs/dev-api.log",
     "dev-deps": "mkdir -p dev/logs && docker compose --profile dev up -d --wait && docker compose --profile dev logs -f 2>&1 | tee dev/logs/docker-compose.log",
     "dev-ui": "mkdir -p dev/logs && npm -w ui run dev 2>&1 | tee dev/logs/dev-ui.log",
@@ -15,6 +16,8 @@
     "lint-fix": "eslint --fix . && npm -w ui run lint-fix",
     "prepare": "husky || true",
     "stop-dev-deps": "docker compose --profile dev stop",
+    "simulate": "playwright test -c playwright.sim.config.ts --project=simulate",
+    "simulate:report": "dotenv -- node --experimental-strip-types --disable-warning=ExperimentalWarning simulations/report.ts",
     "test": "playwright test --max-failures=1",
     "test-unit": "playwright test --project unit --max-failures=1",
     "test-api": "playwright test --project api --max-failures=1",
@@ -43,10 +46,13 @@
     "@data-fair/lib-types-builder": "^1.11.6"
   },
   "devDependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.3.295",
     "@commitlint/config-conventional": "^20.5.0",
+    "@data-fair/lib-agents-sim": "^0.10.0",
     "@data-fair/lib-node": "^2.15.0",
     "@data-fair/lib-utils": "^1.10.1",
     "@json-layout/core": "~2.12.1",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@playwright/test": "^1.60.0",
     "@types/debug": "^4.1.12",
     "@types/fs-extra": "^11.0.4",

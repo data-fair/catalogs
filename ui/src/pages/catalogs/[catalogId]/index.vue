@@ -108,6 +108,8 @@ import DfSectionTabs from '@data-fair/lib-vuetify/section-tabs.vue'
 import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
 import clone from '@data-fair/lib-utils/clone.js'
 import equal from 'fast-deep-equal'
+import { until } from '@vueuse/core'
+import { emitAgentEvent, useAgentTool } from '@data-fair/lib-vue-agents'
 
 const route = useRoute<'/catalogs/[catalogId]/'>()
 const router = useRouter()
@@ -158,6 +160,7 @@ const save = useAsyncAction(
 
     Object.assign(catalog.value, res)
     resetEdit()
+    emitAgentEvent('catalog-saved', { catalog: catalog.value._id })
   },
   {
     success: t('catalogSaved'),
@@ -176,6 +179,81 @@ const tabs = computed(() => {
   }
   tabs.push({ key: 'configuration', title: t('tab.configuration'), icon: mdiCog })
   return tabs
+})
+
+useAgentPage({
+  key: 'catalog',
+  state: () => catalog.value && {
+    catalog: {
+      id: catalog.value._id,
+      title: catalog.value.title,
+      type: plugin.value?.metadata?.title ?? catalog.value.plugin,
+      capabilities: catalog.value.capabilities
+    }
+  },
+  activeTab,
+  tabs,
+  saveLabel: () => t('save')
+})
+
+useAgentRemoteCatalog(catalog)
+
+useAgentTool({
+  name: 'list_catalog_items',
+  description: 'List the imports or the publications of this catalog, with their id and status, to open one with open_catalog_item.',
+  annotations: { title: t('agentListItems'), readOnlyHint: true },
+  inputSchema: {
+    type: 'object' as const,
+    properties: { kind: { type: 'string' as const, enum: ['import', 'publication'] } },
+    required: ['kind'] as const
+  },
+  execute: async ({ kind }) => {
+    const { results } = await $fetch<{ results: any[] }>(`/${kind}s`, { query: { catalogId: route.params.catalogId, size: 100 } })
+    if (!results.length) return `This catalog has no ${kind}s.`
+    return results.map(item => kind === 'import'
+      ? `- ${item.remoteResource.title ?? item.remoteResource.id} (id: \`${item._id}\`) — ${item.status}${item.nextImportDate ? `, next run ${item.nextImportDate.slice(0, 10)}` : ''}`
+      : `- ${item.dataFairDataset.title ?? item.dataFairDataset.id} (id: \`${item._id}\`) — ${item.status}`
+    ).join('\n')
+  }
+})
+
+useAgentTool({
+  name: 'open_catalog_item',
+  description: 'Open the page of an import or a publication of this catalog: its state, its last run logs and its configuration.',
+  annotations: { title: t('agentOpenItem'), readOnlyHint: true },
+  inputSchema: {
+    type: 'object' as const,
+    properties: {
+      kind: { type: 'string' as const, enum: ['import', 'publication'] },
+      id: { type: 'string' as const, description: 'The id given by list_catalog_items' }
+    },
+    required: ['kind', 'id'] as const
+  },
+  execute: async ({ kind, id }) => {
+    await router.push(`/catalogs/${route.params.catalogId}/${kind}s/${encodeURIComponent(id)}`)
+    await untilToolsSettle()
+    return `The ${kind} page is open, its tools are registered and callable from your next step.`
+  }
+})
+
+useAgentTool({
+  name: 'open_catalog_wizard',
+  description: 'Open the wizard that imports a resource of this remote catalog as a dataset, or that publishes a dataset to it. The wizard tools are registered when this returns.',
+  annotations: { title: t('agentOpenWizard'), readOnlyHint: true },
+  inputSchema: {
+    type: 'object' as const,
+    properties: { wizard: { type: 'string' as const, enum: ['import', 'publication'] } },
+    required: ['wizard'] as const
+  },
+  execute: async ({ wizard }) => {
+    const capabilities = (await until(catalog).toBeTruthy())?.capabilities ?? []
+    if (wizard === 'import' ? !capabilities.includes('import') : !supportPublication.value) {
+      return { content: [{ type: 'text' as const, text: `This catalog does not support ${wizard}s.` }], isError: true }
+    }
+    await router.push(`/catalogs/${route.params.catalogId}/${wizard}s/new`)
+    await untilToolsSettle()
+    return `The ${wizard} wizard is open, its tools are registered and callable from your next step.`
+  }
 })
 
 const deleteCatalog = useAsyncAction(
@@ -216,6 +294,9 @@ const assetsUrl = computed(() => {
 
 <i18n lang="yaml">
   en:
+    agentListItems: List the imports or publications
+    agentOpenItem: Open an import or publication
+    agentOpenWizard: Open an import or publication wizard
     backToCatalogs: Back to catalogs
     cancel: Cancel
     catalogDeleted: Catalog deleted!
@@ -230,6 +311,9 @@ const assetsUrl = computed(() => {
       imports: Imports
       publications: Publications
   fr:
+    agentListItems: Lister les imports ou les publications
+    agentOpenItem: Ouvrir un import ou une publication
+    agentOpenWizard: Ouvrir un assistant d'import ou de publication
     backToCatalogs: Retour aux catalogues
     cancel: Annuler
     catalogDeleted: Catalogue supprimé !

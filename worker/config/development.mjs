@@ -3,6 +3,7 @@ const eventsPort = process.env.EVENTS_PORT ?? '8088'
 const registryPort = process.env.REGISTRY_PORT ?? '8089'
 const devHost = process.env.DEV_HOST ?? 'localhost'
 const nginxPort = process.env.NGINX_PORT ?? '5600'
+const dfPort = process.env.DF_PORT ?? '8081'
 
 export default {
   cipherPassword: 'dev',
@@ -13,7 +14,7 @@ export default {
   observer: {
     active: false
   },
-  privateDataFairUrl: `http://${devHost}:${nginxPort}/data-fair`,
+  privateDataFairUrl: `http://localhost:${dfPort}`,
   privateEventsUrl: `http://localhost:${eventsPort}`,
   privateRegistryUrl: `http://localhost:${registryPort}`,
   secretKeys: {

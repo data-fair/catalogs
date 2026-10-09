@@ -93,6 +93,25 @@ logs into the test reporter output.
 The full test suite runs on `git push` via husky. When iterating, run only the related
 test cases.
 
+### AI assistant
+
+The UI exposes WebMCP tools and host state to the data-fair chat, see
+`docs/architecture/agent-integration.md`. Update it when you add, rename or remove a tool.
+
+### Simulations
+
+Judged browser simulations of the AI assistant (`@data-fair/lib-agents-sim`): a simulated
+person pursues a goal with the real assistant on a real model, in the data-fair back-office
+shell embedding the catalogs UI, then a judge reads the transcript. Cases live in
+`simulations/cases/index.ts`. Run and judge them with the `/agents-sim` skill.
+
+- Never part of `npm test`, CI or hooks (separate `playwright.sim.config.ts`): they spend
+  Claude plan quota.
+- They need the `agents` container and the Claude Code bridge (`bridge` zellij pane /
+  `npm run dev-bridge`, port `BRIDGE_PORT` in `.env`). Only the user starts the bridge.
+- A run wipes `test_`-owned catalogs, imports and publications (`DELETE /api/test-env`) and
+  rewrites `test_org1`'s agents settings and its data-fair `agentChat` setting.
+
 ### Linting & Type Checking
 
 ```bash

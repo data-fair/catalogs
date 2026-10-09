@@ -60,6 +60,9 @@
                 v-model="editImport"
                 :schema="importSchema"
                 :options="vjsfOptions"
+                data-title="Import configuration"
+                prefix-name="importConfig_"
+                :sub-agent="true"
               >
                 <template #scheduling-summary="{ node }">
                   {{ t(`frequency.${node.data.type}`) }}
@@ -90,7 +93,9 @@ import cronstrue from 'cronstrue'
 import 'cronstrue/locales/en'
 import 'cronstrue/locales/fr'
 
-import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
+import { emitAgentEvent } from '@data-fair/lib-vue-agents'
+import Vjsf from '@koumoul/vjsf/webmcp'
+import type { Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import clone from '@data-fair/lib-utils/clone.js'
 import equal from 'fast-deep-equal'
@@ -167,6 +172,7 @@ const save = useAsyncAction(
 
     Object.assign(imp.value, res)
     resetEdit()
+    emitAgentEvent('import-saved', { import: imp.value._id })
   },
   {
     success: t('importSaved'),
@@ -189,6 +195,31 @@ const tabs = computed(() => [
   { key: 'logs', title: t('tab.logs'), icon: mdiCalendarText },
   { key: 'configuration', title: t('tab.configuration'), icon: mdiCog }
 ])
+
+useAgentRemoteCatalog(catalog)
+
+useAgentPage({
+  key: 'import',
+  state: () => imp.value && {
+    import: {
+      id: imp.value._id,
+      remoteResource: imp.value.remoteResource,
+      dataset: imp.value.dataFairDataset ?? 'none: no run has created a dataset yet',
+      status: imp.value.status,
+      scheduledRuns: !imp.value.isSchedulingActive
+        ? 'scheduling disabled, it only runs when re-imported'
+        : imp.value.scheduling.length ? `${imp.value.scheduling.length} rule(s)` : 'scheduling enabled but without any rule, it only runs when re-imported',
+      lastImportDate: imp.value.lastImportDate,
+      nextImportDate: imp.value.nextImportDate,
+      ...summarizeLogs(imp.value.logs)
+    },
+    rerun: 'The person runs the import again now with the « Re-importer » action of the page; there is no tool for it.',
+    configure: 'The scheduling (« Activer la planification » and its rules) and the plugin options are in the configuration tab: open it with open_page_tab, then its importConfig_ form tools edit them, and the person saves. Opening the form fills the defaults of empty fields, so the saved values are the ones in this state.'
+  },
+  activeTab,
+  tabs,
+  saveLabel: () => t('save')
+})
 
 const timezoneLabel = (timeZone: string) => {
   if (timeZone === 'Europe/Paris') return ''
