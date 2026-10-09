@@ -55,6 +55,10 @@ server {
     proxy_pass http://localhost:${DF_PORT}/;
   }
 
+  location /agents/ {
+    proxy_pass http://localhost:${AGENTS_PORT};
+  }
+
   location /events/ {
     proxy_pass http://localhost:${EVENTS_PORT};
   }
