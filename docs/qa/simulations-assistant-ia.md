@@ -36,10 +36,10 @@ Earlier runs of the day, then this baseline:
 
 ## Open
 
-- Opening a configuration tab makes the form look modified: vjsf fills the plugin's defaults,
-  « Annuler » / « Enregistrer » appear, and the leave guard asks for confirmation when the
-  person leaves without having typed anything. In the import diagnosis on haiku this blocked
-  every navigation (the test browser dismisses the confirmation).
+- Opening a configuration tab fills the plugin's defaults (intended: saving stores them), so
+  leaving the page asks for confirmation. The test browser dismissed it and blocked every
+  navigation in the import diagnosis on haiku; the runner now accepts dialogs and records them
+  in the console errors the judge reads.
 - data-fair's `navigate` reports success when the catalogs frame does not move.
 - The catalogs `*-ui-config.js` request answers a 404 page through the dev nginx.
 - json-layout's form sub-agent has no title, the chat shows « CatalogConfig Form ».

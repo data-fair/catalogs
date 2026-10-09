@@ -51,6 +51,11 @@ for (const simCase of selected) {
 
     page.on('console', m => { if (m.type() === 'error') consoleErrors.push(m.text()) })
     page.on('pageerror', err => consoleErrors.push(`pageerror: ${err.message}`))
+    // the persona has no dialog tool: confirm what a person would (leaving a form with the defaults vjsf filled in), and keep a trace for the judge
+    page.on('dialog', async dialog => {
+      consoleErrors.push(`dialog accepted by the runner: ${dialog.type()} « ${dialog.message()} »`)
+      await dialog.accept()
+    })
     // The chat iframe POSTs to the agents service's gateway route, so the browser
     // sees the full message array and tool definitions. page.on covers sub-frames,
     // which is why capturing on the top-level page is enough.
