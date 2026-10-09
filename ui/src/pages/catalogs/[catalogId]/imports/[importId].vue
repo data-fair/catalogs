@@ -213,7 +213,8 @@ useAgentPage({
       nextImportDate: imp.value.nextImportDate,
       ...summarizeLogs(imp.value.logs)
     },
-    rerun: 'The person runs the import again now with the « Re-importer » action of the page; there is no tool for it.'
+    rerun: 'The person runs the import again now with the « Re-importer » action of the page; there is no tool for it.',
+    configure: 'The scheduling (« Activer la planification » and its rules) and the plugin options are in the configuration tab: open it with open_page_tab, then its importConfig_ form tools edit them, and the person saves. Opening the form fills the defaults of empty fields, so the saved values are the ones in this state.'
   },
   activeTab,
   tabs,
