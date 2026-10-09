@@ -283,4 +283,48 @@ test.describe('Permissions', () => {
         .rejects.toMatchObject({ status: 403 })
     })
   })
+
+  test.describe('permissions-ownership', () => {
+    let importDoc: any
+    let publication: any
+
+    test.beforeEach(async () => {
+      const catalog = await adminOrg.post('/api/catalogs', createCatalogPayload({
+        type: 'organization', id: 'test_org1', name: 'Test Org 1'
+      }))
+      importDoc = (await adminOrg.post('/api/imports', {
+        catalog: { id: catalog.data._id },
+        config: {},
+        remoteResource: { id: 'test-resource' },
+        scheduling: [],
+        shouldUpdateMetadata: true,
+        shouldUpdateSchema: true
+      })).data
+      publication = (await adminOrg.post('/api/publications', {
+        catalog: { id: catalog.data._id },
+        dataFairDataset: { id: 'org-dataset' },
+        publicationSite: { title: 'Data Fair', url: dataFairUrl, datasetUrlTemplate: `${dataFairUrl}/dataset/{id}` },
+        action: 'createFolderInRoot'
+      })).data
+    })
+
+    test('admin from other organization cannot delete an import (403)', async () => {
+      await expect(adminOtherOrg.delete(`/api/imports/${importDoc._id}`)).rejects.toMatchObject({ status: 403 })
+      expect((await adminOrg.get(`/api/imports/${importDoc._id}`)).status).toBe(200)
+      expect((await adminOrg.delete(`/api/imports/${importDoc._id}`)).status).toBe(204)
+    })
+
+    test('admin from other organization cannot republish or delete a publication (403)', async () => {
+      await expect(adminOtherOrg.post(`/api/publications/${publication._id}`)).rejects.toMatchObject({ status: 403 })
+      await expect(adminOtherOrg.delete(`/api/publications/${publication._id}`)).rejects.toMatchObject({ status: 403 })
+      await expect(adminOtherOrg.delete(`/api/publications/${publication._id}?onlyLink=true`)).rejects.toMatchObject({ status: 403 })
+      expect((await adminOrg.post(`/api/publications/${publication._id}`)).status).toBe(204)
+      expect((await adminOrg.delete(`/api/publications/${publication._id}?onlyLink=true`)).status).toBe(204)
+    })
+
+    test('republishing or deleting an unknown publication returns 404', async () => {
+      await expect(adminOrg.post('/api/publications/unknown')).rejects.toMatchObject({ status: 404 })
+      await expect(adminOrg.delete('/api/publications/unknown')).rejects.toMatchObject({ status: 404 })
+    })
+  })
 })

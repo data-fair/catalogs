@@ -111,7 +111,9 @@ router.post('/', async (req, res) => {
 // Update a publication
 router.post('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  assertAccountRole(sessionState, sessionState.account, 'admin')
+  const publicationDoc = await mongo.publications.findOne({ _id: req.params.id })
+  if (!publicationDoc) throw httpError(404, 'Publication not found')
+  assertAccountRole(sessionState, publicationDoc.owner, 'admin')
 
   await mongo.publications.updateOne(
     { _id: req.params.id },
@@ -125,7 +127,9 @@ router.post('/:id', async (req, res) => {
 // Delete a publication
 router.delete('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  assertAccountRole(sessionState, sessionState.account, 'admin')
+  const publicationDoc = await mongo.publications.findOne({ _id: req.params.id })
+  if (!publicationDoc) throw httpError(404, 'Publication not found')
+  assertAccountRole(sessionState, publicationDoc.owner, 'admin')
 
   if (req.query.onlyLink === 'true') {
     await mongo.publications.deleteOne({ _id: req.params.id })

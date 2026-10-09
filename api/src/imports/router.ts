@@ -191,11 +191,12 @@ router.patch('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  assertAccountRole(sessionState, sessionState.account, 'admin')
+  const importDoc = await mongo.imports.findOne({ _id: req.params.id })
+  if (!importDoc) throw httpError(404, 'Import not found')
+  assertAccountRole(sessionState, importDoc.owner, 'admin')
 
-  const deletedImport = await mongo.imports.findOneAndDelete({ _id: req.params.id })
-  if (!deletedImport) throw httpError(404, 'Import not found')
-  sendImportEvent(deletedImport, 'a été supprimé', 'delete', sessionState)
+  await mongo.imports.deleteOne({ _id: req.params.id })
+  sendImportEvent(importDoc, 'a été supprimé', 'delete', sessionState)
 
   res.status(204).send()
 })
