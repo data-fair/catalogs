@@ -8,7 +8,7 @@ const ROOT = `http://${process.env.DEV_HOST}:${process.env.NGINX_PORT}`
 export const CHAT_FRAME = 'iframe[src*="/agents/"][src*="/chat"]'
 
 export function resolveRoute (route: string, ids: SeedIds) {
-  return route.replaceAll('{catalogId}', ids.catalogId)
+  return route.replaceAll('{catalogId}', ids.catalogId).replaceAll('{failedImportId}', ids.failedImportId)
 }
 
 /** simple-directory keeps the active organization from the login's `org` parameter. */

@@ -86,7 +86,7 @@ test.describe('simulation runner helpers', () => {
     expect(new Set(names).size).toBe(names.length)
     for (const c of cases) {
       expect(c.name).toMatch(/^[a-z0-9-]+$/)
-      expect(resolveRoute(c.route, { catalogId: 'abc' })).toMatch(/^\/data-fair\/catalogs\/[a-z0-9/]+$/)
+      expect(resolveRoute(c.route, { catalogId: 'abc', failedImportId: 'def' })).toMatch(/^\/data-fair\/catalogs\/[a-z0-9/]+$/)
       expect(c).not.toHaveProperty('expected')
     }
   })
