@@ -28,7 +28,8 @@ export const useAgentRemoteCatalog = (catalog: Ref<Catalog | null>) => {
           ...(page && current!.capabilities.includes('pagination') && { page, size: 20 })
         }
       })
-      return formatRemoteListing(listing, { page })
+      const ignored = q && !current!.capabilities.includes('search') ? 'This catalog has no full-text search, the query was ignored: browse the folders instead.\n' : ''
+      return ignored + formatRemoteListing(listing, { page })
     }
   })
 }

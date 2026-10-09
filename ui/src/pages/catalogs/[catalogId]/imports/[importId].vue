@@ -204,9 +204,11 @@ useAgentPage({
     import: {
       id: imp.value._id,
       remoteResource: imp.value.remoteResource,
-      dataset: imp.value.dataFairDataset,
+      dataset: imp.value.dataFairDataset ?? 'none: no run has created a dataset yet',
       status: imp.value.status,
-      scheduledRuns: imp.value.isSchedulingActive && imp.value.scheduling.length ? `${imp.value.scheduling.length} rule(s)` : 'none, it only runs when re-imported',
+      scheduledRuns: !imp.value.isSchedulingActive
+        ? 'scheduling disabled, it only runs when re-imported'
+        : imp.value.scheduling.length ? `${imp.value.scheduling.length} rule(s)` : 'scheduling enabled but without any rule, it only runs when re-imported',
       lastImportDate: imp.value.lastImportDate,
       nextImportDate: imp.value.nextImportDate,
       ...summarizeLogs(imp.value.logs)
