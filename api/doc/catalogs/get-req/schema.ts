@@ -10,6 +10,9 @@ export default {
     skip: {
       type: 'string'
     },
+    page: {
+      type: 'string'
+    },
     showAll: {
       type: 'string'
     },
