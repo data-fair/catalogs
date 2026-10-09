@@ -16,9 +16,9 @@ export async function seedAll (): Promise<SeedIds> {
   })
   // a remote resource deleted since it was imported: the mock plugin fails with « Resource … not found »
   const { data: failedImport } = await admin.post('/api/imports', {
-    catalog: { id: catalog._id },
+    catalog: { id: catalog._id, title: catalog.title },
     remoteResource: { id: 'statistiques-transport-2019', title: 'Statistiques transport 2019' },
-    config: {},
+    config: { nbRows: 10 },
     scheduling: [],
     shouldUpdateMetadata: true,
     shouldUpdateSchema: true

@@ -83,6 +83,7 @@ test.describe('agent tools', () => {
     expect((await callTool(page, 'list_catalog_items', { kind: 'import' })).text).toContain(`Listed resource (id: \`${imp._id}\`)`)
     expect((await callTool(page, 'open_catalog_item', { kind: 'import', id: imp._id })).isError).toBe(false)
     await expect(page).toHaveURL(new RegExp(`/imports/${imp._id}`))
+    expect((await callTool(page, 'search_remote_catalog')).text).toContain('[folder] Données Démographiques')
   })
 
   test('the catalog creation wizard lets the assistant pick the catalog type', async ({ page, goToWithAuth }) => {

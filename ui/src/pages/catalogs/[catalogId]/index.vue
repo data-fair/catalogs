@@ -196,6 +196,8 @@ useAgentPage({
   saveLabel: () => t('save')
 })
 
+useAgentRemoteCatalog(catalog)
+
 useAgentTool({
   name: 'list_catalog_items',
   description: 'List the imports or the publications of this catalog, with their id and status, to open one with open_catalog_item.',

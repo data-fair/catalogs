@@ -196,6 +196,8 @@ const tabs = computed(() => [
   { key: 'configuration', title: t('tab.configuration'), icon: mdiCog }
 ])
 
+useAgentRemoteCatalog(catalog)
+
 useAgentPage({
   key: 'import',
   state: () => imp.value && {
@@ -204,7 +206,7 @@ useAgentPage({
       remoteResource: imp.value.remoteResource,
       dataset: imp.value.dataFairDataset,
       status: imp.value.status,
-      schedulingActive: imp.value.isSchedulingActive,
+      scheduledRuns: imp.value.isSchedulingActive && imp.value.scheduling.length ? `${imp.value.scheduling.length} rule(s)` : 'none, it only runs when re-imported',
       lastImportDate: imp.value.lastImportDate,
       nextImportDate: imp.value.nextImportDate,
       ...summarizeLogs(imp.value.logs)

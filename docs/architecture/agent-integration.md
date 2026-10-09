@@ -20,6 +20,7 @@ through `@data-fair/lib-vue-agents`. Nothing here talks to an LLM, and no tool r
 | `pages/catalogs/new.vue` | `list_catalog_plugins`, `select_catalog_plugin` |
 | the three wizards (`composables/use-agent-wizard.ts`) | `wizard_go_to_step`, refuses the steps the person could not open either |
 | the catalog, import and publication pages (`composables/use-agent-page.ts`) | `open_page_tab`, since a form's tools only exist while its tab is open |
+| the catalog and import pages (`composables/use-agent-remote-catalog.ts`) | `search_remote_catalog`, to check what the remote catalog holds without leaving the page |
 | the catalog page | `open_catalog_wizard` (import or publication), `list_catalog_items` and `open_catalog_item` (imports and publications: the shell's `navigate` does not move the frame from a catalog to one of its imports) |
 
 A tool that mounts a form (a tab, a wizard step, a catalog type) returns only once the page's
