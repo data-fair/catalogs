@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { summarizeLogs, formatRemoteListing } from '../../../ui/src/utils/agent-state.ts'
+import { summarizeLogs, formatRemoteListing, untilStable } from '../../../ui/src/utils/agent-state.ts'
 
 test.describe('agent state helpers', () => {
   test('summarizeLogs keeps the last problems and messages, without task logs', () => {
@@ -31,5 +31,19 @@ test.describe('agent state helpers', () => {
       '- [resource] Stops (id: `r1`) — csv, updated 2026-03-04 — already imported'
     ].join('\n'))
     expect(formatRemoteListing({ results: [] })).toBe('Current folder: root\n0 items')
+  })
+
+  test('untilStable waits for a quiet window, and gives up at the deadline', async () => {
+    let value = 'a'
+    setTimeout(() => { value = 'b' }, 30)
+    let start = Date.now()
+    await untilStable(() => value, 100, 1000, 10)
+    expect(Date.now() - start).toBeGreaterThanOrEqual(120)
+    expect(Date.now() - start).toBeLessThan(500)
+
+    let n = 0
+    start = Date.now()
+    await untilStable(() => String(n++), 100, 200, 10)
+    expect(Date.now() - start).toBeLessThan(400)
   })
 })

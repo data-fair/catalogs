@@ -210,7 +210,7 @@ useAgentPage({
   },
   activeTab,
   tabs,
-  save: { unsaved: () => hasDiff.value, label: () => t('save') }
+  saveLabel: () => t('save')
 })
 
 const timezoneLabel = (timeZone: string) => {

@@ -6,7 +6,7 @@ export const useAgentPage = (opts: {
   state: () => object | null | undefined
   activeTab: Ref<string>
   tabs: MaybeRefOrGetter<{ key: string, title: string }[]>
-  save?: { unsaved: () => boolean, label: () => string }
+  saveLabel?: () => string
 }) => {
   const session = useSession()
 
@@ -17,9 +17,8 @@ export const useAgentPage = (opts: {
       ...state,
       openTab: opts.activeTab.value,
       tabs: toValue(opts.tabs).map(tab => `${tab.key} (${tab.title})`),
-      ...(opts.save && {
-        unsavedChanges: opts.save.unsaved(),
-        save: `Changes made in the configuration form are applied when the person clicks "${opts.save.label()}"; there is no tool for it.`
+      ...(opts.saveLabel && {
+        save: `Changes made in the configuration form are applied when the person clicks "${opts.saveLabel()}"; there is no tool for it.`
       })
     }
   })
@@ -37,7 +36,8 @@ export const useAgentPage = (opts: {
       const target = toValue(opts.tabs).find(t => t.key === tab)
       if (!target) return { content: [{ type: 'text' as const, text: `Unknown tab "${tab}".` }], isError: true }
       opts.activeTab.value = target.key
-      return `Tab "${target.title}" is open.`
+      await untilToolsSettle()
+      return `Tab "${target.title}" is open, its tools are registered and callable from your next step.`
     }
   })
 }

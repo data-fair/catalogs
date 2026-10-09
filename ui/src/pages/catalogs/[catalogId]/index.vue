@@ -108,6 +108,8 @@ import DfSectionTabs from '@data-fair/lib-vuetify/section-tabs.vue'
 import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
 import clone from '@data-fair/lib-utils/clone.js'
 import equal from 'fast-deep-equal'
+import { until } from '@vueuse/core'
+import { useAgentTool } from '@data-fair/lib-vue-agents'
 
 const route = useRoute<'/catalogs/[catalogId]/'>()
 const router = useRouter()
@@ -190,7 +192,27 @@ useAgentPage({
   },
   activeTab,
   tabs,
-  save: { unsaved: () => hasDiff.value, label: () => t('save') }
+  saveLabel: () => t('save')
+})
+
+useAgentTool({
+  name: 'open_catalog_wizard',
+  description: 'Open the wizard that imports a resource of this remote catalog as a dataset, or that publishes a dataset to it. The wizard tools are registered when this returns.',
+  annotations: { title: t('agentOpenWizard'), readOnlyHint: true },
+  inputSchema: {
+    type: 'object' as const,
+    properties: { wizard: { type: 'string' as const, enum: ['import', 'publication'] } },
+    required: ['wizard'] as const
+  },
+  execute: async ({ wizard }) => {
+    const capabilities = (await until(catalog).toBeTruthy())?.capabilities ?? []
+    if (wizard === 'import' ? !capabilities.includes('import') : !supportPublication.value) {
+      return { content: [{ type: 'text' as const, text: `This catalog does not support ${wizard}s.` }], isError: true }
+    }
+    await router.push(`/catalogs/${route.params.catalogId}/${wizard}s/new`)
+    await untilToolsSettle()
+    return `The ${wizard} wizard is open, its tools are registered and callable from your next step.`
+  }
 })
 
 const deleteCatalog = useAsyncAction(
@@ -231,6 +253,7 @@ const assetsUrl = computed(() => {
 
 <i18n lang="yaml">
   en:
+    agentOpenWizard: Open an import or publication wizard
     backToCatalogs: Back to catalogs
     cancel: Cancel
     catalogDeleted: Catalog deleted!
@@ -245,6 +268,7 @@ const assetsUrl = computed(() => {
       imports: Imports
       publications: Publications
   fr:
+    agentOpenWizard: Ouvrir un assistant d'import ou de publication
     backToCatalogs: Retour aux catalogues
     cancel: Annuler
     catalogDeleted: Catalogue supprimé !

@@ -10,6 +10,9 @@ const waitForTools = (page: Page, names: string[]) => page.waitForFunction((name
   return names.every(name => registered.includes(name))
 }, names, { timeout: 30_000 })
 
+// what the chat sees right after a tool call returns
+const registeredTools = (page: Page) => page.evaluate(() => (navigator as any).modelContext.listTools().map((t: any) => t.name) as string[])
+
 const callTool = async (page: Page, name: string, args: Record<string, unknown> = {}) => {
   const result: any = await page.evaluate(({ name, args }) => (navigator as any).modelContext.callTool({ name, arguments: args }), { name, args })
   return { text: result?.content?.[0]?.text as string, isError: !!result?.isError }
@@ -37,7 +40,7 @@ test.describe('agent tools', () => {
 
     await waitForTools(page, ['open_page_tab'])
     expect((await callTool(page, 'open_page_tab', { tab: 'configuration' })).isError).toBe(false)
-    await waitForTools(page, ['catalogConfig_describeState', 'catalogConfig_setFieldValue'])
+    expect(await registeredTools(page)).toEqual(expect.arrayContaining(['catalogConfig_describeState', 'catalogConfig_setFieldValue']))
 
     const state = (await callTool(page, 'catalogConfig_describeState')).text
     const titlePath = state.match(/(\/[^\s`"]*title)\b/)?.[1]
@@ -49,9 +52,12 @@ test.describe('agent tools', () => {
 
   test('the import wizard can be driven up to its configuration step', async ({ page, goToWithAuth }) => {
     const catalog = await createCatalog()
-    await goToWithAuth(`/catalogs/catalogs/${catalog._id}/imports/new`, 'test_admin1')
+    await goToWithAuth(`/catalogs/catalogs/${catalog._id}`, 'test_admin1')
 
-    await waitForTools(page, ['browse_remote_resources', 'select_remote_resource', 'wizard_go_to_step'])
+    await waitForTools(page, ['open_catalog_wizard'])
+    const opened = await callTool(page, 'open_catalog_wizard', { wizard: 'import' })
+    expect(opened.isError, opened.text).toBe(false)
+    expect(await registeredTools(page)).toEqual(expect.arrayContaining(['browse_remote_resources', 'select_remote_resource', 'wizard_go_to_step']))
     expect((await callTool(page, 'wizard_go_to_step', { step: '2' })).isError).toBe(true)
 
     const root = (await callTool(page, 'browse_remote_resources')).text
@@ -64,7 +70,7 @@ test.describe('agent tools', () => {
 
     expect((await callTool(page, 'select_remote_resource', { id: resourceId })).isError).toBe(false)
     expect((await callTool(page, 'wizard_go_to_step', { step: '2' })).isError).toBe(false)
-    await waitForTools(page, ['importConfig_describeState'])
+    expect(await registeredTools(page)).toContain('importConfig_describeState')
   })
 
   test('the catalog creation wizard lets the assistant pick the catalog type', async ({ page, goToWithAuth }) => {
@@ -73,6 +79,6 @@ test.describe('agent tools', () => {
     await waitForTools(page, ['list_catalog_plugins', 'select_catalog_plugin'])
     expect((await callTool(page, 'list_catalog_plugins')).text).toContain(mockPluginId)
     expect((await callTool(page, 'select_catalog_plugin', { plugin: mockPluginId })).isError).toBe(false)
-    await waitForTools(page, ['catalogConfig_describeState'])
+    expect(await registeredTools(page)).toContain('catalogConfig_describeState')
   })
 })

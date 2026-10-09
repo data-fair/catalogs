@@ -20,6 +20,11 @@ through `@data-fair/lib-vue-agents`. Nothing here talks to an LLM, and no tool r
 | `pages/catalogs/new.vue` | `list_catalog_plugins`, `select_catalog_plugin` |
 | the three wizards (`composables/use-agent-wizard.ts`) | `wizard_go_to_step`, refuses the steps the person could not open either |
 | the catalog, import and publication pages (`composables/use-agent-page.ts`) | `open_page_tab`, since a form's tools only exist while its tab is open |
+| the catalog page | `open_catalog_wizard` (import or publication) |
+
+A tool that mounts a form (a tab, a wizard step, a catalog type) returns only once the page's
+tool list has settled (`untilToolsSettle` in `utils/agent-state.ts`): the chat refreshes its tools
+between two requests of a turn, so the form tools are callable from the assistant's next step.
 
 Listing and describing catalogs from anywhere in the back-office is data-fair's job
 (`list_catalogs`, `describe_catalog` in data-fair's `connector-tools.ts`).
@@ -27,8 +32,10 @@ Listing and describing catalogs from anywhere in the back-office is data-fair's 
 ## Host state
 
 `useAgentState` keys, last value wins: `wizard` (current step, available steps, guidance, the
-submit button), `catalog`, `import`, `publication` (what the page shows, the open tab, unsaved
-changes; runs carry their last errors and messages, built by `utils/agent-state.ts`). The
+submit button), `catalog`, `import`, `publication` (what the page shows, the open tab, the button that saves;
+runs carry their last errors and messages, built by `utils/agent-state.ts`). There is no
+"unsaved changes" flag: vjsf fills the plugin's defaults when a form opens, so the page reads
+as modified before anyone types. The
 location is published by data-fair, whose route follows the frame.
 
 ## Simulations

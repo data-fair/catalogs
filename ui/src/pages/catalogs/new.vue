@@ -290,6 +290,7 @@ useAgentTool({
     step.value = hasDepartments.value ? '2' : '3'
     await nextTick()
     await until(pluginFetch.loading).toBe(false)
+    await untilToolsSettle()
     return `Catalog type "${artefactTitle(artefact)}" is selected. ` + (hasDepartments.value
       ? 'The person now picks the owner of the catalog.'
       : 'The configuration form is open, fill it with the catalogConfig_ form tools.')

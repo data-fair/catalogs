@@ -37,7 +37,8 @@ export const useAgentWizard = <S extends string>(opts: {
       if (!target) return { content: [{ type: 'text' as const, text: `Unknown step "${step}".` }], isError: true }
       if (!target.enabled) return { content: [{ type: 'text' as const, text: `Step "${target.title}" is not available yet: ${target.guidance}` }], isError: true }
       opts.step.value = target.value
-      return `Step "${target.title}" is open. ${target.guidance}`
+      await untilToolsSettle()
+      return `Step "${target.title}" is open, its tools are registered and callable from your next step. ${target.guidance}`
     }
   })
 }

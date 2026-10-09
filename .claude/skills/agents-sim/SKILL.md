@@ -16,6 +16,10 @@ Three things must be true, and each fails confusingly if it is not:
 1. The dev stack is up — `bash dev/status.sh`: nginx, dev-api, dev-ui, simple-directory,
    data-fair, registry, mongo, elasticsearch, and the `agents` container. Every case
    runs the catalogs UI from the `dev-ui` server inside the data-fair back-office shell.
+   After a branch switch or an `npm install`, run `npm run build-types` (the API validators
+   are gitignored build output) and warm the UI with `npm run test-e2e`: a cold Vite server
+   fails page chunks while it re-optimizes its dependencies, and the runner then marks the
+   run invalid.
 2. The data-fair container runs with `PRIVATE_AGENTS_URL` (see docker-compose.yml).
    Without it the back-office shows no chat at all and every back-office case dies
    waiting for the chat toggle. A container created before that line was added must

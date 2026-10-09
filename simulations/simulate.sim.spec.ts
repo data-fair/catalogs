@@ -201,6 +201,9 @@ for (const simCase of selected) {
     // is never the product's fault — but it does not throw either: the gateway answers
     // 200 and writes the failure into the SSE body, so the turn "completes". Every
     // other symptom is downstream of it, so it names the cause.
+    // a cold Vite dev server fails page chunks while it re-optimizes its dependencies: the run then measures the dev server
+    const devServerError = consoleErrors.find(e => e.includes('Outdated Optimize Dep') || e.includes('Failed to fetch dynamically imported module'))
+    if (devServerError) error = `dev server failure, warm it up and re-run (run is not judgeable): ${devServerError}`
     await gatewayErrors.settle()
     if (gatewayErrors.messages.length) {
       error = `provider error from the agents gateway (run is not judgeable): ${gatewayErrors.messages[0]}`
