@@ -205,7 +205,7 @@ useAgentWizard({
   step,
   steps: () => [
     { value: '1', title: t('step1.title'), enabled: true, guidance: 'Find the remote resource with browse_remote_resources, then select it with select_remote_resource.' },
-    { value: '2', title: t('step2.title'), enabled: !!selectedResource.value, guidance: 'Set the import options (target dataset, scheduling, metadata and schema updates) with the importConfig_ form tools.' }
+    { value: '2', title: t('step2.title'), enabled: !!selectedResource.value, guidance: `Set the import options of the selected resource${selectedResource.value ? ` « ${selectedResource.value.title} »` : ''} (target dataset, scheduling, metadata and schema updates) with the importConfig_ form tools.` }
   ],
   submitLabel: () => t('step2.next')
 })

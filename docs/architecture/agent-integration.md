@@ -15,7 +15,7 @@ through `@data-fair/lib-vue-agents`. Nothing here talks to an LLM, and no tool r
 
 | Where | Tools |
 |---|---|
-| every vjsf form (`@koumoul/vjsf/webmcp`) | `<prefix>describeState`, `setFieldValue`, `setData`, `editArray`, `getFieldSuggestions`, `getData`, plus the `<prefix>form` sub-agent. Prefixes: `catalogConfig_` (creation and configuration tab), `importConfig_` (import wizard and import page), `publicationConfig_` (publication wizard), `resourceFilters_` (explorer filters, no sub-agent) |
+| every vjsf form (`@koumoul/vjsf/webmcp`) | `<prefix>describeState`, `setFieldValue`, `setData`, `editArray`, `getFieldSuggestions`, `getData`, `openSection`, plus the `<prefix>form` sub-agent. Prefixes: `catalogConfig_` (creation and configuration tab), `importConfig_` (import wizard and import page), `publicationConfig_` (publication wizard), `resourceFilters_` (explorer filters, no sub-agent) |
 | `components/resources-explorer.vue` | `browse_remote_resources`, `select_remote_resource` (not in folder-selection modes, where the open folder is the selection) |
 | `pages/catalogs/new.vue` | `list_catalog_plugins`, `select_catalog_plugin` |
 | the three wizards (`composables/use-agent-wizard.ts`) | `wizard_go_to_step`, refuses the steps the person could not open either |
