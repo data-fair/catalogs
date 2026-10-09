@@ -131,6 +131,7 @@ import cronstrue from 'cronstrue'
 import 'cronstrue/locales/en'
 import 'cronstrue/locales/fr'
 
+import { emitAgentEvent } from '@data-fair/lib-vue-agents'
 import Vjsf from '@koumoul/vjsf/webmcp'
 import type { Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
@@ -195,6 +196,7 @@ const createImport = useAsyncAction(async () => {
   selectedResource.value = null
   validImportConfig.value = false
   importConfig.value = {}
+  emitAgentEvent('import-created', { import: imp._id, remoteResource: imp.remoteResource })
   await router.replace({ path: `/catalogs/${catalog.value?._id}/imports/${imp._id}` })
 })
 

@@ -109,6 +109,7 @@
 <script setup lang="ts">
 import type { Capability } from '@data-fair/types-catalogs'
 import type { AgentWizardStep } from '~/composables/use-agent-wizard'
+import { emitAgentEvent } from '@data-fair/lib-vue-agents'
 import Vjsf from '@koumoul/vjsf/webmcp'
 import type { Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
@@ -230,6 +231,7 @@ const createPublication = useAsyncAction(async () => {
   selectedFolderOrResource.value = null
   validPublicationConfig.value = false
   publicationConfig.value = {}
+  emitAgentEvent('publication-created', { publication: pub._id, dataset: pub.dataFairDataset })
   await router.replace({ path: `/catalogs/${catalog.value?._id}/publications/${pub._id}` })
 })
 

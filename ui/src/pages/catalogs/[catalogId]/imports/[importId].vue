@@ -208,7 +208,8 @@ useAgentPage({
       lastImportDate: imp.value.lastImportDate,
       nextImportDate: imp.value.nextImportDate,
       ...summarizeLogs(imp.value.logs)
-    }
+    },
+    rerun: 'The person runs the import again now with the « Re-importer » action of the page; there is no tool for it.'
   },
   activeTab,
   tabs,

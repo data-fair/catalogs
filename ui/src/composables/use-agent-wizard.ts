@@ -23,8 +23,10 @@ export const useAgentWizard = <S extends string>(opts: {
     submit: `The person creates it by clicking "${toValue(opts.submitLabel)}" on the last step; there is no tool for it.`
   }))
 
-  // keyed state never ends a wait_for_user_action, a transition does
-  watch(opts.step, (step) => {
+  // keyed state never ends a wait_for_user_action, a transition does; sent once the step's form tools are registered
+  watch(opts.step, async (step) => {
+    await untilToolsSettle()
+    if (opts.step.value !== step) return
     const target = toValue(opts.steps).find(s => s.value === step)
     emitAgentEvent('wizard-step-opened', { wizard: opts.name, step, title: target?.title })
   })

@@ -86,7 +86,8 @@ useAgentPage({
       status: publication.value.status,
       lastPublicationDate: publication.value.lastPublicationDate,
       ...summarizeLogs(publication.value.logs)
-    }
+    },
+    rerun: 'The person publishes again with the « Re-publier » action of the page; there is no tool for it.'
   },
   activeTab,
   tabs

@@ -73,6 +73,18 @@ test.describe('agent tools', () => {
     expect(await registeredTools(page)).toContain('importConfig_describeState')
   })
 
+  test('the imports of a catalog can be listed and opened', async ({ page, goToWithAuth }) => {
+    const catalog = await createCatalog()
+    const admin = await axiosAuth('test_admin1@test.com')
+    const { data: imp } = await admin.post('/api/imports', { catalog: { id: catalog._id }, config: {}, remoteResource: { id: 'r1', title: 'Listed resource' }, scheduling: [], shouldUpdateMetadata: true, shouldUpdateSchema: true })
+    await goToWithAuth(`/catalogs/catalogs/${catalog._id}`, 'test_admin1')
+
+    await waitForTools(page, ['list_catalog_items', 'open_catalog_item'])
+    expect((await callTool(page, 'list_catalog_items', { kind: 'import' })).text).toContain(`Listed resource (id: \`${imp._id}\`)`)
+    expect((await callTool(page, 'open_catalog_item', { kind: 'import', id: imp._id })).isError).toBe(false)
+    await expect(page).toHaveURL(new RegExp(`/imports/${imp._id}`))
+  })
+
   test('the catalog creation wizard lets the assistant pick the catalog type', async ({ page, goToWithAuth }) => {
     await goToWithAuth('/catalogs/catalogs/new', 'test_admin1')
 
