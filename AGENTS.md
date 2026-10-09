@@ -93,6 +93,11 @@ logs into the test reporter output.
 The full test suite runs on `git push` via husky. When iterating, run only the related
 test cases.
 
+### AI assistant
+
+The UI exposes WebMCP tools and host state to the data-fair chat, see
+`docs/architecture/agent-integration.md`. Update it when you add, rename or remove a tool.
+
 ### Linting & Type Checking
 
 ```bash

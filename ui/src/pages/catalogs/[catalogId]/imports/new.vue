@@ -57,6 +57,9 @@
                 v-model="importConfig"
                 :schema="importSchema"
                 :options="vjsfOptions"
+                data-title="New import configuration"
+                prefix-name="importConfig_"
+                :sub-agent="true"
               >
                 <template #scheduling-summary="{ node }">
                   {{ t(`frequency.${node.data.type}`) }}
@@ -128,7 +131,8 @@ import cronstrue from 'cronstrue'
 import 'cronstrue/locales/en'
 import 'cronstrue/locales/fr'
 
-import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
+import Vjsf from '@koumoul/vjsf/webmcp'
+import type { Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import { resolvedSchema as importSchemaBase } from '#api/types/import'
 import { toCRON } from '@data-fair/catalogs-shared/cron.ts'
@@ -192,6 +196,16 @@ const createImport = useAsyncAction(async () => {
   validImportConfig.value = false
   importConfig.value = {}
   await router.replace({ path: `/catalogs/${catalog.value?._id}/imports/${imp._id}` })
+})
+
+useAgentWizard({
+  name: 'import a remote resource',
+  step,
+  steps: () => [
+    { value: '1', title: t('step1.title'), enabled: true, guidance: 'Find the remote resource with browse_remote_resources, then select it with select_remote_resource.' },
+    { value: '2', title: t('step2.title'), enabled: !!selectedResource.value, guidance: 'Set the import options (target dataset, scheduling, metadata and schema updates) with the importConfig_ form tools.' }
+  ],
+  submitLabel: () => t('step2.next')
 })
 
 const handleNext = (next: () => void) => {

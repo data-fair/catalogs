@@ -106,6 +106,9 @@
                 class="mr-2"
                 :schema="catalogSchema"
                 :options="vjsfOptions"
+                data-title="New catalog configuration"
+                prefix-name="catalogConfig_"
+                :sub-agent="true"
               />
             </v-form>
           </v-defaults-provider>
@@ -138,8 +141,10 @@ import type { Account } from '@data-fair/lib-common-types/session'
 import type { Plugin } from '#api/types'
 import type { CatalogPostReq } from '#api/doc'
 
-import { computedAsync } from '@vueuse/core'
-import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
+import { computedAsync, until } from '@vueuse/core'
+import { useAgentTool } from '@data-fair/lib-vue-agents'
+import Vjsf from '@koumoul/vjsf/webmcp'
+import type { Options as VjsfOptions } from '@koumoul/vjsf'
 import DfLayoutFetchError from '@data-fair/lib-vuetify/layout-fetch-error.vue'
 import OwnerPick from '@data-fair/lib-vuetify/owner-pick.vue'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
@@ -245,6 +250,52 @@ setBreadcrumbs([{
   text: t('createCatalog')
 }])
 
+useAgentWizard({
+  name: 'create a catalog',
+  step,
+  steps: () => [
+    { value: '1', title: t('selectCatalogType'), enabled: true, guidance: 'Choose the type of remote catalog with list_catalog_plugins and select_catalog_plugin.' },
+    ...(hasDepartments.value ? [{ value: '2', title: t('selectOwner'), enabled: !!newPlugin.value, guidance: 'The person picks the owner of the catalog (the organization or one of its departments) in the form.' }] : []),
+    { value: '3', title: t('information'), enabled: !!newPlugin.value, guidance: 'Fill the title, the description and the configuration of the catalog with the catalogConfig_ form tools.' }
+  ],
+  submitLabel: () => t('create')
+})
+
+useAgentTool({
+  name: 'list_catalog_plugins',
+  description: 'List the types of remote catalogs that can be connected (data.gouv.fr, CKAN, Udata, ArcGIS…), with the id to pass to select_catalog_plugin.',
+  annotations: { title: t('agentListPlugins'), readOnlyHint: true },
+  inputSchema: { type: 'object' as const, properties: {} },
+  execute: async () => {
+    await until(pluginsFetch.loading).toBe(false)
+    const artefacts = pluginsFetch.data.value?.results ?? []
+    if (!artefacts.length) return 'No catalog type is available on this platform.'
+    return artefacts.map(a => `- ${artefactTitle(a)} (id: \`${a._id}\`)${artefactDescription(a) ? `: ${artefactDescription(a)}` : ''}`).join('\n')
+  }
+})
+
+useAgentTool({
+  name: 'select_catalog_plugin',
+  description: 'Choose the type of the new catalog, then open the next step of the wizard.',
+  annotations: { title: t('agentSelectPlugin'), readOnlyHint: false },
+  inputSchema: {
+    type: 'object' as const,
+    properties: { plugin: { type: 'string' as const, description: 'The id given by list_catalog_plugins' } },
+    required: ['plugin'] as const
+  },
+  execute: async ({ plugin }) => {
+    const artefact = pluginsFetch.data.value?.results.find(a => a._id === plugin)
+    if (!artefact) return { content: [{ type: 'text' as const, text: `Unknown catalog type "${plugin}", list them with list_catalog_plugins.` }], isError: true }
+    newPlugin.value = artefact._id
+    step.value = hasDepartments.value ? '2' : '3'
+    await nextTick()
+    await until(pluginFetch.loading).toBe(false)
+    return `Catalog type "${artefactTitle(artefact)}" is selected. ` + (hasDepartments.value
+      ? 'The person now picks the owner of the catalog.'
+      : 'The configuration form is open, fill it with the catalogConfig_ form tools.')
+  }
+})
+
 const vjsfOptions: VjsfOptions = {
   context: {
     owner: newOwner.value
@@ -260,6 +311,8 @@ const vjsfOptions: VjsfOptions = {
 
 <i18n lang="yaml">
   en:
+    agentListPlugins: List the catalog types
+    agentSelectPlugin: Choose the catalog type
     catalogs: Catalogs
     catalog: Catalog
     configuration: Configuration
@@ -273,6 +326,8 @@ const vjsfOptions: VjsfOptions = {
     selectOwner: Select owner
 
   fr:
+    agentListPlugins: Lister les types de catalogues
+    agentSelectPlugin: Choisir le type de catalogue
     catalog: Catalogue
     catalogs: Catalogues
     configuration: Configuration

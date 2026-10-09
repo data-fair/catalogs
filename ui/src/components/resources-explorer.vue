@@ -27,6 +27,8 @@
           v-model="additionalFilters"
           :schema="additionalFiltersSchema"
           :options="vjsfOptions"
+          data-title="Remote resources filters"
+          prefix-name="resourceFilters_"
           class="ma-2"
         />
       </v-form>
@@ -122,9 +124,12 @@
 import type CatalogPlugin from '@data-fair/types-catalogs'
 import type { Catalog, Plugin, Import, Publication } from '#api/types'
 
-import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
+import Vjsf from '@koumoul/vjsf/webmcp'
+import type { Options as VjsfOptions } from '@koumoul/vjsf'
 import { VDataTable, VDataTableServer } from 'vuetify/components'
 import formatBytes from '@data-fair/lib-vue/format/bytes.js'
+import { until } from '@vueuse/core'
+import { useAgentTool } from '@data-fair/lib-vue-agents'
 
 const { t } = useI18n()
 const { dayjs } = useLocaleDayjs()
@@ -299,6 +304,53 @@ const headers = computed(() => {
   return headers
 })
 
+// the assistant browses through the explorer, so the person sees what it looks at
+useAgentTool({
+  name: 'browse_remote_resources',
+  description: `List the folders and resources of the remote catalog "${catalog.title}" in the explorer of the current page, moving the explorer to the requested folder, search or page. Without arguments, lists what the explorer shows.` +
+    (shouldSelectFolder.value ? ' Here a folder is chosen as the publication target: opening a folder selects it.' : ' Then choose a resource with select_remote_resource.'),
+  annotations: { title: t('agentBrowse'), readOnlyHint: true },
+  inputSchema: {
+    type: 'object' as const,
+    properties: {
+      folderId: { type: 'string' as const, description: 'Folder to open, "root" for the root of the catalog' },
+      ...(supportsSearch.value && { q: { type: 'string' as const, description: 'Full-text search in the current folder, empty string to clear it' } }),
+      ...(supportsPagination.value && { page: { type: 'number' as const, description: 'Page number, starting at 1' } })
+    }
+  },
+  execute: async ({ folderId, q, page }: { folderId?: string, q?: string, page?: number }) => {
+    if (folderId) navigate(folderId === 'root' ? null : folderId)
+    if (q !== undefined) search.value = q
+    if (page) currentPage.value = page
+    await nextTick()
+    await until(fetchFolders.loading).toBe(false)
+    if (fetchFolders.error.value) return { content: [{ type: 'text' as const, text: `The remote catalog could not be listed: ${fetchFolders.error.value.message}` }], isError: true }
+    return formatRemoteListing(fetchFolders.data.value ?? { results: [] }, {
+      page: supportsPagination.value ? currentPage.value : undefined,
+      isImported: mode === 'import' ? isResourceImported : undefined
+    })
+  }
+})
+
+if (!shouldSelectFolder.value) {
+  useAgentTool({
+    name: 'select_remote_resource',
+    description: 'Select a resource listed by browse_remote_resources in the current folder of the explorer.',
+    annotations: { title: t('agentSelect'), readOnlyHint: false },
+    inputSchema: {
+      type: 'object' as const,
+      properties: { id: { type: 'string' as const, description: 'The resource id' } },
+      required: ['id'] as const
+    },
+    execute: async ({ id }) => {
+      const item = levelData.value.find((i: any) => i.id === id)
+      if (!item || item.type !== 'resource') return { content: [{ type: 'text' as const, text: `No resource "${id}" in the current folder, list it with browse_remote_resources first.` }], isError: true }
+      selected.value = [id]
+      return `Resource "${item.title}" is selected.`
+    }
+  })
+}
+
 const vjsfOptions = computed<VjsfOptions>(() => ({
   context: {
     catalogConfig: catalog.config, // Provide catalog configuration to Vjsf
@@ -315,6 +367,8 @@ const vjsfOptions = computed<VjsfOptions>(() => ({
 
 <i18n lang="yaml">
 en:
+  agentBrowse: Browse the remote catalog
+  agentSelect: Select a remote resource
   alreadyImported: Already imported
   format: Format
   import: Import
@@ -326,6 +380,8 @@ en:
   updatedAt: Updated At
 
 fr:
+  agentBrowse: Parcourir le catalogue distant
+  agentSelect: Sélectionner une ressource distante
   alreadyImported: Déjà importé
   format: Format
   import: Importer

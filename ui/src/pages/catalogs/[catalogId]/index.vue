@@ -178,6 +178,21 @@ const tabs = computed(() => {
   return tabs
 })
 
+useAgentPage({
+  key: 'catalog',
+  state: () => catalog.value && {
+    catalog: {
+      id: catalog.value._id,
+      title: catalog.value.title,
+      type: plugin.value?.metadata?.title ?? catalog.value.plugin,
+      capabilities: catalog.value.capabilities
+    }
+  },
+  activeTab,
+  tabs,
+  save: { unsaved: () => hasDiff.value, label: () => t('save') }
+})
+
 const deleteCatalog = useAsyncAction(
   async () => {
     await $fetch(`/catalogs/${catalog.value?._id}`, { method: 'DELETE' })

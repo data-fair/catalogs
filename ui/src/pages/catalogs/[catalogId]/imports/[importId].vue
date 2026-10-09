@@ -60,6 +60,9 @@
                 v-model="editImport"
                 :schema="importSchema"
                 :options="vjsfOptions"
+                data-title="Import configuration"
+                prefix-name="importConfig_"
+                :sub-agent="true"
               >
                 <template #scheduling-summary="{ node }">
                   {{ t(`frequency.${node.data.type}`) }}
@@ -90,7 +93,8 @@ import cronstrue from 'cronstrue'
 import 'cronstrue/locales/en'
 import 'cronstrue/locales/fr'
 
-import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
+import Vjsf from '@koumoul/vjsf/webmcp'
+import type { Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import clone from '@data-fair/lib-utils/clone.js'
 import equal from 'fast-deep-equal'
@@ -189,6 +193,25 @@ const tabs = computed(() => [
   { key: 'logs', title: t('tab.logs'), icon: mdiCalendarText },
   { key: 'configuration', title: t('tab.configuration'), icon: mdiCog }
 ])
+
+useAgentPage({
+  key: 'import',
+  state: () => imp.value && {
+    import: {
+      id: imp.value._id,
+      remoteResource: imp.value.remoteResource,
+      dataset: imp.value.dataFairDataset,
+      status: imp.value.status,
+      schedulingActive: imp.value.isSchedulingActive,
+      lastImportDate: imp.value.lastImportDate,
+      nextImportDate: imp.value.nextImportDate,
+      ...summarizeLogs(imp.value.logs)
+    }
+  },
+  activeTab,
+  tabs,
+  save: { unsaved: () => hasDiff.value, label: () => t('save') }
+})
 
 const timezoneLabel = (timeZone: string) => {
   if (timeZone === 'Europe/Paris') return ''
