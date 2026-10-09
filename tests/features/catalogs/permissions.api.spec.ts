@@ -283,4 +283,94 @@ test.describe('Permissions', () => {
         .rejects.toMatchObject({ status: 403 })
     })
   })
+
+  test.describe('permissions-ownership', () => {
+    let importDoc: any
+    let publication: any
+
+    test.beforeEach(async () => {
+      const catalog = await adminOrg.post('/api/catalogs', createCatalogPayload({
+        type: 'organization', id: 'test_org1', name: 'Test Org 1'
+      }))
+      importDoc = (await adminOrg.post('/api/imports', {
+        catalog: { id: catalog.data._id },
+        config: {},
+        remoteResource: { id: 'test-resource' },
+        scheduling: [],
+        shouldUpdateMetadata: true,
+        shouldUpdateSchema: true
+      })).data
+      publication = (await adminOrg.post('/api/publications', {
+        catalog: { id: catalog.data._id },
+        dataFairDataset: { id: 'org-dataset' },
+        publicationSite: { title: 'Data Fair', url: dataFairUrl, datasetUrlTemplate: `${dataFairUrl}/dataset/{id}` },
+        action: 'createFolderInRoot'
+      })).data
+    })
+
+    test('admin from other organization cannot delete an import (403)', async () => {
+      await expect(adminOtherOrg.delete(`/api/imports/${importDoc._id}`)).rejects.toMatchObject({ status: 403 })
+      expect((await adminOrg.get(`/api/imports/${importDoc._id}`)).status).toBe(200)
+      expect((await adminOrg.delete(`/api/imports/${importDoc._id}`)).status).toBe(204)
+    })
+
+    test('admin from other organization cannot republish or delete a publication (403)', async () => {
+      await expect(adminOtherOrg.post(`/api/publications/${publication._id}`)).rejects.toMatchObject({ status: 403 })
+      await expect(adminOtherOrg.delete(`/api/publications/${publication._id}`)).rejects.toMatchObject({ status: 403 })
+      await expect(adminOtherOrg.delete(`/api/publications/${publication._id}?onlyLink=true`)).rejects.toMatchObject({ status: 403 })
+      expect((await adminOrg.post(`/api/publications/${publication._id}`)).status).toBe(204)
+      expect((await adminOrg.delete(`/api/publications/${publication._id}?onlyLink=true`)).status).toBe(204)
+    })
+
+    test('importing into the same dataset id from another organization does not delete its import', async () => {
+      const otherCatalog = await adminOtherOrg.post('/api/catalogs', createCatalogPayload({ type: 'organization', id: 'test_org2', name: 'Test Org 2' }))
+      const importPayload = (catalogId: string) => ({
+        catalog: { id: catalogId },
+        dataFairDataset: { id: 'shared-dataset-id' },
+        config: {},
+        remoteResource: { id: 'test-resource' },
+        scheduling: [],
+        shouldUpdateMetadata: true,
+        shouldUpdateSchema: true
+      })
+      const orgImport = (await adminOrg.post('/api/imports', importPayload(importDoc.catalog.id))).data
+      await adminOtherOrg.post('/api/imports', importPayload(otherCatalog.data._id))
+      expect((await adminOrg.get(`/api/imports/${orgImport._id}`)).status).toBe(200)
+    })
+
+    test('replacing a remote resource from another organization does not delete its publication', async () => {
+      const otherCatalog = await adminOtherOrg.post('/api/catalogs', createCatalogPayload({ type: 'organization', id: 'test_org2', name: 'Test Org 2' }))
+      const replacePayload = (catalogId: string, datasetId: string) => ({
+        catalog: { id: catalogId },
+        dataFairDataset: { id: datasetId },
+        publicationSite: { title: 'Data Fair', url: dataFairUrl, datasetUrlTemplate: `${dataFairUrl}/dataset/{id}` },
+        action: 'replaceResource',
+        remoteResource: { id: 'shared-remote-resource' }
+      })
+      const orgPublication = (await adminOrg.post('/api/publications', replacePayload(importDoc.catalog.id, 'org-dataset-2'))).data
+      await adminOtherOrg.post('/api/publications', replacePayload(otherCatalog.data._id, 'other-dataset'))
+      expect((await adminOrg.get(`/api/publications/${orgPublication._id}`)).status).toBe(200)
+    })
+
+    test('an organization admin still replaces the import of one of its departments', async () => {
+      const depCatalog = await adminDep.post('/api/catalogs', createCatalogPayload({ type: 'organization', id: 'test_org1', name: 'Test Org 1', department: 'dep1' }))
+      const importPayload = (catalogId: string) => ({
+        catalog: { id: catalogId },
+        dataFairDataset: { id: 'dep-dataset-id' },
+        config: {},
+        remoteResource: { id: 'test-resource' },
+        scheduling: [],
+        shouldUpdateMetadata: true,
+        shouldUpdateSchema: true
+      })
+      const depImport = (await adminDep.post('/api/imports', importPayload(depCatalog.data._id))).data
+      await adminOrg.post('/api/imports', importPayload(importDoc.catalog.id))
+      await expect(adminOrg.get(`/api/imports/${depImport._id}`)).rejects.toMatchObject({ status: 404 })
+    })
+
+    test('republishing or deleting an unknown publication returns 404', async () => {
+      await expect(adminOrg.post('/api/publications/unknown')).rejects.toMatchObject({ status: 404 })
+      await expect(adminOrg.delete('/api/publications/unknown')).rejects.toMatchObject({ status: 404 })
+    })
+  })
 })

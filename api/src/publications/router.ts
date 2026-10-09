@@ -4,7 +4,7 @@ import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { assertAccountRole, session, httpError } from '@data-fair/lib-express'
+import { assertAccountRole, getAccountRole, session, httpError } from '@data-fair/lib-express'
 import mongo from '#mongo'
 import config from '#config'
 import findUtils from '#utils/find.ts'
@@ -56,6 +56,11 @@ router.post('/', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const { body } = (await import('#doc/publications/post-req/index.ts')).returnValid(req)
 
+  // Check if the catalog exists
+  const catalog = await mongo.catalogs.findOne({ _id: body.catalog.id })
+  if (!catalog) throw httpError(404, 'Catalog not found')
+  assertAccountRole(sessionState, catalog.owner, 'admin')
+
   // Check if they are already a publication with the same dataFairDataset.id and catalog.id
   const existingPublication = await mongo.publications.countDocuments({
     'dataFairDataset.id': body.dataFairDataset.id,
@@ -64,17 +69,16 @@ router.post('/', async (req, res) => {
   if (existingPublication) throw httpError(409, 'Publication already exists for this dataset and catalog')
 
   // In replace mode, check if they are already a publication with the same remote Folder/Resource id, and delete the link
+  let replaced = null
   if (body.action === 'replaceFolder' && body.remoteFolder?.id) {
-    await mongo.publications.deleteOne({ 'remoteFolder.id': body.remoteFolder?.id })
+    replaced = await mongo.publications.findOne({ 'remoteFolder.id': body.remoteFolder.id })
   }
   if (body.action === 'replaceResource' && body.remoteResource?.id) {
-    await mongo.publications.deleteOne({ 'remoteResource.id': body.remoteResource?.id })
+    replaced = await mongo.publications.findOne({ 'remoteResource.id': body.remoteResource.id })
   }
-
-  // Check if the catalog exists
-  const catalog = await mongo.catalogs.findOne({ _id: body.catalog.id })
-  if (!catalog) throw httpError(404, 'Catalog not found')
-  assertAccountRole(sessionState, catalog.owner, 'admin')
+  if (replaced && getAccountRole(sessionState, replaced.owner) === 'admin') {
+    await mongo.publications.deleteOne({ _id: replaced._id })
+  }
   // Checked by the worker :
   // - if the data-fair dataset exists
   // - the user has the admin right on the dataset
@@ -111,7 +115,9 @@ router.post('/', async (req, res) => {
 // Update a publication
 router.post('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  assertAccountRole(sessionState, sessionState.account, 'admin')
+  const publicationDoc = await mongo.publications.findOne({ _id: req.params.id })
+  if (!publicationDoc) throw httpError(404, 'Publication not found')
+  assertAccountRole(sessionState, publicationDoc.owner, 'admin')
 
   await mongo.publications.updateOne(
     { _id: req.params.id },
@@ -125,7 +131,9 @@ router.post('/:id', async (req, res) => {
 // Delete a publication
 router.delete('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  assertAccountRole(sessionState, sessionState.account, 'admin')
+  const publicationDoc = await mongo.publications.findOne({ _id: req.params.id })
+  if (!publicationDoc) throw httpError(404, 'Publication not found')
+  assertAccountRole(sessionState, publicationDoc.owner, 'admin')
 
   if (req.query.onlyLink === 'true') {
     await mongo.publications.deleteOne({ _id: req.params.id })

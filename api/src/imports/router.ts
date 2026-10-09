@@ -4,7 +4,7 @@ import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { assertAccountRole, session, httpError, type SessionStateAuthenticated } from '@data-fair/lib-express'
+import { assertAccountRole, getAccountRole, session, httpError, type SessionStateAuthenticated } from '@data-fair/lib-express'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import mongo from '#mongo'
 import config from '#config'
@@ -94,7 +94,7 @@ router.post('/', async (req, res) => {
     const existingImport = await mongo.imports.findOne({
       'dataFairDataset.id': body.dataFairDataset.id
     })
-    if (existingImport) {
+    if (existingImport && getAccountRole(sessionState, existingImport.owner) === 'admin') {
       await mongo.imports.deleteOne({ _id: existingImport._id })
       sendImportEvent(existingImport, 'a été supprimé (remplacé par un nouvel import)', 'delete', sessionState)
     }
@@ -191,11 +191,12 @@ router.patch('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
-  assertAccountRole(sessionState, sessionState.account, 'admin')
+  const importDoc = await mongo.imports.findOne({ _id: req.params.id })
+  if (!importDoc) throw httpError(404, 'Import not found')
+  assertAccountRole(sessionState, importDoc.owner, 'admin')
 
-  const deletedImport = await mongo.imports.findOneAndDelete({ _id: req.params.id })
-  if (!deletedImport) throw httpError(404, 'Import not found')
-  sendImportEvent(deletedImport, 'a été supprimé', 'delete', sessionState)
+  await mongo.imports.deleteOne({ _id: req.params.id })
+  sendImportEvent(importDoc, 'a été supprimé', 'delete', sessionState)
 
   res.status(204).send()
 })
