@@ -93,6 +93,7 @@ import cronstrue from 'cronstrue'
 import 'cronstrue/locales/en'
 import 'cronstrue/locales/fr'
 
+import { emitAgentEvent } from '@data-fair/lib-vue-agents'
 import Vjsf from '@koumoul/vjsf/webmcp'
 import type { Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
@@ -171,6 +172,7 @@ const save = useAsyncAction(
 
     Object.assign(imp.value, res)
     resetEdit()
+    emitAgentEvent('import-saved', { import: imp.value._id })
   },
   {
     success: t('importSaved'),

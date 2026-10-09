@@ -1,5 +1,5 @@
 // Adapted from portals' simulations/runner/surfaces.ts (its back-office surface).
-import type { Locator, Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import type { SeedIds } from './fixtures.ts'
 import { OWNER, OWNER_ADMIN_EMAIL } from './settings.ts'
 
@@ -14,8 +14,9 @@ export function resolveRoute (route: string, ids: SeedIds) {
 /** simple-directory keeps the active organization from the login's `org` parameter. */
 export async function login (page: Page, target: string) {
   await page.goto(`${ROOT}/simple-directory/login?redirect=${encodeURIComponent(target)}&org=${OWNER.id}`)
-  await page.fill('input[name="email"]', OWNER_ADMIN_EMAIL)
-  await page.fill('input[name="password"]', 'passwd')
+  await page.getByLabel('Adresse mail').fill(OWNER_ADMIN_EMAIL)
+  await page.getByRole('textbox', { name: 'Mot de passe' }).fill('passwd')
+  await expect(page.getByRole('button', { name: 'Se connecter' })).toBeEnabled()
   await page.getByRole('button', { name: 'Se connecter' }).click()
   await page.waitForURL(url => url.toString().startsWith(target), { timeout: 30_000 })
 }

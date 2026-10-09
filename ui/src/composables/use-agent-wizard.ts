@@ -1,5 +1,5 @@
 import type { Ref, MaybeRefOrGetter } from 'vue'
-import { useAgentState, useAgentTool } from '@data-fair/lib-vue-agents'
+import { emitAgentEvent, useAgentState, useAgentTool } from '@data-fair/lib-vue-agents'
 
 export interface AgentWizardStep<S extends string = string> {
   value: S
@@ -22,6 +22,12 @@ export const useAgentWizard = <S extends string>(opts: {
     steps: toValue(opts.steps).map(s => ({ step: s.value, title: s.title, available: s.enabled, guidance: s.guidance })),
     submit: `The person creates it by clicking "${toValue(opts.submitLabel)}" on the last step; there is no tool for it.`
   }))
+
+  // keyed state never ends a wait_for_user_action, a transition does
+  watch(opts.step, (step) => {
+    const target = toValue(opts.steps).find(s => s.value === step)
+    emitAgentEvent('wizard-step-opened', { wizard: opts.name, step, title: target?.title })
+  })
 
   useAgentTool({
     name: 'wizard_go_to_step',

@@ -109,7 +109,7 @@ import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
 import clone from '@data-fair/lib-utils/clone.js'
 import equal from 'fast-deep-equal'
 import { until } from '@vueuse/core'
-import { useAgentTool } from '@data-fair/lib-vue-agents'
+import { emitAgentEvent, useAgentTool } from '@data-fair/lib-vue-agents'
 
 const route = useRoute<'/catalogs/[catalogId]/'>()
 const router = useRouter()
@@ -160,6 +160,7 @@ const save = useAsyncAction(
 
     Object.assign(catalog.value, res)
     resetEdit()
+    emitAgentEvent('catalog-saved', { catalog: catalog.value._id })
   },
   {
     success: t('catalogSaved'),
