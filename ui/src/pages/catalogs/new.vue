@@ -257,7 +257,7 @@ useAgentWizard({
   steps: () => [
     { value: '1', title: t('selectCatalogType'), enabled: true, guidance: 'Choose the type of remote catalog with list_catalog_plugins and select_catalog_plugin.' },
     ...(hasDepartments.value ? [{ value: '2', title: t('selectOwner'), enabled: !!newPlugin.value, guidance: `The person confirms or changes the owner of the catalog (currently ${newOwner.value?.departmentName ?? newOwner.value?.name ?? 'none'}), then clicks "${t('next')}".` }] : []),
-    { value: '3', title: t('information'), enabled: !!newPlugin.value, guidance: 'Fill the title, the description and the configuration of the catalog with the catalogConfig_ form tools.' }
+    { value: '3', title: t('information'), enabled: !!newPlugin.value, guidance: 'Fill the values the person gave (title, configuration) with the catalogConfig_ form tools; leave optional fields such as the description empty unless the person asked for them.' }
   ],
   submitLabel: () => t('create')
 })

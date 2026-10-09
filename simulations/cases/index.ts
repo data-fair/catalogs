@@ -22,7 +22,7 @@ export const cases: SimulationCase[] = [
     name: 'import-ressource',
     route: '/data-fair/catalogs/{catalogId}',
     persona,
-    goal: 'Importer la ressource « Population par commune 2023 » du catalogue « Catalogue open data de la région » en jeu de données, mis à jour automatiquement une fois par mois.',
+    goal: "Importer la ressource « Population par commune 2023 » du catalogue « Catalogue open data de la région » en jeu de données, mis à jour automatiquement une fois par mois. C'est un premier essai : les options d'import par défaut conviennent.",
     maxTurns: 12
   },
   {

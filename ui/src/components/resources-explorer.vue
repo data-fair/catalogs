@@ -344,7 +344,10 @@ if (!shouldSelectFolder.value) {
     },
     execute: async ({ id }) => {
       const item = levelData.value.find((i: any) => i.id === id)
-      if (!item || item.type !== 'resource') return { content: [{ type: 'text' as const, text: `No resource "${id}" in the current folder, list it with browse_remote_resources first.` }], isError: true }
+      if (!item || item.type !== 'resource') {
+        const ids = levelData.value.filter((i: any) => i.type === 'resource').map((i: any) => `\`${i.id}\``)
+        return { content: [{ type: 'text' as const, text: `No resource "${id}" in the folder the explorer shows. ${ids.length ? `Its resources are ${ids.join(', ')}.` : 'It holds no resource.'} Open the right folder with browse_remote_resources, then pass the id exactly as listed.` }], isError: true }
+      }
       selected.value = [id]
       return `Resource "${item.title}" is selected.`
     }
