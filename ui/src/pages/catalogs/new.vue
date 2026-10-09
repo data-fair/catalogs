@@ -142,7 +142,7 @@ import type { Plugin } from '#api/types'
 import type { CatalogPostReq } from '#api/doc'
 
 import { computedAsync, until } from '@vueuse/core'
-import { useAgentTool } from '@data-fair/lib-vue-agents'
+import { emitAgentEvent, useAgentTool } from '@data-fair/lib-vue-agents'
 import Vjsf from '@koumoul/vjsf/webmcp'
 import type { Options as VjsfOptions } from '@koumoul/vjsf'
 import DfLayoutFetchError from '@data-fair/lib-vuetify/layout-fetch-error.vue'
@@ -236,6 +236,7 @@ const createCatalog = useAsyncAction(
       },
     })
 
+    emitAgentEvent('catalog-created', { catalog: catalog._id, title: catalog.title, plugin: catalog.plugin })
     await router.replace({ path: `/catalogs/${catalog._id}` })
   },
   {

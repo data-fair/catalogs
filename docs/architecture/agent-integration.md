@@ -31,7 +31,7 @@ Listing and describing catalogs from anywhere in the back-office is data-fair's 
 
 ## Host state
 
-`useAgentState` keys, last value wins: `wizard` (current step, available steps, guidance, the
+`useAgentState` keys, last value wins: `catalogs` (the list page: count, search, the catalogs shown), `wizard` (current step, available steps, guidance, the
 submit button), `catalog`, `import`, `publication` (what the page shows, the open tab, the button that saves;
 runs carry their last errors and messages, built by `utils/agent-state.ts`). There is no
 "unsaved changes" flag: vjsf fills the plugin's defaults when a form opens, so the page reads
@@ -40,7 +40,8 @@ location is published by data-fair, whose route follows the frame.
 
 `wait_for_user_action` only ends on a transition (an unkeyed event) or a location change, so
 what the person does is also emitted: `wizard-step-opened` (once the step's tools are
-registered), `catalog-saved`, `import-saved`, `import-created`, `publication-created`.
+registered), `catalog-created`, `catalog-saved`, `import-saved`, `import-created`,
+`publication-created`.
 
 ## Simulations
 
