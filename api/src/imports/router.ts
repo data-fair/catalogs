@@ -4,7 +4,7 @@ import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { assertAccountRole, session, httpError, type SessionStateAuthenticated } from '@data-fair/lib-express'
+import { assertAccountRole, getAccountRole, session, httpError, type SessionStateAuthenticated } from '@data-fair/lib-express'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import mongo from '#mongo'
 import config from '#config'
@@ -94,7 +94,7 @@ router.post('/', async (req, res) => {
     const existingImport = await mongo.imports.findOne({
       'dataFairDataset.id': body.dataFairDataset.id
     })
-    if (existingImport) {
+    if (existingImport && getAccountRole(sessionState, existingImport.owner) === 'admin') {
       await mongo.imports.deleteOne({ _id: existingImport._id })
       sendImportEvent(existingImport, 'a été supprimé (remplacé par un nouvel import)', 'delete', sessionState)
     }
