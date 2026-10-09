@@ -32,7 +32,9 @@ export class CatalogsMongo {
     await mongo.configure({
       catalogs: {
         // We always get catalogs by owner type and id
-        main: { 'owner.type': 1, 'owner.id': 1 }
+        main: { 'owner.type': 1, 'owner.id': 1 },
+        // q query parameter of the catalogs list
+        fullText: { title: 'text', description: 'text' }
       },
       imports: {
         // Get imports by catalog and owner
