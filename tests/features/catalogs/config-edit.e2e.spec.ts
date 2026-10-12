@@ -30,7 +30,8 @@ test.describe('catalog configuration edition', () => {
     const title = page.getByLabel('Titre')
     const description = page.getByLabel('Description')
     const configUrl = page.getByLabel('URL', { exact: true })
-    await expect(configUrl).toHaveValue('https://data.gouv.fr')
+    // the first render of the form waits for the catalog, then the plugin descriptor
+    await expect(configUrl).toHaveValue('https://data.gouv.fr', { timeout: 15_000 })
 
     await title.fill('Config edit catalog edited')
     await expect(title).toHaveValue('Config edit catalog edited')

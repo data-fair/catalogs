@@ -13,6 +13,9 @@
         v-model="editCatalog"
         :schema="catalogSchema"
         :options="vjsfOptions"
+        data-title="Catalog configuration"
+        prefix-name="catalogConfig_"
+        :sub-agent="true"
       >
         <template #activity>
           <catalog-activity />
@@ -25,7 +28,8 @@
 <script setup lang="ts">
 import type { Catalog } from '#api/types'
 
-import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
+import Vjsf from '@koumoul/vjsf/webmcp'
+import type { Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import { resolvedSchema as catalogSchemaBase } from '#api/types/catalog'
 

@@ -65,6 +65,12 @@ echo ""
 echo -e "${BOLD}Dev processes:${RESET}"
 check_http "dev-api" "http://localhost:${DEV_API_PORT}/catalogs/api/test-env"
 check_http "dev-ui" "http://localhost:${DEV_UI_PORT}/catalogs/"
+# Optional: only needed for simulations (npm run simulate).
+if [ -n "${BRIDGE_PORT:-}" ]; then
+  check_http "dev-bridge (opt)" "http://localhost:${BRIDGE_PORT}/_bridge/status"
+else
+  printf "%-20s n/a      (BRIDGE_PORT missing from .env — see dev/init-env.sh)\n" "dev-bridge (opt)"
+fi
 echo ""
 
 # --- Docker compose services ---
@@ -73,6 +79,7 @@ check_http "simple-directory" "${NGINX}/simple-directory/"
 check_http "data-fair" "${NGINX}/data-fair/"
 check_http "events" "${NGINX}/events/"
 check_http "registry" "${NGINX}/registry/"
+check_http "agents" "${NGINX}/agents/"
 check_tcp  "mongo" "localhost" "${MONGO_PORT}"
 check_tcp  "elasticsearch" "localhost" "${ES_PORT}"
 echo ""

@@ -81,6 +81,7 @@ import DfLayoutEmptyState from '@data-fair/lib-vuetify/layout-empty-state.vue'
 import DfLayoutFetchError from '@data-fair/lib-vuetify/layout-fetch-error.vue'
 import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
 import { mdiTransitConnection } from '@mdi/js'
+import { useAgentState } from '@data-fair/lib-vue-agents'
 
 const session = useSessionAuthenticated()
 const showAll = useBooleanSearchParam('showAll')
@@ -123,6 +124,12 @@ const displayCatalogs = computed(() => {
   const catalogs = (catalogsFetch.data.value?.results ?? [])
   if (!search.value) return catalogs
   return catalogs.filter(catalog => catalog.title.toLowerCase().includes(search.value.toLowerCase()))
+})
+
+useAgentState('catalogs', () => catalogsFetch.data.value && {
+  count: catalogsFetch.data.value.count,
+  search: search.value || undefined,
+  shown: displayCatalogs.value.slice(0, 30).map(c => `${c.title} (id: ${c._id})`)
 })
 
 watch(

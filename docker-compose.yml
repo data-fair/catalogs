@@ -18,6 +18,7 @@ services:
       - DF_PORT=${DF_PORT}
       - EVENTS_PORT=${EVENTS_PORT}
       - REGISTRY_PORT=${REGISTRY_PORT}
+      - AGENTS_PORT=${AGENTS_PORT}
     volumes:
       - ./dev/resources/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
 
@@ -75,6 +76,8 @@ services:
 
       - PRIVATE_CATALOGS_URL=http://${DEV_HOST}:${NGINX_PORT}/catalogs
       - SECRET_CATALOGS=secret-catalogs
+      # turns on the back-office AI assistant (agentsIntegration), needed by the simulations
+      - PRIVATE_AGENTS_URL=http://localhost:${AGENTS_PORT}
 
   #####
   # optional services
@@ -95,6 +98,23 @@ services:
       - SECRET_EVENTS=secret-events
       - SECRET_SENDMAILS=secret-sendmails
       - OBSERVER_ACTIVE=false
+
+  # the AI assistant: data-fair's back-office renders its chat, the catalogs UI registers its tools
+  agents:
+    profiles:
+      - dev
+    image: ghcr.io/data-fair/agents:main
+    network_mode: host
+    depends_on:
+      - mongo
+    environment:
+      - PORT=${AGENTS_PORT}
+      - MONGO_URL=mongodb://localhost:${MONGO_PORT}/data-fair-agents
+      - PRIVATE_DIRECTORY_URL=http://localhost:${SD_PORT}
+      - PRIVATE_EVENTS_URL=http://localhost:${EVENTS_PORT}
+      - OBSERVER_ACTIVE=false
+      - SECRET_EVENTS=secret-events
+      - CIPHER_PASSWORD=dev
 
   # registry-side dev container — same domain as catalogs under /registry
   # so the UI lists artefacts directly using the SimpleDirectory session cookie.

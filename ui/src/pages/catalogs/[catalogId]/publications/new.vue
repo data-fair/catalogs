@@ -47,6 +47,9 @@
                 v-model="publicationConfig"
                 :schema="publicationSchema"
                 :options="vjsfOptions"
+                data-title="New publication configuration"
+                prefix-name="publicationConfig_"
+                :sub-agent="true"
               />
             </v-form>
           </v-defaults-provider>
@@ -105,7 +108,10 @@
 
 <script setup lang="ts">
 import type { Capability } from '@data-fair/types-catalogs'
-import Vjsf, { type Options as VjsfOptions } from '@koumoul/vjsf'
+import type { AgentWizardStep } from '~/composables/use-agent-wizard'
+import { emitAgentEvent } from '@data-fair/lib-vue-agents'
+import Vjsf from '@koumoul/vjsf/webmcp'
+import type { Options as VjsfOptions } from '@koumoul/vjsf'
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import { resolvedSchema as publicationSchemaBase, type Publication } from '#api/types/publication'
 
@@ -225,7 +231,34 @@ const createPublication = useAsyncAction(async () => {
   selectedFolderOrResource.value = null
   validPublicationConfig.value = false
   publicationConfig.value = {}
+  emitAgentEvent('publication-created', { publication: pub._id, dataset: pub.dataFairDataset })
   await router.replace({ path: `/catalogs/${catalog.value?._id}/publications/${pub._id}` })
+})
+
+useAgentWizard({
+  name: 'publish a dataset to the remote catalog',
+  step,
+  steps: () => {
+    const action = effectiveAction.value
+    const steps: AgentWizardStep<'1' | '2'>[] = [{
+      value: '1',
+      title: t('stepTitles.configurePublication'),
+      enabled: true,
+      guidance: 'Choose the dataset to publish and the publication options with the publicationConfig_ form tools.'
+    }]
+    if (action && action !== 'createFolderInRoot') {
+      steps.push({
+        value: '2',
+        title: t(`stepTitles.${action}`),
+        enabled: validPublicationConfig.value,
+        guidance: action === 'replaceResource'
+          ? 'Find the remote resource to replace with browse_remote_resources, then select it with select_remote_resource.'
+          : 'Open the destination folder with browse_remote_resources: the open folder is the one selected.'
+      })
+    }
+    return steps
+  },
+  submitLabel: () => t(`actionButtons.${effectiveAction.value ?? 'createFolderInRoot'}`)
 })
 
 const handleNext = (next: () => void) => {
