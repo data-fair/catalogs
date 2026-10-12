@@ -205,7 +205,7 @@ useAgentPage({
       id: imp.value._id,
       remoteResource: imp.value.remoteResource,
       dataset: imp.value.dataFairDataset ?? 'none: no run has created a dataset yet',
-      status: imp.value.status,
+      status: imp.value.status === 'waiting' ? 'waiting: a run is queued, the worker starts it within seconds (nextImportDate is the scheduled run after it)' : imp.value.status,
       scheduledRuns: !imp.value.isSchedulingActive
         ? 'scheduling disabled, it only runs when re-imported'
         : imp.value.scheduling.length ? `${imp.value.scheduling.length} rule(s)` : 'scheduling enabled but without any rule, it only runs when re-imported',

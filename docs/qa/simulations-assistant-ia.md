@@ -17,6 +17,16 @@ Tools role on haiku, persona on sonnet.
 | `import-ressource` | not satisfied: every import failed with a 421 from data-fair (dev environment) | not satisfied: the persona wanted every row, capped at 50 by the mock; then stuck on a blank frame after a guessed route |
 | `import-diagnostic` | satisfied | not satisfied: correct diagnosis, then the frame could not leave the import page |
 
+### Re-run of 2026-10-12
+
+Same versions, `import-ressource` and `import-diagnostic` only, after the worker port fix and
+the runner accepting dialogs.
+
+| Case | Pass A (assistant sonnet) | Pass B (assistant haiku) |
+|---|---|---|
+| `import-ressource` | satisfied, after the person corrected the assistant: it read the `waiting` status next to `nextImportDate` as « nothing runs before November » | satisfied |
+| `import-diagnostic` | satisfied (claimed every remote folder was browsed, one was not) | satisfied |
+
 ## What the runs made us fix
 
 Earlier runs of the day, then this baseline:
@@ -32,7 +42,9 @@ Earlier runs of the day, then this baseline:
 - no `unsavedChanges` flag in the host state;
 - the dev worker calls data-fair on its own port (data-fair now answers 421 to proxied calls of
   internal endpoints) with an API key that has `asAccount`;
-- the runner marks runs broken by the Vite dev server invalid.
+- the runner marks runs broken by the Vite dev server invalid;
+- the import state says a `waiting` import is queued and starts within seconds, and that
+  `nextImportDate` is the scheduled run after it.
 
 ## Open
 
