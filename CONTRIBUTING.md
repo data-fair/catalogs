@@ -8,49 +8,24 @@
 
 ## Install dependencies
 
-1. Install npm dependencies for all workspaces :
-
 ```sh
-npm i
-```
-
-2. Build / Update the types based on schemas :
-
-```sh
-npm run build-types
-```
-
-3. Create a local `.env` file with random ports for this checkout :
-
-```sh
-./dev/init-env.sh
-```
-
-4. Install the Playwright browser used by the end-to-end tests :
-
-```sh
-npx playwright install chromium
+npm ci
+npx --no df-dev setup                 # .env with free ports (kept if it exists, --force to redraw), types, UI build
+npx playwright install chromium  # browser of the end-to-end tests
 ```
 
 ## Start the development environment
 
 ```sh
-npm run dev-zellij
+npm run dev-zellij                          # core containers + ui, api, worker
+npm run dev-zellij -- --services agents     # with the optional agents container
 ```
 
-*Note : This command will start a Zellij session with several panes, each one running a part of the project. The dev server URL (with the random ports from `.env`) is printed in the bottom banner. You can also run the environment manually by running the commands below in different terminals.*
-
-<details>
-<summary>Services</summary>
-
-- **Dev dependencies** : `npm run dev-deps`
-- **Api** : `npm run dev-api`
-- **UI** : `npm run dev-ui`
-- **Worker** : `npm run dev-worker`
-
-</details>
+This opens a zellij (>= 0.44) session named after the checkout directory, or attaches to it if it runs. The dev URL is in the footer. From another terminal: `npx --no df-dev status`, `npx --no df-dev logs <pane>`, `npx --no df-dev restart <pane>`, `npx --no df-dev up <service>`.
 
 ## Stop the development environment
+
+Quit zellij, then:
 
 ```sh
 npm run stop-dev-deps
@@ -69,15 +44,11 @@ Each checkout has its own `.env` with random ports, so you can run multiple work
 by side without port collisions :
 
 ```sh
-./dev/worktree.sh feat-xyz        # create ../catalogs_feat-xyz, install and build it
-./dev/delete-worktree.sh feat-xyz # stop its docker compose services and remove it
+npx --no df-worktree feat-xyz          # from the main checkout: ../catalogs_feat-xyz, installed and built
+npx --no df-worktree-delete feat-xyz   # its containers, volumes and zellij session, then the worktree
 ```
 
-You can check the health of the current environment at any time :
-
-```sh
-bash dev/status.sh
-```
+You can check the health of the current environment at any time with `npx --no df-dev status`.
 
 ## Running the tests
 

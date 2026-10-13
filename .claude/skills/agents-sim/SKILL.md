@@ -13,9 +13,9 @@ transcript.
 
 Three things must be true, and each fails confusingly if it is not:
 
-1. The dev stack is up — `bash dev/status.sh`: nginx, dev-api, dev-ui, simple-directory,
+1. The dev stack is up — `npx --no df-dev status` (start the optional `agents` container with `npx --no df-dev up agents`): nginx, api, ui, simple-directory,
    data-fair, registry, mongo, elasticsearch, and the `agents` container. Every case
-   runs the catalogs UI from the `dev-ui` server inside the data-fair back-office shell.
+   runs the catalogs UI from the `ui` pane inside the data-fair back-office shell.
    After a branch switch or an `npm install`, run `npm run build-types` (the API validators
    are gitignored build output) and warm the UI with `npm run test-e2e`: a cold Vite server
    fails page chunks while it re-optimizes its dependencies, and the runner then marks the
@@ -23,10 +23,10 @@ Three things must be true, and each fails confusingly if it is not:
 2. The data-fair container runs with `PRIVATE_AGENTS_URL` (see docker-compose.yml).
    Without it the back-office shows no chat at all and every back-office case dies
    waiting for the chat toggle. A container created before that line was added must
-   be recreated by the user (`docker compose --profile dev up -d data-fair`).
+   be recreated by the user (`docker compose up -d data-fair`).
 3. The bridge is running — it has a `bridge` pane in the zellij layout, and
-   `bash dev/status.sh` reports it as `dev-bridge (opt)`. The runner checks it
-   and says so. Only the maintainer starts it (`npm run dev-bridge`).
+   the `bridge` pane starts suspended; the maintainer presses Enter in it. The runner
+   checks it and says so.
 
 Ask the user to start anything that is down. Never start or stop dev processes yourself.
 
