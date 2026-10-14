@@ -21,35 +21,35 @@ async function performLogin (page: any, context: any, url: string, user: string)
 export const test = base.extend<{
   goToWithAuth: (url: string, user: string) => Promise<void>
 }>({
-      page: async ({ page }, use) => {
-        await page.context().addCookies([{
-          name: 'i18n_lang',
-          value: 'fr',
-          url: baseUrl
-        }, {
-          name: 'cache_bypass',
-          value: '1',
-          url: baseUrl
-        }])
-        await use(page)
-      },
+  page: async ({ page }, use) => {
+    await page.context().addCookies([{
+      name: 'i18n_lang',
+      value: 'fr',
+      url: baseUrl
+    }, {
+      name: 'cache_bypass',
+      value: '1',
+      url: baseUrl
+    }])
+    await use(page)
+  },
 
-      goToWithAuth: async ({ page, context }, use) => {
-        const goToWithAuth = async (url: string, user: string) => {
-          const cached = cookieCache.get(user)
-          if (cached) {
-            await context.addCookies(cached)
-            await page.goto(url)
-            if (page.url().includes('/simple-directory/login')) {
-              cookieCache.delete(user)
-              await performLogin(page, context, url, user)
-            }
-          } else {
-            await performLogin(page, context, url, user)
-          }
+  goToWithAuth: async ({ page, context }, use) => {
+    const goToWithAuth = async (url: string, user: string) => {
+      const cached = cookieCache.get(user)
+      if (cached) {
+        await context.addCookies(cached)
+        await page.goto(url)
+        if (page.url().includes('/simple-directory/login')) {
+          cookieCache.delete(user)
+          await performLogin(page, context, url, user)
         }
-        await use(goToWithAuth)
+      } else {
+        await performLogin(page, context, url, user)
       }
-    })
+    }
+    await use(goToWithAuth)
+  }
+})
 
 export { expect }

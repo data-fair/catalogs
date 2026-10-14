@@ -187,7 +187,6 @@
         </v-card-actions>
       </v-card>
     </v-menu>
-
   </template>
 </template>
 

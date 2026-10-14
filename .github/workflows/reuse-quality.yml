@@ -1,10 +1,23 @@
 name: Quality checks
 
+# The full gate. One build job (types, UI) shared as an artifact; static checks and unit tests
+# in one job; api and e2e tests in one job, on a fresh runner with the core services, single
+# worker (tests share one dev env state). No shards: the whole api + e2e run takes about
+# 2 min (measured 2026-10, most of it the cold vite warm-up), less than a runner's setup.
+# Used by pull requests, releases and the nightly check of master; the pre-push hook only
+# runs a light subset (dev/pre-push.sh).
+
 on:
   workflow_call:
+    inputs:
+      retries:
+        description: playwright retries per failed test (the nightly run uses 0 to expose flaky tests)
+        type: number
+        default: 1
+  workflow_dispatch:
 
 jobs:
-  quality:
+  build:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout git repository
@@ -12,23 +25,108 @@ jobs:
 
     - uses: actions/setup-node@v5
       with:
-        node-version: 24
+        node-version-file: .nvmrc
         cache: 'npm'
 
     - name: Install dependencies
       run: npm ci
 
-    - name: Lint
-      run: npm run lint
-
+    # the generated .type modules are imported by the API, the worker, the tests and the UI build
     - name: Build types
       run: npm run build-types
+
+    # also generates the ui/dts files vue-tsc needs
+    - name: Build UI
+      run: npm -w ui run build
+
+    - name: Upload build outputs
+      uses: actions/upload-artifact@v4
+      with:
+        name: build
+        include-hidden-files: true # the .type directories
+        retention-days: 1
+        path: |
+          **/.type/
+          !**/node_modules/**
+          ui/dist/
+          ui/dts/
+
+  static:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout git repository
+      uses: actions/checkout@v5
+
+    - uses: actions/setup-node@v5
+      with:
+        node-version-file: .nvmrc
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Download build outputs
+      uses: actions/download-artifact@v4
+      with:
+        name: build
+
+    - name: Lint
+      run: npm run lint
 
     - name: Type check
       run: npm run check-types
 
-    - name: Build UI
-      run: npm -w ui run build
+    - name: Audit
+      run: npm audit --omit=dev --audit-level=critical
+
+    # no server needed
+    - name: Unit tests
+      run: npx playwright test --project=unit
+
+  tests:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      # empty on workflow_dispatch, where playwright.config.ts falls back to 1
+      TEST_RETRIES: ${{ inputs.retries }}
+    steps:
+    - name: Checkout git repository
+      uses: actions/checkout@v5
+
+    - uses: actions/setup-node@v5
+      with:
+        node-version-file: .nvmrc
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Download build outputs
+      uses: actions/download-artifact@v4
+      with:
+        name: build
+
+    # only the browser binaries are cached, keyed on the installed playwright version;
+    # the system packages they need are installed on every run
+    - name: Read the playwright version
+      id: playwright
+      run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+    - name: Cache playwright browsers
+      id: playwright-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+    - name: Install playwright browser
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      run: npx playwright install --with-deps chromium
+
+    - name: Install playwright system dependencies
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+      run: npx playwright install-deps chromium
 
     - name: Init .env
       run: ./node_modules/.bin/df-dev init-env # local bin only: a bare npx would fetch an unrelated "df-dev" from the registry if the dependency were missing
@@ -41,16 +139,15 @@ jobs:
       run: docker compose up -d --wait
 
     - name: Start dev API
-      run: NODE_CONFIG=$(./node_modules/.bin/df-dev absent-config) ./node_modules/.bin/dotenv -- npm -w api run dev &
+      run: |
+        mkdir -p dev/logs
+        NODE_CONFIG=$(./node_modules/.bin/df-dev absent-config) ./node_modules/.bin/dotenv -- npm -w api run dev > dev/logs/api.log 2>&1 &
 
     - name: Start dev worker
-      run: NODE_CONFIG=$(./node_modules/.bin/df-dev absent-config) ./node_modules/.bin/dotenv -- npm -w worker run dev &
+      run: NODE_CONFIG=$(./node_modules/.bin/df-dev absent-config) ./node_modules/.bin/dotenv -- npm -w worker run dev > dev/logs/worker.log 2>&1 &
 
     - name: Start dev UI
-      run: ./node_modules/.bin/dotenv -- npm -w ui run dev &
-
-    - name: Install Playwright browser
-      run: npx playwright install --with-deps chromium
+      run: ./node_modules/.bin/dotenv -- npm -w ui run dev > dev/logs/ui.log 2>&1 &
 
     - name: Wait for the dev API and UI to be ready
       run: |
@@ -63,13 +160,21 @@ jobs:
           sleep 2
         done
         echo "dev API or UI did not become ready" >&2
+        tail -n 50 dev/logs/*.log
         exit 1
 
-    - name: Run tests
-      run: npm test
+    - name: Run api and e2e tests
+      run: npx playwright test --project=api --project=e2e
 
-    - name: Audit
-      run: npm audit --omit=dev --audit-level=critical
+    - name: Upload test results
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: |
+          test-results/
+          dev/logs/
+        retention-days: 7
 
     - name: Docker compose logs on failure
       if: failure()
