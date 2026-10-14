@@ -6,7 +6,6 @@ import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { assertAccountRole, getAccountRole, session, httpError } from '@data-fair/lib-express'
 import mongo from '#mongo'
-import config from '#config'
 import findUtils from '#utils/find.ts'
 
 const router = Router()
@@ -98,7 +97,6 @@ router.post('/', async (req, res) => {
   await wsEmit(`publication/${validPublication._id}`, validPublication)
 
   // Emit an event for the publication
-  if (!config.privateEventsUrl && !config.secretKeys.events) return
   eventsQueue.pushEvent({
     title: `La publication pour le jeu de données ${validPublication.dataFairDataset.title || validPublication.dataFairDataset.id} a été créée`,
     topic: { key: `catalogs:publication-create:${validPublication._id}` },

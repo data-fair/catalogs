@@ -5,7 +5,7 @@ import Debug from 'debug'
 import fs from 'fs'
 import resolvePath from 'resolve-path'
 import { emit as wsEmit, init as wsInit } from '@data-fair/lib-node/ws-emitter.js'
-import { startObserver, stopObserver, internalError } from '@data-fair/lib-node/observer.js'
+import { startObserver, stopObserver } from '@data-fair/lib-node/observer.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
 import { ensureArtefact } from '@data-fair/lib-node-registry'
@@ -40,14 +40,8 @@ export const start = async () => {
   await wsInit(db)
   if (config.observer.active) await startObserver(config.observer.port)
 
-  // Configure events queue
-  if (config.privateEventsUrl) {
-    if (!config.secretKeys?.events) {
-      internalError('catalogs-missing-events-secret', 'Missing secretKeys.events in config')
-    } else {
-      await eventsQueue.start({ eventsUrl: config.privateEventsUrl, eventsSecret: config.secretKeys.events })
-    }
-  }
+  // without the events service (optional) the queue is inactive and pushEvent is a no-op
+  await eventsQueue.start({ eventsUrl: config.privateEventsUrl, eventsSecret: config.secretKeys.events })
 
   mainLoopPromise = mainLoop()
 }
