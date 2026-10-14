@@ -60,7 +60,8 @@ uses `passwd`.
 
 When `NODE_ENV=development` the API exposes `/api/test-env`:
 - `GET /` — readiness probe (`{ ok: true }`)
-- `DELETE /` — delete all `test_*`-owned catalogs, imports and publications
+- `DELETE /` — delete all `test_*`-owned catalogs, imports and publications; answers 409 with
+  the list of `test_*` tasks the worker still runs after 5 s (a task leaking from a test)
 - `DELETE /plugins` — wipe the installed plugins directory
 
 These endpoints are used by the Playwright support helpers in `tests/support/axios.ts`.
@@ -71,16 +72,33 @@ These endpoints are used by the Playwright support helpers in `tests/support/axi
 npm test                          # all tests
 npm run test-unit                 # unit tests only
 npm run test-api                  # API tests only
+npm run test-api-fast             # API tests, stop at the first failure (iteration only)
 npm run test-e2e                  # browser e2e tests only
 npx playwright test path/to/file  # a specific file
 ```
 
-Tests are organized under `tests/features/<topic>/<name>.{unit,api,e2e}.spec.ts`.
-The `state-setup` project checks that the dev API is up; on failure read the processes with
-`npx --no df-dev logs api` / `logs worker`.
+Tests are organized under `tests/features/<topic>/<name>.{unit,api,e2e}.spec.ts`; api and e2e
+specs import `test` / `expect` from `tests/fixtures/login.ts`. The `state-setup` project
+checks that the dev API is up, `e2e-warmup` visits every UI route once so a cold vite transforms them before the e2e tests;
+dependency discovery is off, so a blank page there with a module named in the console means a
+commonjs dependency is missing from `optimizeDeps.include` in `ui/vite.config.ts` (use the
+exact import specifier). On a failure the api and
+worker pane logs are attached to the trace (`npx playwright show-trace test-results/<test>/trace.zip`);
+per-test durations of the last run are in `dev/logs/test-timings.json`. Keep the 30 s test
+timeout (hooks included): a heavy spec calls `test.slow()`.
 
-The full test suite runs on `git push` via husky. When iterating, run only the related
-test cases.
+Quality gates:
+
+| When | What |
+|---|---|
+| commit (`.husky/pre-commit`) | `npm run lint` |
+| push (`.husky/pre-push` → `dev/pre-push.sh`) | type check, unit tests, the `@smoke` api/e2e tests, and the api/e2e spec files changed since `origin/master` |
+| pull request, release tag (`reuse-quality.yml`) | lint, types, UI build, audit, and the whole unit/api/e2e suite (no nightly: the suite is small) |
+
+`@smoke` (`test('...', { tag: '@smoke' }, ...)`) marks a few fast tests over the core flows
+(catalog CRUD, import, publication, plugin resolution, list page, configuration edition,
+plugin picker). Tag a test only if it is fast and covers a path many features depend on.
+When iterating, run only the related test cases; `npm run quality` runs the full gate locally.
 
 ### AI assistant
 

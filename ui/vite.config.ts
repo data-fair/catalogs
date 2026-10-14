@@ -21,10 +21,26 @@ const envPort = (name: string) => {
 // https://vitejs.dev/config/
 export default defineConfig(({ command, isPreview }) => ({
   base: '/catalogs',
-  optimizeDeps: { include: ['debug', ...commonjsDeps] },
+  optimizeDeps: {
+    // no discovery: a dependency found while browsing reloads the page, which breaks cold e2e runs;
+    // ESM dependencies are served as is, only the commonjs ones must be listed here
+    noDiscovery: true,
+    include: [
+      'debug',
+      'ajv/dist/runtime/ucs2length.js',
+      'ajv-i18n/localize/en/index.js',
+      'ajv-i18n/localize/fr/index.js',
+      'fast-deep-equal',
+      'cronstrue',
+      'cronstrue/locales/en',
+      'cronstrue/locales/fr',
+      'timezones.json',
+      ...commonjsDeps
+    ]
+  },
   resolve: {
     alias: {
-      '~': path.resolve(__dirname, 'src/')
+      '~': path.resolve(import.meta.dirname, 'src/')
     },
   },
   html: {

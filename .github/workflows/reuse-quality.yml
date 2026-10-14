@@ -4,16 +4,11 @@ name: Quality checks
 # in one job; api and e2e tests in one job, on a fresh runner with the core services, single
 # worker (tests share one dev env state). No shards: the whole api + e2e run takes about
 # 2 min (measured 2026-10, most of it the cold vite warm-up), less than a runner's setup.
-# Used by pull requests, releases and the nightly check of master; the pre-push hook only
+# Used by pull requests and releases; the pre-push hook only
 # runs a light subset (dev/pre-push.sh).
 
 on:
   workflow_call:
-    inputs:
-      retries:
-        description: playwright retries per failed test (the nightly run uses 0 to expose flaky tests)
-        type: number
-        default: 1
   workflow_dispatch:
 
 jobs:
@@ -87,9 +82,6 @@ jobs:
   tests:
     needs: build
     runs-on: ubuntu-latest
-    env:
-      # empty on workflow_dispatch, where playwright.config.ts falls back to 1
-      TEST_RETRIES: ${{ inputs.retries }}
     steps:
     - name: Checkout git repository
       uses: actions/checkout@v5

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../../fixtures/login.ts'
 import { axios, axiosAuth, cleanDb, cleanPlugins } from '../../support/axios.ts'
 import { publishMockPlugin } from '../../support/registry.ts'
 

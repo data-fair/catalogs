@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../../fixtures/login.ts'
 import { axios, axiosAuth, cleanDb, cleanPlugins } from '../../support/axios.ts'
 import { publishMockPlugin } from '../../support/registry.ts'
 
@@ -48,7 +48,7 @@ test.describe('Permissions', () => {
   })
 
   test.describe('permissions-catalogs', () => {
-    test('superadmin can create, read, update, delete catalogs at any level', async () => {
+    test('superadmin can create, read, update, delete catalogs at any level', { tag: '@smoke' }, async () => {
       const orgCatalog = await superadmin.post('/api/catalogs', createCatalogPayload({
         type: 'organization', id: 'test_org1', name: 'Test Org 1'
       }))
@@ -173,7 +173,7 @@ test.describe('Permissions', () => {
         .rejects.toMatchObject({ status: 403 })
     })
 
-    test('organization admin can import from any catalog (org and department)', async () => {
+    test('organization admin can import from any catalog (org and department)', { tag: '@smoke' }, async () => {
       expect((await adminOrg.post('/api/imports', createImportPayload(orgCatalog.data._id))).status).toBe(201)
       expect((await adminOrg.post('/api/imports', createImportPayload(depCatalog.data._id))).status).toBe(201)
     })
@@ -235,7 +235,7 @@ test.describe('Permissions', () => {
         .rejects.toMatchObject({ status: 403 })
     })
 
-    test('organization admin can publish organization dataset to organization catalog', async () => {
+    test('organization admin can publish organization dataset to organization catalog', { tag: '@smoke' }, async () => {
       expect((await adminOrg.post('/api/publications', createPublicationPayload(orgCatalog.data._id, 'org-dataset'))).status).toBe(201)
     })
 

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../../fixtures/login.ts'
 import { axios, axiosAuth } from '../../support/axios.ts'
 import { publishMockPlugin } from '../../support/registry.ts'
 
@@ -10,7 +10,7 @@ test.describe('plugins resolved from the registry', () => {
     await publishMockPlugin()
   })
 
-  test('returns a plugin descriptor with its schemas and metadata', async () => {
+  test('returns a plugin descriptor with its schemas and metadata', { tag: '@smoke' }, async () => {
     const adminOrg = await axiosAuth({ email: 'test_admin1@test.com', org: 'test_org1' })
     const res = await adminOrg.get('/api/plugins/' + pluginId)
     expect(res.data.id).toBe(pluginId)

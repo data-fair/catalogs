@@ -16,7 +16,7 @@ test.describe('catalog configuration edition', () => {
   })
   test.beforeEach(cleanDb)
 
-  test('keeps the plugin config visible while editing the title and description', async ({ page, goToWithAuth }) => {
+  test('keeps the plugin config visible while editing the title and description', { tag: '@smoke' }, async ({ page, goToWithAuth }) => {
     const admin = await axiosAuth('test_admin1@test.com')
     const { data: catalog } = await admin.post('/api/catalogs', {
       title: 'Config edit catalog',
