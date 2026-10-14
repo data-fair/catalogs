@@ -3,6 +3,8 @@
 # =============================
 FROM node:24.21.0-alpine3.24 AS base
 
+RUN apk upgrade --no-cache
+
 WORKDIR /app
 ENV NODE_ENV=production
 ENV DEBUG=upgrade*
@@ -76,6 +78,9 @@ RUN mkdir -p /app/shared/node_modules
 # =============================
 FROM base AS worker
 
+# npm, npx, corepack and yarn are not needed at runtime
+RUN rm -rf /usr/local/lib/node_modules /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /opt/yarn-* /usr/local/bin/yarn /usr/local/bin/yarnpkg
+
 COPY --from=worker-installer /app/node_modules node_modules
 COPY worker worker
 COPY shared shared
@@ -107,6 +112,9 @@ RUN mkdir -p /app/api/node_modules
 # Final API Image
 # =============================
 FROM base AS main
+
+# npm, npx, corepack and yarn are not needed at runtime
+RUN rm -rf /usr/local/lib/node_modules /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /opt/yarn-* /usr/local/bin/yarn /usr/local/bin/yarnpkg
 
 COPY --from=api-installer /app/node_modules node_modules
 COPY shared shared
