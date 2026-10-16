@@ -4,6 +4,7 @@ import { existsSync, mkdirSync } from 'node:fs'
 import { axiosBuilder } from '@data-fair/lib-node/axios.js'
 import { test as setup } from '@playwright/test'
 import { baseURL } from './support/axios.ts'
+import { seedDataFairApiKey } from './support/data-fair.ts'
 
 const ax = axiosBuilder()
 
@@ -24,4 +25,6 @@ If you are an agent do not try to start it. Instead check for a startup failure 
   } catch {
     // log tailing is optional
   }
+
+  await seedDataFairApiKey()
 })
