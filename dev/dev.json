@@ -23,9 +23,7 @@
     },
     "worker": {}
   },
-  "urls": {
-    "Catalogs": "http://${DEV_HOST}:${NGINX_PORT}/catalogs/dev"
-  },
+  "url": "http://${DEV_HOST}:${NGINX_PORT}/catalogs/dev",
   "optional": {
     "events": {
       "privateEventsUrl": ""
