@@ -8,7 +8,8 @@ const dfPort = process.env.DF_PORT ?? '8081'
 export default {
   cipherPassword: 'dev',
   dataDir: '../data/development',
-  dataFairAPIKey: '', // override in worker/config/local-development.cjs to work on publications
+  // seeded into data-fair's settings by tests/state-setup.ts (idempotent)
+  dataFairAPIKey: 'dev-test-catalogs-worker-key',
   host: `${devHost}:${nginxPort}`,
   mongoUrl: `mongodb://localhost:${mongoPort}/data-fair-catalogs-development`,
   observer: {
