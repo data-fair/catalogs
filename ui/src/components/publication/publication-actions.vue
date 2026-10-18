@@ -142,7 +142,7 @@
                 <div class="font-weight-medium">
                   {{ t('deleteRemotePublication') }}
                 </div>
-                <div class="text-caption font-italic">
+                <div class="text-body-small font-italic">
                   {{ t('deleteRemotePublicationNote') }}
                 </div>
               </div>
@@ -158,7 +158,7 @@
                 <div class="font-weight-medium">
                   {{ t('keepRemotePublication') }}
                 </div>
-                <div class="text-caption font-italic">
+                <div class="text-body-small font-italic">
                   {{ t('keepRemotePublicationNote') }}
                 </div>
               </div>
