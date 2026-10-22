@@ -20,8 +20,6 @@ export const sendCatalogEvent = (
   topicAction: string,
   sessionState?: SessionStateAuthenticated
 ) => {
-  if (!config.privateEventsUrl && !config.secretKeys.events) return
-
   eventsQueue.pushEvent({
     title: `Le catalogue ${catalog.title} ${actionText}`,
     topic: { key: `catalogs:catalog-${topicAction}:${catalog._id}` },

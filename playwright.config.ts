@@ -1,38 +1,39 @@
 import { defineConfig, devices } from '@playwright/test'
 import 'dotenv/config'
 
-const devHost = process.env.DEV_HOST ?? 'localhost'
-const nginxPort = process.env.NGINX_PORT ?? '5600'
+const ci = !!process.env.CI
 
 export default defineConfig({
   testDir: './tests',
+  // api and e2e tests share the dev env state (one clean wipes every test owner): one worker
   workers: 1,
   fullyParallel: false,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
-  reporter: 'dot',
-  timeout: 60_000,
+  forbidOnly: ci,
+  // a flake must not cost a full re-run
+  retries: ci ? 1 : 0,
+  // the json report keeps the per-test durations of the last run, used to size the smoke set
+  // on a failure: npx playwright show-trace test-results/<test>/trace.zip (pane logs attached there)
+  reporter: [['dot'], ['json', { outputFile: 'dev/logs/test-timings.json' }]],
+  // per test, HOOKS INCLUDED: heavy specs call test.slow() (x3) instead of raising this
+  timeout: 30_000,
   expect: { timeout: 5_000 },
 
   use: {
-    baseURL: `http://${devHost}:${nginxPort}/catalogs`,
-    actionTimeout: 10_000,
+    baseURL: `http://${process.env.DEV_HOST}:${process.env.NGINX_PORT}/catalogs`,
+    actionTimeout: 5_000,
     navigationTimeout: 10_000,
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
   },
 
   projects: [
     {
-      name: 'state-setup',
-      testMatch: /state-setup\.ts/,
-      teardown: 'state-teardown'
-    },
-    {
-      name: 'state-teardown',
-      testMatch: /state-teardown\.ts/,
-    },
-    {
       name: 'unit',
       testMatch: /.*\.unit\.spec\.ts/,
+    },
+    {
+      name: 'state-setup',
+      testMatch: /state-setup\.ts/,
     },
     {
       name: 'api',
@@ -40,9 +41,19 @@ export default defineConfig({
       dependencies: ['state-setup'],
     },
     {
+      // a cold vite transforms each route on its first visit: this pays for it once, with a
+      // long timeout, before the e2e tests
+      name: 'e2e-warmup',
+      testMatch: /e2e-warmup\.ts/,
+      dependencies: ['state-setup'],
+      timeout: 120_000,
+      expect: { timeout: 30_000 },
+      use: { ...devices['Desktop Chrome'], navigationTimeout: 60_000 },
+    },
+    {
       name: 'e2e',
       testMatch: /.*\.e2e\.spec\.ts/,
-      dependencies: ['state-setup'],
+      dependencies: ['e2e-warmup'],
       use: { ...devices['Desktop Chrome'] },
     },
   ],

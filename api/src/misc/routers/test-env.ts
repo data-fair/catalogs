@@ -15,9 +15,26 @@ router.get('/', (req, res) => {
 // Cleanup test_* owned data from mongo. Only documents whose owner.id starts
 // with "test_" are removed, so interactive dev work under other accounts
 // survives test runs.
+// It refuses (409) while the worker still runs a test task after a short wait: deleting its
+// data under it would leak the task into the next test, so the leak is reported where it starts.
 router.delete('/', async (req, res, next) => {
   try {
     const testOwnerFilter = { 'owner.id': { $regex: /^test_/ } }
+
+    const runningFilter = { ...testOwnerFilter, status: 'running' as const }
+    const running = async () => [
+      ...(await mongo.imports.find(runningFilter).project({ _id: 1 }).toArray()).map(t => `import/${t._id}`),
+      ...(await mongo.publications.find(runningFilter).project({ _id: 1 }).toArray()).map(t => `publication/${t._id}`)
+    ]
+    let tasks = await running()
+    for (let i = 0; tasks.length && i < 50; i++) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+      tasks = await running()
+    }
+    if (tasks.length) {
+      res.status(409).send(`tasks still running after 5 s: ${tasks.join(', ')}`)
+      return
+    }
 
     await Promise.all([
       mongo.catalogs.deleteMany(testOwnerFilter),

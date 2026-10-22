@@ -5,7 +5,7 @@ const eventsPort = process.env.EVENTS_PORT ?? '8088'
 const registryPort = process.env.REGISTRY_PORT ?? '8089'
 
 export default {
-  cipherPassword: 'dev',
+  cipherPassword: 'dev-cipher-password-0123456789abcdef',
   dataDir: '../data/development',
   mongoUrl: `mongodb://localhost:${mongoPort}/data-fair-catalogs-development`,
   observer: {

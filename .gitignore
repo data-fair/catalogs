@@ -1,9 +1,21 @@
+# dependencies and generated code
+node_modules/
+.type/
+
+# local environment and data
+.env
+**/config/local-*
 data/
 dev/logs/
-node_modules/
-**/config/local-*
-.type/
-.env
-playwright-report/
+
+# test output
 test-results/
+playwright-report/
+
+# agent working files
+docs/superpowers/
+.superpowers/
+.playwright-mcp/
+
+# catalogs
 simulations/tmp/

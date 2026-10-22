@@ -5,7 +5,7 @@ import { session, assertAuthenticated, getAccountRole } from '@data-fair/lib-exp
 import * as wsServer from '@data-fair/lib-express/ws-server.js'
 import { init as wsEmitterInit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { startObserver, stopObserver, internalError } from '@data-fair/lib-node/observer.js'
+import { startObserver, stopObserver } from '@data-fair/lib-node/observer.js'
 import { createHttpTerminator } from 'http-terminator'
 import http from 'http'
 import config from '#config'
@@ -27,14 +27,8 @@ export const start = async () => {
   session.init(config.privateDirectoryUrl)
   await mongo.init()
 
-  // Configure events queue
-  if (config.privateEventsUrl) {
-    if (!config.secretKeys.events) {
-      internalError('catalogs-missing-events-secret', 'Missing secretKeys.events in config')
-    } else {
-      await eventsQueue.start({ eventsUrl: config.privateEventsUrl, eventsSecret: config.secretKeys.events })
-    }
-  }
+  // without the events service (optional) the queue is inactive and pushEvent is a no-op
+  await eventsQueue.start({ eventsUrl: config.privateEventsUrl, eventsSecret: config.secretKeys.events })
 
   /**
    * Init webSocket server

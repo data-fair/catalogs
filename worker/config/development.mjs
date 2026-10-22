@@ -6,7 +6,7 @@ const nginxPort = process.env.NGINX_PORT ?? '5600'
 const dfPort = process.env.DF_PORT ?? '8081'
 
 export default {
-  cipherPassword: 'dev',
+  cipherPassword: 'dev-cipher-password-0123456789abcdef',
   dataDir: '../data/development',
   // seeded into data-fair's settings by tests/state-setup.ts (idempotent)
   dataFairAPIKey: 'dev-test-catalogs-worker-key',

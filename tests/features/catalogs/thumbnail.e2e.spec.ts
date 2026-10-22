@@ -19,9 +19,11 @@ test.describe('catalog plugin thumbnails from the registry', () => {
   const waitForThumbnail = (page: Page) =>
     page.waitForResponse(r => r.url().includes('/registry/api/v1/thumbnails/'), { timeout: 10000 })
 
-  test('the plugin picker fetches the thumbnail', async ({ page, goToWithAuth }) => {
+  test('the plugin picker lists the registry plugins with their thumbnail', { tag: '@smoke' }, async ({ page, goToWithAuth }) => {
     const thumbnail = waitForThumbnail(page)
     await goToWithAuth('/catalogs/catalogs/new', 'test_admin1')
+    // the picker card of the mock plugin (registry artefact title "Mock")
+    await expect(page.getByText(/Mock/).first()).toBeVisible({ timeout: 10_000 })
     expect((await thumbnail).status()).toBe(200)
   })
 

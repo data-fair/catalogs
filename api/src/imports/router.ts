@@ -7,7 +7,6 @@ import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { assertAccountRole, getAccountRole, session, httpError, type SessionStateAuthenticated } from '@data-fair/lib-express'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import mongo from '#mongo'
-import config from '#config'
 import findUtils from '#utils/find.ts'
 
 const router = Router()
@@ -26,8 +25,6 @@ const sendImportEvent = (
   topicAction: string,
   sessionState: SessionStateAuthenticated
 ) => {
-  if (!config.privateEventsUrl && !config.secretKeys.events) return
-
   eventsQueue.pushEvent({
     title: `L'import de la resource ${imp.remoteResource.title} ${actionText}`,
     topic: { key: `catalogs:import-${topicAction}:${imp._id}` },
