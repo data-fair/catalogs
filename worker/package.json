@@ -3,7 +3,7 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development DEBUG=worker*,locks* nodemon -e js,ts,json index.ts"
+    "dev": "NODE_ENV=development DEBUG=locks* nodemon -e js,ts,json index.ts"
   },
   "imports": {
     "#config": "./src/config.ts",
@@ -22,7 +22,6 @@
     "@data-fair/lib-node-registry": "^0.7.2",
     "axios": "^1.20.0",
     "config": "^5.0.1",
-    "debug": "^4.4.1",
     "form-data": "^4.0.4",
     "fs-extra": "^11.3.0",
     "mongodb": "^6.17.0",

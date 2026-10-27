@@ -2,6 +2,8 @@
   "name": "@data-fair/catalogs-shared",
   "type": "module",
   "dependencies": {
-    "croner": "^9.1.0"
+    "@opentelemetry/semantic-conventions": "^1.43.0",
+    "croner": "^9.1.0",
+    "pino": "^10.4.0"
   }
 }

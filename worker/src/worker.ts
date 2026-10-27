@@ -1,7 +1,6 @@
 import type { Publication, Import } from '#api/types'
 import type CatalogPlugin from '@data-fair/types-catalogs'
 
-import Debug from 'debug'
 import fs from 'fs'
 import resolvePath from 'resolve-path'
 import { emit as wsEmit, init as wsInit } from '@data-fair/lib-node/ws-emitter.js'
@@ -9,6 +8,7 @@ import { startObserver, stopObserver } from '@data-fair/lib-node/observer.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
 import { ensureArtefact } from '@data-fair/lib-node-registry'
+import { getLogger } from '@data-fair/catalogs-shared/logger.ts'
 import { importPluginModule } from '@data-fair/catalogs-shared/plugin-load.ts'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import importTask from './lib/import.ts'
@@ -18,8 +18,8 @@ import config, { registryCacheDir } from '#config'
 import mongo from '#mongo'
 import locks from '#locks'
 
-const debug = Debug('worker')
-const debugLoop = Debug('worker-loop')
+const logger = getLogger('worker')
+const loggerLoop = getLogger('worker-loop')
 
 /** Loop promises, resolved when worker is stopped */
 let mainLoopPromise: Promise<void>
@@ -69,7 +69,7 @@ const mainLoop = async () => {
 
     // Timeout between each loop
     if ((now - lastActivity) > config.worker.inactivityDelay) { // inactive polling interval
-      debugLoop('the worker is inactive wait extra delay', config.worker.inactiveInterval)
+      loggerLoop.debug({ delay: config.worker.inactiveInterval }, 'the worker is inactive wait extra delay')
       await new Promise(resolve => setTimeout(resolve, config.worker.inactiveInterval))
     } else { // base polling interval
       await new Promise(resolve => setTimeout(resolve, config.worker.interval))
@@ -78,7 +78,7 @@ const mainLoop = async () => {
     // wait for an available spot in the promise pool
     // the loop is stopped as long as the pool is full
     if (!promisePool.includes(null)) {
-      debugLoop('pool is full, wait for a free spot')
+      loggerLoop.debug('pool is full, wait for a free spot')
       await Promise.any(promisePool)
     }
 
@@ -87,7 +87,7 @@ const mainLoop = async () => {
     if (stopped) continue
 
     const freeSlot = promisePool.findIndex(p => !p)
-    debugLoop('index of a free slot', freeSlot)
+    loggerLoop.debug({ slot: freeSlot }, 'index of a free slot')
 
     let type, task
     for (const taskType of types) {
@@ -116,7 +116,7 @@ const mainLoop = async () => {
  * Execute a task
  */
 async function iter (task: Task, type: typeof types[number]) {
-  debug('Process', type, task._id)
+  logger.debug({ type, id: task._id }, 'Process')
   const collection = type === 'import' ? mongo.imports : mongo.publications
 
   const catalog = await mongo.catalogs.findOne({ _id: task.catalog.id })
@@ -124,7 +124,7 @@ async function iter (task: Task, type: typeof types[number]) {
     await collection.deleteOne({ _id: task._id })
     return taskInternalError(task, type, 'worker-missing-catalog', 'found a task without associated catalog, weird')
   }
-  debug(`From catalog ${catalog.title} (${catalog._id})`)
+  logger.debug({ id: catalog._id, title: catalog.title }, 'From catalog')
 
   // Resolve the plugin from the registry: ensureArtefact downloads + extracts
   // the tarball into the local cache on a miss, returns the cached path on a
@@ -157,7 +157,7 @@ async function iter (task: Task, type: typeof types[number]) {
     await wsEmit(`${type}/${task._id}`, { status: 'error' })
     return taskInternalError(task, type, 'worker-plugin-load-failed', msg, e)
   }
-  debug(`Using plugin ${catalog.plugin}`)
+  logger.debug({ plugin: catalog.plugin }, 'Using plugin')
 
   try {
     if (type === 'import') {

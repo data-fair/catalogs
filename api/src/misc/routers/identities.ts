@@ -1,11 +1,11 @@
 // Webhooks for Simple Directory
 
-import Debug from 'debug'
 import { createIdentitiesRouter } from '@data-fair/lib-express/identities/index.js'
+import { getLogger } from '@data-fair/catalogs-shared/logger.ts'
 import config from '#config'
 import mongo from '#mongo'
 
-const debug = Debug('webhooks-simple-directory')
+const logger = getLogger('webhooks-simple-directory')
 
 /** Helper function to update all collections */
 const updateAllCollections = async (filter: any, update: any) => {
@@ -29,7 +29,10 @@ export default createIdentitiesRouter(
   config.secretKeys.identities,
   // onUpdate
   async (identity) => {
-    debug('Incoming sd webhook for update', identity)
+    logger.debug(
+      { type: identity.type, id: identity.id, name: identity.name, departments: identity.departments },
+      'Incoming sd webhook for update'
+    )
 
     // Update owner name
     await updateAllCollections(
@@ -71,7 +74,7 @@ export default createIdentitiesRouter(
 
   // onDelete
   async (identity) => {
-    debug('Incoming sd webhook for delete', identity)
+    logger.debug({ type: identity.type, id: identity.id }, 'Incoming sd webhook for delete')
     // Delete all catalogs, imports and publications for this identity
     await deleteFromAllCollections({ 'owner.type': identity.type, 'owner.id': identity.id })
 

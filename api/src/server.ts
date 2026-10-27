@@ -8,8 +8,11 @@ import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { startObserver, stopObserver } from '@data-fair/lib-node/observer.js'
 import { createHttpTerminator } from 'http-terminator'
 import http from 'http'
+import { getLogger } from '@data-fair/catalogs-shared/logger.ts'
 import config from '#config'
 import mongo from '#mongo'
+
+const logger = getLogger('api')
 
 const server = http.createServer(app)
 const httpTerminator = createHttpTerminator({ server })
@@ -58,7 +61,7 @@ export const start = async () => {
   server.listen(config.port)
   await new Promise(resolve => server.once('listening', resolve))
 
-  console.log(`API server listening on port ${config.port}`)
+  logger.info({ port: config.port }, 'API server listening')
 }
 
 export const stop = async () => {
