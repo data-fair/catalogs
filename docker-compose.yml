@@ -46,6 +46,9 @@ services:
       - MAILS_TRANSPORT={"host":"localhost","port":${MAILDEV_SMTP_PORT},"ignoreTLS":true}
       # per recipient, stored in mongo: repeated test runs would stop the mails silently
       - MAILSRATELIMIT_POINTS=100000
+      # the test non-human identity of dev/resources/users.json (tests/features/scopes)
+      - MANAGE_NHIS=true
+      - NHIS_ALLOW_INSECURE_ISSUERS=true
     volumes:
       - ./dev/resources/users.json:/app/data/users.json
       - ./dev/resources/organizations.json:/app/data/organizations.json
