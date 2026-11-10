@@ -9,15 +9,18 @@ import { resolvedSchema as catalogSchema } from '#types/catalog/index.ts'
 import mongo from '#mongo'
 import config from '#config'
 import findUtils from '#utils/find.ts'
+import { agentSchema } from '#utils/agent-schema.ts'
+import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import { getPlugin } from '../plugins/service.ts'
-import { sendCatalogEvent, prepareCatalog, validateCatalog } from './service.ts'
+import { sendCatalogEvent, prepareCatalog, validateCatalog, updateCatalog } from './service.ts'
 import { catalogFacets, catalogsWithCounts } from './aggregations.ts'
+import { requireOperationScope } from '../scopes.ts'
 
 const router = Router()
 export default router
 
 // Get the list of catalogs
-router.get('/', async (req, res) => {
+router.get('/', requireOperationScope('listCatalogs'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   assertAccountRole(sessionState, sessionState.account, 'admin')
 
@@ -61,7 +64,7 @@ router.get('/', async (req, res) => {
 })
 
 // Create a new catalog
-router.post('/', async (req, res) => {
+router.post('/', requireOperationScope('postCatalog'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const { body } = (await import('../../doc/catalogs/post-req/index.ts')).returnValid(req)
 
@@ -89,7 +92,7 @@ router.post('/', async (req, res) => {
 })
 
 // Get a catalog
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireOperationScope('getCatalog'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
@@ -100,7 +103,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Patch some fields of a catalog
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', requireOperationScope('patchCatalog'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
@@ -127,43 +130,21 @@ router.patch('/:id', async (req, res) => {
       await mongo.imports.updateMany({ 'catalog.id': req.params.id }, { $set: update })
     }
   }
-  req.body.updated = {
-    id: sessionState.user.id,
-    name: sessionState.user.name,
-    date: new Date().toISOString()
-  }
-
-  const patch: Record<string, any> = { $set: {} }
-  for (const key in req.body) {
-    if (req.body[key] === null) {
-      patch.$unset = patch.$unset || {}
-      patch.$unset[key] = true
-      delete req.body[key]
-    } else {
-      patch.$set = patch.$set || {}
-      patch.$set[key] = req.body[key]
-    }
-  }
-  const patchedCatalog = await validateCatalog({ ...catalog, ...req.body })
-  const preparedCatalog = await prepareCatalog(patchedCatalog)
-  Object.assign(patch.$set, preparedCatalog)
-  Object.assign(patchedCatalog, preparedCatalog)
-
-  await mongo.catalogs.updateOne({ _id: req.params.id }, patch)
-  sendCatalogEvent(patchedCatalog, 'a été modifié', 'patch', sessionState)
-  delete patchedCatalog.secrets // Do not return secrets in the response
+  const patchedCatalog = await updateCatalog(catalog, req.body, sessionState)
   res.status(200).json(patchedCatalog)
 })
 
 // Delete a catalog (and all its publications if deletePublications query)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireOperationScope('deleteCatalog'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
   // Delete also all publications for this catalog if asked
-  if (req.query.deletePublications) {
+  // a query string: only 'true' asks it ('false' is a truthy string)
+  const deletePublications = req.query.deletePublications === 'true'
+  if (deletePublications) {
     const result = await mongo.publications.updateMany(
       { 'catalog.id': req.params.id },
       { $set: { action: 'delete', status: 'waiting' } }
@@ -188,13 +169,13 @@ router.delete('/:id', async (req, res) => {
   // Delete all imports for this catalog but not the imported datasets
   await mongo.imports.deleteMany({ 'catalog.id': req.params.id })
 
-  const msg = req.query.deletePublications ? 'a été supprimé avec ses publications' : 'a été supprimé'
+  const msg = deletePublications ? 'a été supprimé avec ses publications' : 'a été supprimé'
   sendCatalogEvent(catalog, msg, 'delete', sessionState)
   res.status(204).send()
 })
 
 // Explore the list of remote folders/resources from a catalog
-router.get('/:id/resources', async (req, res) => {
+router.get('/:id/resources', requireOperationScope('listCatalogResources'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
@@ -209,4 +190,52 @@ router.get('/:id/resources', async (req, res) => {
   })
 
   res.status(200).json(datasets)
+})
+
+// the whole-document configuration of a catalog, the agent editor's read and save
+const configurationKeys = ['title', 'description', 'config'] as const
+const catalogConfiguration = (catalog: Pick<Catalog, typeof configurationKeys[number]>) => ({
+  title: catalog.title,
+  ...(catalog.description !== undefined ? { description: catalog.description } : {}),
+  config: catalog.config
+})
+
+router.get('/:id/configuration', requireOperationScope('getCatalogConfiguration'), async (req, res) => {
+  const sessionState = await session.reqAuthenticated(req)
+  const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
+  if (!catalog) throw httpError(404, 'Catalog not found')
+  assertAccountRole(sessionState, catalog.owner, 'admin')
+  res.json(catalogConfiguration(catalog))
+})
+
+router.get('/:id/configuration-schema', requireOperationScope('getCatalogConfigurationSchema'), async (req, res) => {
+  const sessionState = await session.reqAuthenticated(req)
+  const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
+  if (!catalog) throw httpError(404, 'Catalog not found')
+  assertAccountRole(sessionState, catalog.owner, 'admin')
+
+  const { plugin } = await getPlugin(catalog.plugin, catalog.owner)
+  const builder = jsonSchema(catalogSchema).pickProperties([...configurationKeys])
+  if (plugin.configSchema) builder.addProperty('config', plugin.configSchema)
+  // the top-level layout places the UI's activity slot, nothing an agent editor can render
+  const { layout, ...schema } = builder.schema
+  res.json(agentSchema({ ...schema, additionalProperties: false }, { owner: catalog.owner }))
+})
+
+// replaces the configuration: a missing description is removed, the masked secrets read by the GET
+// keep the stored ones
+router.put('/:id/configuration', requireOperationScope('putCatalogConfiguration'), async (req, res) => {
+  const sessionState = await session.reqAuthenticated(req)
+  const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
+  if (!catalog) throw httpError(404, 'Catalog not found')
+  assertAccountRole(sessionState, catalog.owner, 'admin')
+
+  const body = req.body ?? {}
+  if (typeof body !== 'object' || Array.isArray(body)) throw httpError(400, 'The configuration must be an object')
+  for (const key of Object.keys(body)) {
+    if (!(configurationKeys as readonly string[]).includes(key)) throw httpError(400, `Unsupported configuration part ${key}`)
+  }
+  const changes = { title: body.title, description: body.description ?? null, config: body.config }
+  const patchedCatalog = await updateCatalog(catalog, changes, sessionState)
+  res.status(200).json(catalogConfiguration(patchedCatalog))
 })

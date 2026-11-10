@@ -88,7 +88,7 @@ import type { Import } from '#api/types'
 
 import DfSectionTabs from '@data-fair/lib-vuetify/section-tabs.vue'
 import NavigationRight from '@data-fair/lib-vuetify/navigation-right.vue'
-import timeZones from 'timezones.json'
+import { utcs } from '@data-fair/catalogs-shared/utcs.ts'
 import cronstrue from 'cronstrue'
 import 'cronstrue/locales/en'
 import 'cronstrue/locales/fr'
@@ -224,13 +224,6 @@ useAgentPage({
 const timezoneLabel = (timeZone: string) => {
   if (timeZone === 'Europe/Paris') return ''
   return ' — ' + t('timezone') + ' ' + (timeZone ?? 'UTC')
-}
-
-const utcs: string[] = []
-for (const tz of timeZones) {
-  for (const utc of tz.utc) {
-    if (!utcs.includes(utc)) utcs.push(utc)
-  }
 }
 
 const vjsfOptions = computed<VjsfOptions>(() => ({

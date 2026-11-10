@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@data-fair/catalogs-shared": "*",
+    "@data-fair/lib-common-types": "^1.27.0",
     "@data-fair/lib-express": "^2.0.0",
     "@data-fair/lib-node": "^3.0.0",
     "@data-fair/lib-node-registry": "^0.7.2",

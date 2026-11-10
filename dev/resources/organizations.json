@@ -106,6 +106,10 @@
         "role": "admin"
       },
       {
+        "id": "test_scope_nhi",
+        "role": "admin"
+      },
+      {
         "id": "test_contrib1",
         "role": "contrib"
       },

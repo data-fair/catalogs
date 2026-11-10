@@ -36,7 +36,6 @@
     "ofetch": "^1.5.1",
     "reconnecting-websocket": "^4.4.0",
     "sass-embedded": "^1.89.2",
-    "timezones.json": "^1.7.2",
     "unplugin-auto-import": "^21.1.0",
     "unplugin-vue-components": "^32.1.0",
     "vite": "^8.0.2",

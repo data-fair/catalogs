@@ -7,6 +7,7 @@ import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { assertAccountRole, getAccountRole, session, httpError } from '@data-fair/lib-express'
 import mongo from '#mongo'
 import findUtils from '#utils/find.ts'
+import { requireOperationScope } from '../scopes.ts'
 
 const router = Router()
 export default router
@@ -19,7 +20,7 @@ const validatePublication = async (pub: Partial<Publication>) => {
 }
 
 // Get the list of publications
-router.get('/', async (req, res) => {
+router.get('/', requireOperationScope('listPublications'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   assertAccountRole(sessionState, sessionState.account, 'admin')
 
@@ -39,7 +40,7 @@ router.get('/', async (req, res) => {
 })
 
 // Get a specific publication by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireOperationScope('getPublication'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   assertAccountRole(sessionState, sessionState.account, 'admin')
   const { id } = req.params
@@ -51,7 +52,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Publish a data-fair dataset (create a publication that will be processed by the worker)
-router.post('/', async (req, res) => {
+router.post('/', requireOperationScope('postPublication'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const { body } = (await import('#doc/publications/post-req/index.ts')).returnValid(req)
 
@@ -111,7 +112,7 @@ router.post('/', async (req, res) => {
 })
 
 // Update a publication
-router.post('/:id', async (req, res) => {
+router.post('/:id', requireOperationScope('rerunPublication'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const publicationDoc = await mongo.publications.findOne({ _id: req.params.id })
   if (!publicationDoc) throw httpError(404, 'Publication not found')
@@ -127,7 +128,7 @@ router.post('/:id', async (req, res) => {
 })
 
 // Delete a publication
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireOperationScope('deletePublication'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const publicationDoc = await mongo.publications.findOne({ _id: req.params.id })
   if (!publicationDoc) throw httpError(404, 'Publication not found')
