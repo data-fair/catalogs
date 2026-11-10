@@ -29,7 +29,7 @@ The capabilities of a catalog (`catalogs_describe_catalog`) tell what it allows:
    - `createFolderInRoot`: a new folder at the root of the remote catalog;
    - `createFolder` or `createResource`: inside the `remoteFolder` given;
    - `replaceFolder` or `replaceResource`: replaces the `remoteFolder` or `remoteResource` given, from `catalogs_browse_remote_resources`.
-3. **The publication site.** With the `requiresPublicationSite` capability the remote dataset links back to a data-fair portal: `publicationSite` is required. Call `datafair_list_publication_sites` for the owner of the dataset and copy the `{ title, url, datasetUrlTemplate }` object of one site among those the dataset is published on (the `publicationSites` of `datafair_describe_dataset`). A dataset published on no site must first be published on one in data-fair.
+3. **The publication site.** With the `requiresPublicationSite` capability the remote dataset links back to a data-fair portal: `publicationSite` is required. Call `datafair_list_publication_sites` for the owner of the dataset and copy the `{ title, url, datasetUrlTemplate }` object of one site among those the dataset is published on (the `publicationSites` of `datafair_describe_dataset`). A dataset published on no site must first be published on one in data-fair. The data-fair tools need a `datasets` scope: a token limited to the `catalogs` scopes publishes but cannot list the datasets nor the publication sites.
 4. **Publish again** now with `catalogs_rerun_publication`. A publication also runs again by itself when the dataset changes.
 
 ## Follow the runs and diagnose a failure

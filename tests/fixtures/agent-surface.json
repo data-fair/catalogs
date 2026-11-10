@@ -2695,7 +2695,7 @@
     {
       "name": "workflow",
       "description": "How to connect the account to a remote data catalog, import its resources as data-fair datasets, publish data-fair datasets to it, and follow the runs: find a catalog plugin, create and configure a catalog, browse its resources, create and schedule an import, publish a dataset (actions, publication site), then diagnose a failed import or publication from its logs. Read it before connecting a catalog, importing, publishing or repairing one of them.",
-      "digest": "sha256:b8bef5fbd6dc50811f33880af4eb7791284ae176a9af0f639eafe7f85afd7584"
+      "digest": "sha256:efa913db41b277cb7488db76e54272911179466e5eb258d765fe4343391112d3"
     },
     {
       "name": "catalog-configuration",
