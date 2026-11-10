@@ -3,7 +3,7 @@
 import Debug from 'debug'
 import { Router } from 'express'
 import { assertReqInternalSecret } from '@data-fair/lib-express'
-import { internalError } from '@data-fair/lib-node/observer.js'
+import log from '@data-fair/lib-node/log.js'
 import mongo from '#mongo'
 import config from '#config'
 
@@ -16,8 +16,9 @@ router.post('/', async (req, res) => {
   assertReqInternalSecret(req, config.secretKeys.catalogs)
   debug('Incoming data fair webhook for datasets update/delete', req.body)
 
-  if (!req.body.update || !req.body.delete) { // Non blocking error
-    internalError('catalogs-data-fair-webhook', 'Missing datasets in request body')
+  // non blocking, a malformed call of the caller is not an internal failure
+  if (!req.body.update || !req.body.delete) {
+    log.warn('data-fair webhook without update or delete datasets lists', { code: 'catalogs-data-fair-webhook' })
   }
 
   await mongo.publications.updateMany(

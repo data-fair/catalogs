@@ -134,3 +134,25 @@ npm run check-types      # TypeScript
 npm run build-types      # generate type definitions from JSON schemas
 npm -w ui run build      # build the Vue SPA
 ```
+
+## Logging
+
+Server code (`api/`, `worker/`, `shared/`) logs through `import log from '@data-fair/lib-node/log.js'`
+(pino: JSON on stdout in production, pretty in dev); the full API is in the "Logging" section of the
+`@data-fair/lib-node` README. eslint `no-console` applies to `api/src/**`, `worker/src/**`, `shared/**` and the
+two `index.ts`; `api/scripts/` keep `console`.
+
+- `log.info|warn|alert|error(msg, { code?, err?, ...fields })`: `code` is a **static string**, ids go in their
+  own fields, the error in `err`, never in the message.
+- `error` is for internal failures only (counted in `df_logs`, alerting). Client errors, upstream failures
+  (a remote catalog, a plugin removed from the registry) and situations reported to the owner on the
+  task (lost permissions, missing publication site) are `warn`.
+- The actor (ip, host, userId, accountKey...) is never passed by hand: `session.middleware()` opens the
+  request log context. The owner of a catalog, import or publication uses the `owner*` names
+  (`ownerLogFields` in `shared/log-fields.ts`).
+- The worker runs each task in `withLogContext(taskLogFields(task, type))` (`catalogId`, `taskType`,
+  `importId` / `publicationId`, owner), so every line below it, plugin code included, carries the task.
+  The plugin is loaded before entering that context, its lines pass the fields explicitly.
+- `debug` call sites are unchanged; their output is redirected into the logger.
+- Task logs shown in the UI (`worker/src/lib/logs.ts`, the `log` given to plugins) are a separate thing,
+  stored on the import / publication document.
