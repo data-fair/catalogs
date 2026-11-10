@@ -106,6 +106,8 @@ const importConfigurationKeys = ['config', 'isSchedulingActive', 'shouldUpdateMe
 const importConfiguration = {
   type: 'object',
   additionalProperties: false,
+  // config is required too when the catalog has the importConfig capability (the schema route says so)
+  required: ['shouldUpdateMetadata', 'shouldUpdateSchema', 'scheduling'],
   properties: pick(importComponent.properties, importConfigurationKeys)
 }
 
@@ -237,7 +239,7 @@ const operations: Record<ScopedOperationId, Operation> = {
   },
   postImport: {
     summary: 'Import a remote resource',
-    description: 'Import a resource of a remote catalog (listCatalogResources) as a data-fair dataset of the owner of the catalog. The worker runs it within seconds. With dataFairDataset the import overwrites that existing dataset, and replaces the import that pointed to it.',
+    description: 'Import a resource of a remote catalog (listCatalogResources) as a data-fair dataset of the owner of the catalog. The worker runs it within seconds. With dataFairDataset the import overwrites that existing dataset, and replaces the import that pointed to it: dataFairDataset and separator need the admin tier of the catalogs scopes.',
     tags: ['imports'],
     requestBody: body(postBody(importSchema, ['catalog', 'dataFairDataset', 'separator', 'remoteResource', 'scheduling', 'config', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema'], {
       config: pluginConfig('The import config, it follows the importConfigSchema of the plugin (getPlugin) when the catalog has the importConfig capability, {} otherwise.')
@@ -288,7 +290,7 @@ const operations: Record<ScopedOperationId, Operation> = {
   },
   putImportConfiguration: {
     summary: 'Replace the configuration of an import',
-    description: 'Replace the scheduling, update options and plugin import config. A missing optional part is removed; config is refused when the catalog has no importConfig capability.',
+    description: 'Replace the scheduling, update options and plugin import config. A missing isSchedulingActive is set to its default (true); config is required when the catalog has the importConfig capability and refused otherwise.',
     tags: ['imports'],
     parameters: [idParam('Id of the import.')],
     requestBody: body(ref('importConfiguration')),

@@ -51,6 +51,7 @@ export const scopedOperations = {
   getImportConfigurationSchema: { method: 'get', path: '/imports/{id}/configuration-schema', family: 'catalogs', tier: 'read' },
   listPublications: { method: 'get', path: '/publications', family: 'catalogs', tier: 'read' },
   getPublication: { method: 'get', path: '/publications/{id}', family: 'catalogs', tier: 'read' },
+  // as on PATCH, dataFairDataset and separator (overwriting an existing dataset) need the admin tier, checked by the route
   postImport: { method: 'post', path: '/imports', family: 'catalogs', tier: 'write' },
   // the admin fields of the body (owner, dataFairDataset, separator) also need the admin tier, checked by the route
   patchImport: { method: 'patch', path: '/imports/{id}', family: 'catalogs', tier: 'write' },

@@ -62,6 +62,16 @@ test.describe('scopes', () => {
     expect(saved.isSchedulingActive).not.toBe(false)
   })
 
+  test('importing into an existing dataset needs the admin tier', async () => {
+    const { catalog } = await seed()
+    const write = (await nhiSession('catalogs:write')).bearerAx
+    const payload = { ...importPayload(catalog._id), remoteResource: { id: 'r3', title: 'Resource 3' } }
+    expect((await write.post('/api/imports', { ...payload, dataFairDataset: { id: 'x' } }, status)).status).toBe(403)
+    expect((await write.post('/api/imports', { ...payload, separator: ';' }, status)).status).toBe(403)
+    const admin = (await nhiSession('catalogs:admin')).bearerAx
+    expect((await admin.post('/api/imports', { ...payload, dataFairDataset: { id: 'x' } }, status)).status).toBe(201)
+  })
+
   for (const scope of ['catalogs:admin', 'all:admin']) {
     test(`${scope} connects and deletes catalogs`, async () => {
       const { bearerAx } = await nhiSession(scope)

@@ -125,7 +125,7 @@ const describeImport = {
 const createImport = {
   name: 'create_import',
   title: { en: 'Import a remote resource', fr: 'Importer une ressource distante' },
-  description: 'Import a resource of a remote catalog as a data-fair dataset of the owner of the catalog. The remoteResource id and title come from catalogs_browse_remote_resources. Without dataFairDataset a new dataset is created; with dataFairDataset (an existing dataset, from datafair_list_account_datasets) the import overwrites it. The worker runs it within seconds: follow it with catalogs_describe_import. Configure its scheduling and plugin options afterwards with the catalogs_import_configuration tools.',
+  description: 'Import a resource of a remote catalog as a data-fair dataset of the owner of the catalog. The remoteResource id and title come from catalogs_browse_remote_resources. Without dataFairDataset a new dataset is created; with dataFairDataset (an existing dataset, from datafair_list_account_datasets) the import overwrites it, which needs the admin tier of the catalogs scopes. The worker runs it within seconds: follow it with catalogs_describe_import. Configure its scheduling and plugin options afterwards with the catalogs_import_configuration tools.',
   annotations: { openWorldHint: true },
   bodyFields: ['catalog', 'remoteResource', 'dataFairDataset', 'config', 'scheduling', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema']
 } satisfies AgentOperation

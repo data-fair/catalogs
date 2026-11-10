@@ -54,6 +54,9 @@ router.get('/:id', requireOperationScope('getImport'), async (req, res) => {
 router.post('/', requireOperationScope('postImport'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const { body } = (await import('#doc/imports/post-req/index.ts')).returnValid(req)
+  // pointing an import at an existing dataset (overwritten by each run) needs the admin tier, as on PATCH
+  const adminFields: readonly string[] = importPatchFields.admin
+  if (Object.keys(body).some(k => adminFields.includes(k))) assertReqScope(req, acceptedScopes('catalogs', 'admin'))
 
   // Check if the catalog exists
   const catalog = await mongo.catalogs.findOne({ _id: body.catalog.id })
@@ -76,6 +79,8 @@ router.post('/', requireOperationScope('postImport'), async (req, res) => {
   imp._id = nanoid()
   imp.owner = catalog.owner
   imp.status = 'waiting'
+  // the validator applies no defaults: the worker only schedules imports with isSchedulingActive true
+  imp.isSchedulingActive = imp.isSchedulingActive ?? importSchema.properties.isSchedulingActive.default
   imp.waitingAt = new Date().toISOString()
   imp.created = imp.updated = {
     id: sessionState.user.id,
@@ -184,7 +189,7 @@ router.get('/:id/configuration-schema', requireOperationScope('getImportConfigur
   }))
 })
 
-// replaces the configuration: a missing optional part is removed; without the importConfig
+// replaces the configuration: a missing optional part takes its default or is removed; without the importConfig
 // capability the stored config is kept
 router.put('/:id/configuration', requireOperationScope('putImportConfiguration'), async (req, res) => {
   const { sessionState, importDoc, catalog } = await findImportAndCatalog(req)
@@ -195,7 +200,9 @@ router.put('/:id/configuration', requireOperationScope('putImportConfiguration')
     if (!keys.includes(key)) throw httpError(400, `Unsupported configuration part ${key}`)
   }
   const changes: Record<string, any> = {}
-  for (const key of keys) changes[key] = body[key] ?? null
+  // a missing part takes its schema default (isSchedulingActive), or is removed
+  const properties: Record<string, { default?: unknown }> = importSchema.properties
+  for (const key of keys) changes[key] = body[key] ?? properties[key]?.default ?? null
   const patchedImport = await updateImport(importDoc, changes, sessionState)
   res.status(200).json(importConfiguration(patchedImport, catalog))
 })

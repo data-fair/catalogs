@@ -29,6 +29,10 @@ test.describe('api document', () => {
     if (process.env.DEV_HOST) expect(text).not.toContain(process.env.DEV_HOST)
   })
 
+  test('the import configuration declares the parts the route requires', () => {
+    expect(apiDocs().components.schemas.importConfiguration.required.sort()).toEqual(['scheduling', 'shouldUpdateMetadata', 'shouldUpdateSchema'])
+  })
+
   test('no secrets in the schemas', () => {
     expect(JSON.stringify(apiDocs())).not.toContain('"secrets"')
     expect(JSON.stringify(apiDocs('en'))).not.toContain('"secrets"')

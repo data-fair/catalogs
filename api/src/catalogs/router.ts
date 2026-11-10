@@ -142,7 +142,9 @@ router.delete('/:id', requireOperationScope('deleteCatalog'), async (req, res) =
   assertAccountRole(sessionState, catalog.owner, 'admin')
 
   // Delete also all publications for this catalog if asked
-  if (req.query.deletePublications) {
+  // a query string: only 'true' asks it ('false' is a truthy string)
+  const deletePublications = req.query.deletePublications === 'true'
+  if (deletePublications) {
     const result = await mongo.publications.updateMany(
       { 'catalog.id': req.params.id },
       { $set: { action: 'delete', status: 'waiting' } }
@@ -167,7 +169,7 @@ router.delete('/:id', requireOperationScope('deleteCatalog'), async (req, res) =
   // Delete all imports for this catalog but not the imported datasets
   await mongo.imports.deleteMany({ 'catalog.id': req.params.id })
 
-  const msg = req.query.deletePublications ? 'a été supprimé avec ses publications' : 'a été supprimé'
+  const msg = deletePublications ? 'a été supprimé avec ses publications' : 'a été supprimé'
   sendCatalogEvent(catalog, msg, 'delete', sessionState)
   res.status(204).send()
 })
