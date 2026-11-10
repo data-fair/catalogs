@@ -29,7 +29,7 @@
     <h3 class="text-headline-small mt-0 mb-4">
       {{ t('nbImports', importsFetch.data.value.count) }}
     </h3>
-    <v-row class="d-flex align-stretch">
+    <v-row class="d-flex align-stretch df-card-grid">
       <v-col
         v-for="imp in importsFetch.data.value.results"
         :key="imp._id"

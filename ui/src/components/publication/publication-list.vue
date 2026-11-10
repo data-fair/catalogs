@@ -30,7 +30,7 @@
     <h3 class="text-headline-small mt-0 mb-4">
       {{ t('nbPublications', publicationsStore.count.value) }}
     </h3>
-    <v-row class="d-flex align-stretch">
+    <v-row class="d-flex align-stretch df-card-grid">
       <v-col
         v-for="publication in publicationsStore.publications.value"
         :key="publication._id"

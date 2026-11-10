@@ -44,7 +44,7 @@
     />
     <!-- List of catalogs -->
     <template v-else>
-      <v-row class="d-flex align-stretch">
+      <v-row class="d-flex align-stretch df-card-grid">
         <v-col
           v-for="catalog in displayCatalogs"
           :key="catalog._id"
