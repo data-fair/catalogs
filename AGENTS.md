@@ -35,7 +35,7 @@ worktrees coexist without port collisions. From the main checkout:
 
 ```bash
 npx --no df-worktree feat-xyz          # ../catalogs_feat-xyz: npm ci + df-dev setup (.env, types, UI build)
-npx --no df-worktree-delete feat-xyz   # containers, volumes, zellij session, then the worktree
+npx --no df-worktree-delete feat-xyz   # containers, volumes, zellij session, the worktree and its branch
 ```
 
 Branch names: letters, digits, `.`, `_`, `-`, at most 60 characters, no `/`.

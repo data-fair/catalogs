@@ -4,7 +4,7 @@
 
 - A Javascript/Typescript IDE with [Vue.js](https://vuejs.org/) and [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) support.
 - A recent [Docker](https://docs.docker.com/engine/install/) installation.
-- [Node.js v24+](https://nodejs.org/)
+- [Node.js 24.22.1+](https://nodejs.org/) (`.nvmrc`)
 
 ## Install dependencies
 
@@ -45,7 +45,7 @@ by side without port collisions :
 
 ```sh
 npx --no df-worktree feat-xyz          # from the main checkout: ../catalogs_feat-xyz, installed and built
-npx --no df-worktree-delete feat-xyz   # its containers, volumes and zellij session, then the worktree
+npx --no df-worktree-delete feat-xyz   # its containers, volumes and zellij session, the worktree and its branch
 ```
 
 You can check the health of the current environment at any time with `npx --no df-dev status`.
