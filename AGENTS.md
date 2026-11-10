@@ -135,6 +135,15 @@ npm run build-types      # generate type definitions from JSON schemas
 npm -w ui run build      # build the Vue SPA
 ```
 
+## Scopes and API document
+
+catalogs is scope-aware (`session.init(..., { scopeAware: true })`): a session whose token carries a `scope` claim can only be read on routes that checked a scope, otherwise it gets 403. Scoped sessions come from the non-human identity token exchange of simple-directory, later also from OAuth client applications. Sessions without a `scope` claim and internal secret calls are not affected.
+
+- The vocabulary (the `catalogs` family with read / write / admin tiers, declared with `defineScopes` from `@data-fair/lib-common-types/scopes.js`, which adds the global `all:read` / `all:write` / `all:admin`) and the operation table live in `api/src/scopes.ts`. The worker reaches data-fair with its own key in the name of the owner: `catalogs:write` alone creates datasets (imports) and sends datasets outside (publications), the descriptions say so; keep them explicit.
+- Every new session-facing route gets a row in `scopedOperations` and `requireOperationScope('<operationId>')` as its first handler. Without one it stays refused to scoped sessions (the admin routes, on purpose). Parts of a body that need a higher tier than the route are checked in the route with `assertReqScope` (the admin parts of an import PATCH, `api/src/imports/patch-fields.ts`).
+- `GET /api/api-docs.json` (`api/contract/api-docs.ts`, built from the same table) is the document data-fair merges into the platform document: keep it independent of the request origin (data-fair fetches it over the private url) and keep each accepted scope as its own `security` alternative. Edit the table, not the document. Its skills are the markdown files of `api/contract/skills/`, served at `/api/agents/skills/<name>.md`.
+- Tests: `tests/features/scopes/` (vocabulary, route enforcement with `nhiSession` from `tests/support/nhi.ts`, the test NHI of `dev/resources/users.json`) and `tests/features/agent-tools/`.
+
 ## Logging
 
 Server code (`api/`, `worker/`, `shared/`) logs through `import log from '@data-fair/lib-node/log.js'`

@@ -11,6 +11,8 @@ import importsRouter from './imports/router.ts'
 import pluginRouter from './plugins/router.ts'
 import publicationsRouter from './publications/router.ts'
 import adminRouter from './admin/router.ts'
+import apiDocs from '../contract/api-docs.ts'
+import { readAgentSkill } from '../contract/skills.ts'
 
 export const app = express()
 
@@ -22,6 +24,21 @@ app.use(session.middleware())
 app.set('json spaces', 2)
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+// public, read by data-fair (private url, no forwarded headers) to merge it into its platform document
+app.get('/api/api-docs.json', (req, res) => {
+  res.set('Cache-Control', 'public, max-age=300')
+  res.vary('Accept-Language')
+  res.json(apiDocs(req.acceptsLanguages('fr', 'en') === 'en' ? 'en' : 'fr'))
+})
+
+// the bodies of the document's skills, linked from its x-agent.skills; public like the document
+app.get('/api/agents/skills/:file', (req, res) => {
+  const body = req.params.file.endsWith('.md') ? readAgentSkill(req.params.file.slice(0, -3)) : undefined
+  if (!body) return res.status(404).send('unknown skill')
+  res.set('Cache-Control', 'public, max-age=300')
+  res.type('text/markdown').send(body)
+})
 
 app.use('/api/catalogs', catalogsRouter)
 app.use('/api/datasets', datasetsRouter)
