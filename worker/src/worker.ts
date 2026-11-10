@@ -1,4 +1,4 @@
-import type { Publication, Import } from '#api/types'
+import type { Catalog, Publication, Import } from '#api/types'
 import type CatalogPlugin from '@data-fair/types-catalogs'
 
 import Debug from 'debug'
@@ -13,7 +13,8 @@ import { importPluginModule } from '@data-fair/catalogs-shared/plugin-load.ts'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import importTask from './lib/import.ts'
 import publicationTask from './lib/publication.ts'
-import { taskInternalError } from './lib/internal-error.ts'
+import log, { withLogContext } from '@data-fair/lib-node/log.js'
+import { taskLogFields } from '@data-fair/catalogs-shared/log-fields.ts'
 import config, { registryCacheDir } from '#config'
 import mongo from '#mongo'
 import locks from '#locks'
@@ -117,12 +118,15 @@ const mainLoop = async () => {
  */
 async function iter (task: Task, type: typeof types[number]) {
   debug('Process', type, task._id)
+  // passed explicitly until the plugin is loaded: a plugin module evaluated inside a log context
+  // would attribute its long-lived timers and pools to this first task
+  const logFields = taskLogFields(task, type)
   const collection = type === 'import' ? mongo.imports : mongo.publications
 
   const catalog = await mongo.catalogs.findOne({ _id: task.catalog.id })
   if (!catalog) { // A task without catalog should not exist, log an error and delete the task
     await collection.deleteOne({ _id: task._id })
-    return taskInternalError(task, type, 'worker-missing-catalog', 'found a task without associated catalog, weird')
+    return log.error('found a task without associated catalog, weird', { code: 'worker-missing-catalog', ...logFields })
   }
   debug(`From catalog ${catalog.title} (${catalog._id})`)
 
@@ -155,10 +159,17 @@ async function iter (task: Task, type: typeof types[number]) {
       { $set: { status: 'error', logs: [{ type: 'error', msg, date: new Date().toISOString() }] } }
     )
     await wsEmit(`${type}/${task._id}`, { status: 'error' })
-    return taskInternalError(task, type, 'worker-plugin-load-failed', msg, e)
+    // a plugin removed from the registry or no longer shared with the owner is an expected situation
+    if (status === 404 || status === 403) return log.warn('the plugin of the catalog is not available', { code: 'worker-plugin-unavailable', plugin: catalog.plugin, ...logFields, err: e })
+    return log.error('failed to load the plugin of the catalog', { code: 'worker-plugin-load-failed', plugin: catalog.plugin, ...logFields, err: e })
   }
   debug(`Using plugin ${catalog.plugin}`)
 
+  await withLogContext(logFields, () => processTask(catalog, plugin, task, type))
+}
+
+async function processTask (catalog: Catalog, plugin: CatalogPlugin, task: Task, type: typeof types[number]) {
+  const collection = type === 'import' ? mongo.imports : mongo.publications
   try {
     if (type === 'import') {
       await importTask.process(catalog, plugin, task as Import)
@@ -167,7 +178,7 @@ async function iter (task: Task, type: typeof types[number]) {
     }
   } catch (e: any) {
     // Normally we should not have errors here, they should be caught before
-    taskInternalError(task, type, 'worker-task-failed', 'Failed to process the task', e)
+    log.error('failed to process the task', { code: 'worker-task-failed', err: e })
     await collection.updateOne({ _id: task._id }, {
       $set: { status: 'error' },
       $push: {

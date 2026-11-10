@@ -6,6 +6,7 @@ import * as wsServer from '@data-fair/lib-express/ws-server.js'
 import { init as wsEmitterInit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { startObserver, stopObserver } from '@data-fair/lib-node/observer.js'
+import log from '@data-fair/lib-node/log.js'
 import { createHttpTerminator } from 'http-terminator'
 import http from 'http'
 import config from '#config'
@@ -58,7 +59,7 @@ export const start = async () => {
   server.listen(config.port)
   await new Promise(resolve => server.once('listening', resolve))
 
-  console.log(`API server listening on port ${config.port}`)
+  log.info(`API server listening on port ${config.port}`)
 }
 
 export const stop = async () => {
