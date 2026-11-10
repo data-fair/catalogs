@@ -126,7 +126,7 @@
 <script setup lang="ts">
 import type { Import } from '#api/types'
 
-import timeZones from 'timezones.json'
+import { utcs } from '@data-fair/catalogs-shared/utcs.ts'
 import cronstrue from 'cronstrue'
 import 'cronstrue/locales/en'
 import 'cronstrue/locales/fr'
@@ -228,13 +228,6 @@ watch(catalog, (newCatalog) => {
 const timezoneLabel = (timeZone: string) => {
   if (timeZone === 'Europe/Paris') return ''
   return ' — ' + t('timezone') + ' ' + timeZone ? timeZone : 'UTC'
-}
-
-const utcs: string[] = []
-for (const tz of timeZones) {
-  for (const utc of tz.utc) {
-    if (!utcs.includes(utc)) utcs.push(utc)
-  }
 }
 
 const vjsfOptions = computed<VjsfOptions>(() => ({

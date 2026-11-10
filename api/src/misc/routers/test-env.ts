@@ -49,6 +49,17 @@ router.delete('/', async (req, res, next) => {
   }
 })
 
+// The raw mongo document of a catalog, ciphered secrets included (tests of the secret handling).
+router.get('/catalogs/:id', async (req, res, next) => {
+  try {
+    const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
+    if (!catalog) return res.status(404).send()
+    res.json(catalog)
+  } catch (err) {
+    next(err)
+  }
+})
+
 // Wipe the local registry artefact cache (used between test runs).
 router.delete('/plugins', async (req, res, next) => {
   try {

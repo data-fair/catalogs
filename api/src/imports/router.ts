@@ -1,50 +1,22 @@
-import type { Import } from '#types'
+import type { Catalog, Import } from '#types'
+import type { Request } from 'express'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
-import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
-import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { assertAccountRole, assertReqScope, getAccountRole, session, httpError, type SessionStateAuthenticated } from '@data-fair/lib-express'
+import { assertAccountRole, assertReqScope, getAccountRole, session, httpError } from '@data-fair/lib-express'
+import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import mongo from '#mongo'
 import findUtils from '#utils/find.ts'
+import { resolvedSchema as importSchema } from '#types/import/index.ts'
+import { getPlugin } from '../plugins/service.ts'
 import { acceptedScopes, requireOperationScope } from '../scopes.ts'
 import { importPatchFields, patchableImportFields } from './patch-fields.ts'
+import { sendImportEvent, validateImport, updateImport } from './service.ts'
+import { agentSchema } from '#utils/agent-schema.ts'
 
 const router = Router()
 export default router
-
-/**
- * Helper function to send events related to catalogs
- * @param catalog The catalog object
- * @param actionText The text describing the action (e.g. "a été créé")
- * @param topicAction The action part of the topic key (e.g. "create", "delete")
- * @param sessionState Optional session state for authentication
- */
-const sendImportEvent = (
-  imp: Import,
-  actionText: string,
-  topicAction: string,
-  sessionState: SessionStateAuthenticated
-) => {
-  eventsQueue.pushEvent({
-    title: `L'import de la resource ${imp.remoteResource.title} ${actionText}`,
-    topic: { key: `catalogs:import-${topicAction}:${imp._id}` },
-    sender: imp.owner,
-    resource: {
-      type: 'catalog',
-      id: imp.catalog.id,
-      title: 'Catalogue associé : ' + imp.catalog.title,
-    }
-  }, sessionState)
-}
-
-/**
- * Check that an import object is valid
- */
-const validateImport = async (imp: Partial<Import>) => {
-  return (await import('#types/import/index.ts')).returnValid(imp)
-}
 
 // Get the list of imports
 router.get('/', requireOperationScope('listImports'), async (req, res) => {
@@ -153,37 +125,7 @@ router.patch('/:id', requireOperationScope('patchImport'), async (req, res) => {
     }
   }
 
-  // Set the next import date based on scheduling if scheduling was updated
-  if (req.body.scheduling !== undefined) {
-    if (Array.isArray(req.body.scheduling) && req.body.scheduling.length === 0) {
-      req.body.nextImportDate = null
-    } else {
-      req.body.nextImportDate = getNextImportDate(req.body.scheduling)
-    }
-  }
-
-  req.body.updated = {
-    id: sessionState.user.id,
-    name: sessionState.user.name,
-    date: new Date().toISOString()
-  }
-
-  const patch: Record<string, any> = { }
-  for (const key in req.body) {
-    if (req.body[key] === null) {
-      patch.$unset = patch.$unset || {}
-      patch.$unset[key] = true
-      delete req.body[key]
-    } else {
-      patch.$set = patch.$set || {}
-      patch.$set[key] = req.body[key]
-    }
-  }
-  const patchedImport = await validateImport({ ...importDoc, ...req.body })
-  await mongo.imports.updateOne({ _id: req.params.id }, patch)
-
-  sendImportEvent(patchedImport, 'a été modifié', 'update', sessionState)
-  await wsEmit(`import/${req.params.id}`, patchedImport)
+  const patchedImport = await updateImport(importDoc, req.body, sessionState)
   res.status(200).json(patchedImport)
 })
 
@@ -197,4 +139,63 @@ router.delete('/:id', requireOperationScope('deleteImport'), async (req, res) =>
   sendImportEvent(importDoc, 'a été supprimé', 'delete', sessionState)
 
   res.status(204).send()
+})
+
+// the whole-document configuration of an import, the agent editor's read and save; config only when
+// the catalog has the importConfig capability
+const configurationKeys = ['config', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema', 'scheduling'] as const
+const configurationKeysOf = (catalog: Catalog | null) => configurationKeys
+  .filter(k => k !== 'config' || !!catalog?.capabilities?.includes('importConfig'))
+const importConfiguration = (imp: Import, catalog: Catalog | null) => {
+  const conf: Record<string, any> = {}
+  for (const key of configurationKeysOf(catalog)) {
+    if (imp[key] !== undefined) conf[key] = imp[key]
+  }
+  return conf
+}
+
+const findImportAndCatalog = async (req: Request) => {
+  const sessionState = await session.reqAuthenticated(req)
+  const importDoc = await mongo.imports.findOne({ _id: req.params.id as string })
+  if (!importDoc) throw httpError(404, 'Import not found')
+  assertAccountRole(sessionState, importDoc.owner, 'admin')
+  const catalog = await mongo.catalogs.findOne({ _id: importDoc.catalog.id })
+  return { sessionState, importDoc, catalog }
+}
+
+router.get('/:id/configuration', requireOperationScope('getImportConfiguration'), async (req, res) => {
+  const { importDoc, catalog } = await findImportAndCatalog(req)
+  res.json(importConfiguration(importDoc, catalog))
+})
+
+router.get('/:id/configuration-schema', requireOperationScope('getImportConfigurationSchema'), async (req, res) => {
+  const { importDoc, catalog } = await findImportAndCatalog(req)
+  if (!catalog) throw httpError(404, 'Catalog not found')
+  const keys = configurationKeysOf(catalog)
+  const builder = jsonSchema(importSchema).pickProperties(keys)
+  if (keys.includes('config')) {
+    const { plugin } = await getPlugin(catalog.plugin, catalog.owner)
+    if (plugin.importConfigSchema) builder.addProperty('config', plugin.importConfigSchema)
+  }
+  res.json(agentSchema({ ...builder.schema, additionalProperties: false }, {
+    owner: importDoc.owner,
+    catalogConfig: catalog.config,
+    resourceId: importDoc.remoteResource.id
+  }))
+})
+
+// replaces the configuration: a missing optional part is removed; without the importConfig
+// capability the stored config is kept
+router.put('/:id/configuration', requireOperationScope('putImportConfiguration'), async (req, res) => {
+  const { sessionState, importDoc, catalog } = await findImportAndCatalog(req)
+  const keys: readonly string[] = configurationKeysOf(catalog)
+  const body = req.body ?? {}
+  if (typeof body !== 'object' || Array.isArray(body)) throw httpError(400, 'The configuration must be an object')
+  for (const key of Object.keys(body)) {
+    if (!keys.includes(key)) throw httpError(400, `Unsupported configuration part ${key}`)
+  }
+  const changes: Record<string, any> = {}
+  for (const key of keys) changes[key] = body[key] ?? null
+  const patchedImport = await updateImport(importDoc, changes, sessionState)
+  res.status(200).json(importConfiguration(patchedImport, catalog))
 })
