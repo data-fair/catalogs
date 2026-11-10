@@ -2,7 +2,8 @@
 
 The catalogs UI runs inside the data-fair back-office (a d-frame). data-fair renders the chat
 drawer of the `agents` service; catalogs only exposes **WebMCP tools** and **host state** to it,
-through `@data-fair/lib-vue-agents`. Nothing here talks to an LLM, and no tool runs server side.
+through `@data-fair/lib-vue-agents`. Nothing here talks to an LLM, and no UI tool runs server side
+(the server-side surface is below).
 
 - `ui/src/App.vue` calls `useFrameServer('catalogs')` once: every tool registered on
   `navigator.modelContext` afterwards reaches the chat over the tab's BroadcastChannel.
@@ -43,6 +44,19 @@ location is published by data-fair, whose route follows the frame.
 what the person does is also emitted: `wizard-step-opened` (once the step's tools are
 registered), `catalog-created`, `catalog-saved`, `import-saved`, `import-created`,
 `publication-created`.
+
+## Server-side surface
+
+Apart from the UI tools, the API describes itself to agents: `GET /catalogs/api/api-docs.json`
+(`api/contract/api-docs.ts`) is a public OpenAPI document that data-fair merges into its platform
+document, where `@data-fair/openapi-mcp` turns its `x-agent` annotations (`api/contract/x-agent.ts`)
+into the `catalogs_*` tools of agents working without a browser (MCP clients, the platform MCP
+server): list, create and delete catalogs, imports and publications, browse a remote catalog, re-run
+and read the logs of a run, and two json-layout editor groups (`catalogs_catalog_configuration_*`,
+`catalogs_import_configuration_*`) over the whole-document configuration routes. Their skill is
+`api/contract/skills/workflow.md`. Each tool carries the scopes of its operation (`api/src/scopes.ts`);
+the surface is pinned by `tests/fixtures/agent-surface.json` (`UPDATE_GOLDEN=1` regenerates it). These
+tools act directly, with the person's or the token's rights, unlike the UI tools above.
 
 ## Simulations
 

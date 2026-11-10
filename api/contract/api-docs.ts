@@ -22,6 +22,7 @@ import importsGetReq from '../doc/imports/get-req/schema.ts'
 import publicationsGetReq from '../doc/publications/get-req/schema.ts'
 import { vocabulary, acceptedScopes, scopedOperations, type ScopedOperationId } from '../src/scopes.ts'
 import { importPatchFields } from '../src/imports/patch-fields.ts'
+import { root, operations as agentOperations } from './x-agent.ts'
 
 // the resolved schemas as OpenAPI components: no $id, no build annotations, no vjsf layout (its
 // context urls are the UI's)
@@ -137,11 +138,23 @@ const operations: Record<ScopedOperationId, Operation> = {
     description: 'List the catalogs of the active account (the remote catalogs it is connected to), with the number of imports and publications of each and facets on their plugins and capabilities.',
     tags: ['catalogs'],
     parameters: queryParams(catalogsGetReq),
-    responses: { 200: json('A page of catalogs.', page(ref('catalog'), { facets: { type: 'object' } })) }
+    responses: {
+      200: json('A page of catalogs.', page({
+        allOf: [ref('catalog'), {
+          type: 'object',
+          properties: {
+            importsCount: { type: 'integer', description: 'Number of imports from the catalog.' },
+            publicationsCount: { type: 'integer', description: 'Number of publications to the catalog.' },
+            importsErrorCount: { type: 'integer', description: 'Number of imports whose last run failed.' },
+            publicationsErrorCount: { type: 'integer', description: 'Number of publications whose last run failed.' }
+          }
+        }]
+      }, { facets: { type: 'object' } }))
+    }
   },
   postCatalog: {
     summary: 'Connect a catalog',
-    description: 'Connect the account to a remote catalog through a catalog plugin. The config follows the configSchema of the plugin (getPlugin); its secret fields are ciphered and masked. The owner defaults to the active account.',
+    description: 'Connect the account to a remote catalog through a catalog plugin. The config follows the configSchema of the plugin (getPlugin); its secret fields are ciphered and masked. The owner is the account the catalog belongs to, the caller must be one of its admins.',
     tags: ['catalogs'],
     requestBody: body(postBody(catalogSchema, ['title', 'description', 'plugin', 'owner', 'config'], {
       config: pluginConfig('The config of the catalog, it follows the configSchema of the plugin (getPlugin).')
@@ -243,7 +256,13 @@ const operations: Record<ScopedOperationId, Operation> = {
     description: `Update some parts of an import; status: waiting runs it again now. ${importPatchFields.admin.join(', ')} need the admin tier of the catalogs scopes. A null value removes a part.`,
     tags: ['imports'],
     parameters: [idParam('Id of the import.')],
-    requestBody: body({ type: 'object', properties: pick(importComponent.properties, [...importPatchFields.write, ...importPatchFields.admin]) }),
+    requestBody: body({
+      type: 'object',
+      properties: {
+        ...pick(importComponent.properties, [...importPatchFields.write, ...importPatchFields.admin]),
+        status: { type: 'string', enum: ['waiting'], description: 'waiting runs the import again now (refused while it is running).' }
+      }
+    }),
     responses: { 200: json('The updated import.', ref('import')) }
   },
   deleteImport: {
@@ -351,12 +370,14 @@ export default (locale: ScopeLocale = 'fr') => {
       operationId,
       ...operation,
       tags: operation.tags.map(tag => tagTitles[tag as keyof typeof tagTitles][locale]),
-      security: operationSecurity(operationId as ScopedOperationId)
+      security: operationSecurity(operationId as ScopedOperationId),
+      ...(operationId in agentOperations ? { 'x-agent': agentOperations[operationId as keyof typeof agentOperations] } : {})
     }
   }
   return {
     openapi: '3.1.0',
     info: { ...infos[locale], version: '1.0.0' },
+    'x-agent': root,
     // no request origin: data-fair fetches this document over a private url and prefixes the paths itself
     servers: [{ url: '/catalogs/api' }],
     components: {
