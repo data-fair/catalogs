@@ -12,12 +12,13 @@ import findUtils from '#utils/find.ts'
 import { getPlugin } from '../plugins/service.ts'
 import { sendCatalogEvent, prepareCatalog, validateCatalog } from './service.ts'
 import { catalogFacets, catalogsWithCounts } from './aggregations.ts'
+import { requireOperationScope } from '../scopes.ts'
 
 const router = Router()
 export default router
 
 // Get the list of catalogs
-router.get('/', async (req, res) => {
+router.get('/', requireOperationScope('listCatalogs'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   assertAccountRole(sessionState, sessionState.account, 'admin')
 
@@ -61,7 +62,7 @@ router.get('/', async (req, res) => {
 })
 
 // Create a new catalog
-router.post('/', async (req, res) => {
+router.post('/', requireOperationScope('postCatalog'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const { body } = (await import('../../doc/catalogs/post-req/index.ts')).returnValid(req)
 
@@ -89,7 +90,7 @@ router.post('/', async (req, res) => {
 })
 
 // Get a catalog
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireOperationScope('getCatalog'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
@@ -100,7 +101,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Patch some fields of a catalog
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', requireOperationScope('patchCatalog'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
@@ -156,7 +157,7 @@ router.patch('/:id', async (req, res) => {
 })
 
 // Delete a catalog (and all its publications if deletePublications query)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireOperationScope('deleteCatalog'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')
@@ -194,7 +195,7 @@ router.delete('/:id', async (req, res) => {
 })
 
 // Explore the list of remote folders/resources from a catalog
-router.get('/:id/resources', async (req, res) => {
+router.get('/:id/resources', requireOperationScope('listCatalogResources'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const catalog = await mongo.catalogs.findOne({ _id: req.params.id })
   if (!catalog) throw httpError(404, 'Catalog not found')

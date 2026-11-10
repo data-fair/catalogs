@@ -25,7 +25,8 @@ export const start = async () => {
   if (config.dataDir && !existsSync(config.dataDir)) throw new Error(`Data directory ${resolvePath(config.dataDir)} was not mounted`)
 
   if (config.observer.active) await startObserver(config.observer.port)
-  session.init(config.privateDirectoryUrl)
+  // scope-aware: every session-facing route is guarded by requireOperationScope (api/src/scopes.ts)
+  session.init(config.privateDirectoryUrl, undefined, undefined, { scopeAware: true })
   await mongo.init()
 
   // without the events service (optional) the queue is inactive and pushEvent is a no-op

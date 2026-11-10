@@ -3,13 +3,14 @@ import type { Plugin } from '#types'
 import { Router } from 'express'
 import { assertAccountRole, session } from '@data-fair/lib-express'
 import { getPlugin } from './service.ts'
+import { requireOperationScope } from '../scopes.ts'
 
 const router = Router()
 export default router
 
 // Get a plugin descriptor (schemas + metadata) resolved from the registry.
 // The plugin list itself is read by the UI directly from the registry API.
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireOperationScope('getPlugin'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   assertAccountRole(sessionState, sessionState.account, 'admin')
 

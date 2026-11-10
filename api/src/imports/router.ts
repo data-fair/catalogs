@@ -4,10 +4,12 @@ import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { assertAccountRole, getAccountRole, session, httpError, type SessionStateAuthenticated } from '@data-fair/lib-express'
+import { assertAccountRole, assertReqScope, getAccountRole, session, httpError, type SessionStateAuthenticated } from '@data-fair/lib-express'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import mongo from '#mongo'
 import findUtils from '#utils/find.ts'
+import { acceptedScopes, requireOperationScope } from '../scopes.ts'
+import { importPatchFields, patchableImportFields } from './patch-fields.ts'
 
 const router = Router()
 export default router
@@ -45,7 +47,7 @@ const validateImport = async (imp: Partial<Import>) => {
 }
 
 // Get the list of imports
-router.get('/', async (req, res) => {
+router.get('/', requireOperationScope('listImports'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   assertAccountRole(sessionState, sessionState.account, 'admin')
 
@@ -65,7 +67,7 @@ router.get('/', async (req, res) => {
 })
 
 // Get a specific import by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireOperationScope('getImport'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   assertAccountRole(sessionState, sessionState.account, 'admin')
   const { id } = req.params
@@ -77,7 +79,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Import a distant dataset (create an import document that will be processed by the worker)
-router.post('/', async (req, res) => {
+router.post('/', requireOperationScope('postImport'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const { body } = (await import('#doc/imports/post-req/index.ts')).returnValid(req)
 
@@ -119,7 +121,7 @@ router.post('/', async (req, res) => {
   res.status(201).json(validImport)
 })
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', requireOperationScope('patchImport'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   if (!req.params.id) throw httpError(400, 'Import ID is required')
 
@@ -127,12 +129,11 @@ router.patch('/:id', async (req, res) => {
   if (!importDoc) throw httpError(404, 'Import not found')
   assertAccountRole(sessionState, importDoc.owner, 'admin')
 
-  // Get the import schema to check which fields can be edited
-  const importSchema = (await import('#types/import/index.ts')).resolvedSchema
-
   // Restrict the parts of the import that can be edited
-  const acceptedParts = Object.keys(importSchema.properties)
-    .filter(k => sessionState.user.adminMode || !(importSchema.properties)[k].readOnly || k === 'owner' || k === 'status')
+  const acceptedParts = patchableImportFields(!!sessionState.user.adminMode)
+  const adminFields: readonly string[] = importPatchFields.admin
+  // the admin parts need the admin tier of a scoped session, checked before anything is written
+  if (Object.keys(req.body).some(k => adminFields.includes(k))) assertReqScope(req, acceptedScopes('catalogs', 'admin'))
 
   for (const key in req.body) {
     if (!acceptedParts.includes(key)) throw httpError(400, `Unsupported patch part ${key}`)
@@ -186,7 +187,7 @@ router.patch('/:id', async (req, res) => {
   res.status(200).json(patchedImport)
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireOperationScope('deleteImport'), async (req, res) => {
   const sessionState = await session.reqAuthenticated(req)
   const importDoc = await mongo.imports.findOne({ _id: req.params.id })
   if (!importDoc) throw httpError(404, 'Import not found')
