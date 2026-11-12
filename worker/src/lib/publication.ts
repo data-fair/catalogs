@@ -5,6 +5,7 @@ import type { AxiosRequestConfig } from 'axios'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import log from '@data-fair/lib-node/log.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
+import { eventText } from '@data-fair/catalogs-shared/event-texts.ts'
 import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 // data-fair is a service of our own infrastructure (configured private URL, not user input)
 import { privateAxiosInstance as axios } from '@data-fair/lib-node/axios.js'
@@ -52,13 +53,14 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
     await mongo.publications.updateOne({ _id: pub._id }, { $set: { status: 'error', logs: [{ date: new Date().toISOString(), msg: errorMsg, type: 'error' }] } })
     await wsEmit(`publication/${pub._id}`, { status: 'error', logs: [{ date: new Date().toISOString(), msg: errorMsg, type: 'error' }] })
     eventsQueue.pushEvent({
-      title: `La publication du jeu de données ${dataFairDataset?.title || pub.dataFairDataset.title} a échoué`,
+      title: eventText('publication-error', { title: dataFairDataset?.title || pub.dataFairDataset.title }),
+      body: eventText('catalog', { title: pub.catalog.title }),
       topic: { key: `catalogs:publication-error:${pub._id}` },
       sender: pub.owner,
       resource: {
         type: 'catalog',
         id: pub.catalog.id,
-        title: 'Catalogue associé : ' + pub.catalog.title
+        title: pub.catalog.title
       },
       originator: {
         internalProcess: {

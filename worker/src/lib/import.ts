@@ -7,6 +7,7 @@ import FormData from 'form-data'
 import tmp from 'tmp-promise'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
+import { eventText } from '@data-fair/catalogs-shared/event-texts.ts'
 import log from '@data-fair/lib-node/log.js'
 import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 // data-fair is a service of our own infrastructure (configured private URL, not user input)
@@ -37,13 +38,14 @@ const handleImportError = async (type: 'upload' | 'download', imp: Import, err: 
   if (type === 'download') log.warn('failed to download the resource file', { code: 'worker-download-failed', err })
   else log.error('failed to upload the resource file', { code: 'worker-upload-failed', err })
   eventsQueue.pushEvent({
-    title: `L'import de la resource ${imp.remoteResource.title} à échoué`,
+    title: eventText('import-error', { title: imp.remoteResource.title }),
+    body: eventText('catalog', { title: imp.catalog.title }),
     topic: { key: `catalogs:import-error:${imp._id}` },
     sender: imp.owner,
     resource: {
       type: 'catalog',
       id: imp.catalog.id,
-      title: 'Catalogue associé : ' + imp.catalog.title
+      title: imp.catalog.title
     },
     originator: {
       internalProcess: {

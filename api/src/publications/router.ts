@@ -4,6 +4,7 @@ import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
+import { eventText } from '@data-fair/catalogs-shared/event-texts.ts'
 import { assertAccountRole, getAccountRole, session, httpError } from '@data-fair/lib-express'
 import mongo from '#mongo'
 import findUtils from '#utils/find.ts'
@@ -99,13 +100,14 @@ router.post('/', requireOperationScope('postPublication'), async (req, res) => {
 
   // Emit an event for the publication
   eventsQueue.pushEvent({
-    title: `La publication pour le jeu de données ${validPublication.dataFairDataset.title || validPublication.dataFairDataset.id} a été créée`,
+    title: eventText('publication-create', { title: validPublication.dataFairDataset.title || validPublication.dataFairDataset.id }),
+    body: eventText('catalog', { title: validPublication.catalog.title }),
     topic: { key: `catalogs:publication-create:${validPublication._id}` },
     sender: validPublication.owner,
     resource: {
       type: 'catalog',
       id: validPublication.catalog.id,
-      title: 'Catalogue associé : ' + validPublication.catalog.title,
+      title: validPublication.catalog.title,
     }
   }, sessionState)
   res.status(201).json(validPublication)

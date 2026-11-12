@@ -4,6 +4,7 @@ import type { Catalog } from '#types'
 
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { cipher, decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
+import { type EventAction, eventText } from '@data-fair/catalogs-shared/event-texts.ts'
 import { getPlugin } from '../plugins/service.ts'
 import config from '#config'
 import mongo from '#mongo'
@@ -11,18 +12,18 @@ import mongo from '#mongo'
 /**
  * Helper function to send events related to catalogs
  * @param catalog The catalog object
- * @param actionText The text describing the action (e.g. "a été créé")
  * @param topicAction The action part of the topic key (e.g. "create", "delete")
  * @param sessionState Optional session state for authentication
+ * @param textAction The action whose text is the title, when it is more precise than the topic one
  */
 export const sendCatalogEvent = (
   catalog: Catalog,
-  actionText: string,
-  topicAction: string,
-  sessionState?: SessionStateAuthenticated
+  topicAction: 'create' | 'patch' | 'delete',
+  sessionState?: SessionStateAuthenticated,
+  textAction: EventAction<'catalog'> = topicAction
 ) => {
   eventsQueue.pushEvent({
-    title: `Le catalogue ${catalog.title} ${actionText}`,
+    title: eventText(`catalog-${textAction}`, { title: catalog.title }),
     topic: { key: `catalogs:catalog-${topicAction}:${catalog._id}` },
     sender: catalog.owner,
     resource: {
@@ -106,7 +107,7 @@ export const updateCatalog = async (catalog: Catalog, changes: Record<string, an
   Object.assign(patchedCatalog, preparedCatalog)
 
   await mongo.catalogs.updateOne({ _id: catalog._id }, patch)
-  sendCatalogEvent(patchedCatalog, 'a été modifié', 'patch', sessionState)
+  sendCatalogEvent(patchedCatalog, 'patch', sessionState)
   delete patchedCatalog.secrets // Do not return secrets in the response
   return patchedCatalog
 }

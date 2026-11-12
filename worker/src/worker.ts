@@ -7,6 +7,7 @@ import resolvePath from 'resolve-path'
 import { emit as wsEmit, init as wsInit } from '@data-fair/lib-node/ws-emitter.js'
 import { startObserver, stopObserver } from '@data-fair/lib-node/observer.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
+import { eventText } from '@data-fair/catalogs-shared/event-texts.ts'
 import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
 import { ensureArtefact } from '@data-fair/lib-node-registry'
 import { importPluginModule } from '@data-fair/catalogs-shared/plugin-load.ts'
@@ -193,13 +194,14 @@ async function processTask (catalog: Catalog, plugin: CatalogPlugin, task: Task,
     await wsEmit(`${type}/${task._id}`, { status: 'error' })
     // Push an event to the queue
     eventsQueue.pushEvent({
-      title: `${type === 'import' ? "L'import de la resource" : 'La publication du jeu de données'} ${type === 'import' ? (task as Import).remoteResource?.title : (task as Publication).dataFairDataset?.title} a échoué`,
+      title: eventText(`${type}-error`, { title: type === 'import' ? (task as Import).remoteResource?.title : (task as Publication).dataFairDataset?.title }),
+      body: eventText('catalog', { title: task.catalog.title }),
       topic: { key: `catalogs:${type}-error:${task._id}` },
       sender: task.owner,
       resource: {
         type: 'catalog',
         id: task.catalog.id,
-        title: 'Catalogue associé : ' + task.catalog.title
+        title: task.catalog.title
       },
       originator: {
         internalProcess: {

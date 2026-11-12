@@ -4,29 +4,31 @@ import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import type { SessionStateAuthenticated } from '@data-fair/lib-express'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
+import { type EventAction, eventText } from '@data-fair/catalogs-shared/event-texts.ts'
 import mongo from '#mongo'
 
 /**
- * Helper function to send events related to catalogs
- * @param catalog The catalog object
- * @param actionText The text describing the action (e.g. "a été créé")
+ * Helper function to send events related to imports
+ * @param imp The import object
  * @param topicAction The action part of the topic key (e.g. "create", "delete")
- * @param sessionState Optional session state for authentication
+ * @param sessionState Session state for authentication
+ * @param textAction The action whose text is the title, when it is more precise than the topic one
  */
 export const sendImportEvent = (
   imp: Import,
-  actionText: string,
-  topicAction: string,
-  sessionState: SessionStateAuthenticated
+  topicAction: 'create' | 'update' | 'delete',
+  sessionState: SessionStateAuthenticated,
+  textAction: EventAction<'import'> = topicAction
 ) => {
   eventsQueue.pushEvent({
-    title: `L'import de la resource ${imp.remoteResource.title} ${actionText}`,
+    title: eventText(`import-${textAction}`, { title: imp.remoteResource.title }),
+    body: eventText('catalog', { title: imp.catalog.title }),
     topic: { key: `catalogs:import-${topicAction}:${imp._id}` },
     sender: imp.owner,
     resource: {
       type: 'catalog',
       id: imp.catalog.id,
-      title: 'Catalogue associé : ' + imp.catalog.title,
+      title: imp.catalog.title,
     }
   }, sessionState)
 }
@@ -70,7 +72,7 @@ export const updateImport = async (importDoc: Import, changes: Record<string, an
   const patchedImport = await validateImport(merged)
   await mongo.imports.updateOne({ _id: importDoc._id }, patch)
 
-  sendImportEvent(patchedImport, 'a été modifié', 'update', sessionState)
+  sendImportEvent(patchedImport, 'update', sessionState)
   await wsEmit(`import/${importDoc._id}`, patchedImport)
   return patchedImport
 }

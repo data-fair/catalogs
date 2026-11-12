@@ -12,4 +12,7 @@ import uiNotif from '@data-fair/lib-vuetify/ui-notif.vue'
 import { useFrameServer } from '@data-fair/lib-vue-agents'
 
 useFrameServer('catalogs')
+
+const session = useSession()
+watchEffect(() => { document.documentElement.lang = session.lang.value ?? 'fr' })
 </script>

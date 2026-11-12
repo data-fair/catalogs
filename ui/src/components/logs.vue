@@ -119,7 +119,7 @@ const getIcon = (logs: Log[]) => {
   return mdiCheckCircle
 }
 
-const formatDate = (date: string) => dayjs(date).format('DD/MM/YYYY HH:mm')
+const formatDate = (date: string) => dayjs(date).format('L LT')
 
 const iconsByStatus = {
   waiting: mdiClock,
