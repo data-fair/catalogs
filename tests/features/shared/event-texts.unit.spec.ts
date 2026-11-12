@@ -18,6 +18,6 @@ test.describe('event texts', () => {
   })
 
   test('keeps a placeholder without value', () => {
-    expect(eventText('catalog', {}).en).toBe('Catalog: {title}')
+    expect(eventText('catalog-create', {}).en).toBe('The catalog {title} was created')
   })
 })

@@ -16,8 +16,7 @@ const fr = {
   'import-replace': "L'import de la ressource {title} a été supprimé (remplacé par un nouvel import)",
   'import-error': "L'import de la ressource {title} a échoué",
   'publication-create': 'La publication du jeu de données {title} a été créée',
-  'publication-error': 'La publication du jeu de données {title} a échoué',
-  catalog: 'Catalogue : {title}'
+  'publication-error': 'La publication du jeu de données {title} a échoué'
 }
 
 export type EventTextKey = keyof typeof fr
@@ -33,8 +32,7 @@ const en: Record<EventTextKey, string> = {
   'import-replace': 'The import of the resource {title} was deleted (replaced by a new import)',
   'import-error': 'The import of the resource {title} failed',
   'publication-create': 'The publication of the dataset {title} was created',
-  'publication-error': 'The publication of the dataset {title} failed',
-  catalog: 'Catalog: {title}'
+  'publication-error': 'The publication of the dataset {title} failed'
 }
 
 export const messages: Record<Lang, Record<EventTextKey, string>> = { fr, en }

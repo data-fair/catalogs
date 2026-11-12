@@ -21,8 +21,7 @@ export const sendImportEvent = (
   textAction: EventAction<'import'> = topicAction
 ) => {
   eventsQueue.pushEvent({
-    title: eventText(`import-${textAction}`, { title: imp.remoteResource.title }),
-    body: eventText('catalog', { title: imp.catalog.title }),
+    title: eventText(`import-${textAction}`, { title: imp.remoteResource.title || imp.remoteResource.id }),
     topic: { key: `catalogs:import-${topicAction}:${imp._id}` },
     sender: imp.owner,
     resource: {

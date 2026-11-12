@@ -53,8 +53,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
     await mongo.publications.updateOne({ _id: pub._id }, { $set: { status: 'error', logs: [{ date: new Date().toISOString(), msg: errorMsg, type: 'error' }] } })
     await wsEmit(`publication/${pub._id}`, { status: 'error', logs: [{ date: new Date().toISOString(), msg: errorMsg, type: 'error' }] })
     eventsQueue.pushEvent({
-      title: eventText('publication-error', { title: dataFairDataset?.title || pub.dataFairDataset.title }),
-      body: eventText('catalog', { title: pub.catalog.title }),
+      title: eventText('publication-error', { title: dataFairDataset?.title || pub.dataFairDataset.title || pub.dataFairDataset.id }),
       topic: { key: `catalogs:publication-error:${pub._id}` },
       sender: pub.owner,
       resource: {

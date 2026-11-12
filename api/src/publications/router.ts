@@ -101,7 +101,6 @@ router.post('/', requireOperationScope('postPublication'), async (req, res) => {
   // Emit an event for the publication
   eventsQueue.pushEvent({
     title: eventText('publication-create', { title: validPublication.dataFairDataset.title || validPublication.dataFairDataset.id }),
-    body: eventText('catalog', { title: validPublication.catalog.title }),
     topic: { key: `catalogs:publication-create:${validPublication._id}` },
     sender: validPublication.owner,
     resource: {

@@ -194,8 +194,7 @@ async function processTask (catalog: Catalog, plugin: CatalogPlugin, task: Task,
     await wsEmit(`${type}/${task._id}`, { status: 'error' })
     // Push an event to the queue
     eventsQueue.pushEvent({
-      title: eventText(`${type}-error`, { title: type === 'import' ? (task as Import).remoteResource?.title : (task as Publication).dataFairDataset?.title }),
-      body: eventText('catalog', { title: task.catalog.title }),
+      title: eventText(`${type}-error`, { title: type === 'import' ? ((task as Import).remoteResource?.title || (task as Import).remoteResource?.id) : ((task as Publication).dataFairDataset?.title || (task as Publication).dataFairDataset?.id) }),
       topic: { key: `catalogs:${type}-error:${task._id}` },
       sender: task.owner,
       resource: {

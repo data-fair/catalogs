@@ -38,8 +38,7 @@ const handleImportError = async (type: 'upload' | 'download', imp: Import, err: 
   if (type === 'download') log.warn('failed to download the resource file', { code: 'worker-download-failed', err })
   else log.error('failed to upload the resource file', { code: 'worker-upload-failed', err })
   eventsQueue.pushEvent({
-    title: eventText('import-error', { title: imp.remoteResource.title }),
-    body: eventText('catalog', { title: imp.catalog.title }),
+    title: eventText('import-error', { title: imp.remoteResource.title || imp.remoteResource.id }),
     topic: { key: `catalogs:import-error:${imp._id}` },
     sender: imp.owner,
     resource: {
