@@ -4,7 +4,6 @@ import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { eventText } from '@data-fair/catalogs-shared/event-texts.ts'
 import { assertAccountRole, getAccountRole, session, httpError } from '@data-fair/lib-express'
 import mongo from '#mongo'
 import findUtils from '#utils/find.ts'
@@ -98,9 +97,13 @@ router.post('/', requireOperationScope('postPublication'), async (req, res) => {
   await mongo.publications.insertOne(validPublication)
   await wsEmit(`publication/${validPublication._id}`, validPublication)
 
-  // Emit an event for the publication
+  // Emit an event for the publication (its errors are sent by the worker)
+  const datasetTitle = validPublication.dataFairDataset.title || validPublication.dataFairDataset.id
   eventsQueue.pushEvent({
-    title: eventText('publication-create', { title: validPublication.dataFairDataset.title || validPublication.dataFairDataset.id }),
+    title: {
+      en: `The publication of the dataset ${datasetTitle} was created`,
+      fr: `La publication du jeu de données ${datasetTitle} a été créée`
+    },
     topic: { key: `catalogs:publication-create:${validPublication._id}` },
     sender: validPublication.owner,
     resource: {

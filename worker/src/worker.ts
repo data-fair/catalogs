@@ -7,13 +7,13 @@ import resolvePath from 'resolve-path'
 import { emit as wsEmit, init as wsInit } from '@data-fair/lib-node/ws-emitter.js'
 import { startObserver, stopObserver } from '@data-fair/lib-node/observer.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { eventText } from '@data-fair/catalogs-shared/event-texts.ts'
 import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
 import { ensureArtefact } from '@data-fair/lib-node-registry'
 import { importPluginModule } from '@data-fair/catalogs-shared/plugin-load.ts'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import importTask from './lib/import.ts'
 import publicationTask from './lib/publication.ts'
+import { sendTaskErrorEvent } from './lib/events.ts'
 import log, { withLogContext } from '@data-fair/lib-node/log.js'
 import { taskLogFields } from '@data-fair/catalogs-shared/log-fields.ts'
 import config, { registryCacheDir } from '#config'
@@ -193,27 +193,9 @@ async function processTask (catalog: Catalog, plugin: CatalogPlugin, task: Task,
     })
     await wsEmit(`${type}/${task._id}`, { status: 'error' })
     // Push an event to the queue
-    eventsQueue.pushEvent({
-      title: eventText(`${type}-error`, { title: type === 'import' ? ((task as Import).remoteResource?.title || (task as Import).remoteResource?.id) : ((task as Publication).dataFairDataset?.title || (task as Publication).dataFairDataset?.id) }),
-      topic: { key: `catalogs:${type}-error:${task._id}` },
-      sender: task.owner,
-      resource: {
-        type: 'catalog',
-        id: task.catalog.id,
-        title: task.catalog.title
-      },
-      originator: {
-        internalProcess: {
-          id: 'catalogs-worker',
-          name: 'Catalogs Worker'
-        }
-      },
-      urlParams: {
-        catalogId: task.catalog.id,
-        type: type + 's',
-        itemId: task._id
-      }
-    })
+    sendTaskErrorEvent(type, task, type === 'import'
+      ? ((task as Import).remoteResource?.title || (task as Import).remoteResource?.id)
+      : ((task as Publication).dataFairDataset?.title || (task as Publication).dataFairDataset?.id))
   }
 }
 

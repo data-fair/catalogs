@@ -4,24 +4,31 @@ import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import type { SessionStateAuthenticated } from '@data-fair/lib-express'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
-import { type EventAction, eventText } from '@data-fair/catalogs-shared/event-texts.ts'
 import mongo from '#mongo'
 
+const importTitles = {
+  create: (title: string) => ({ en: `The import of the resource ${title} was created`, fr: `L'import de la ressource ${title} a été créé` }),
+  update: (title: string) => ({ en: `The import of the resource ${title} was updated`, fr: `L'import de la ressource ${title} a été modifié` }),
+  delete: (title: string) => ({ en: `The import of the resource ${title} was deleted`, fr: `L'import de la ressource ${title} a été supprimé` }),
+  replace: (title: string) => ({
+    en: `The import of the resource ${title} was deleted (replaced by a new import)`,
+    fr: `L'import de la ressource ${title} a été supprimé (remplacé par un nouvel import)`
+  })
+}
+
 /**
- * Helper function to send events related to imports
- * @param imp The import object
- * @param topicAction The action part of the topic key (e.g. "create", "delete")
- * @param sessionState Session state for authentication
- * @param textAction The action whose text is the title, when it is more precise than the topic one
+ * Send an event about an import (its errors are sent by the worker).
+ * @param topicAction The action part of the topic key
+ * @param textAction The text of the title, when it is more precise than the topic action
  */
 export const sendImportEvent = (
   imp: Import,
   topicAction: 'create' | 'update' | 'delete',
   sessionState: SessionStateAuthenticated,
-  textAction: EventAction<'import'> = topicAction
+  textAction: keyof typeof importTitles = topicAction
 ) => {
   eventsQueue.pushEvent({
-    title: eventText(`import-${textAction}`, { title: imp.remoteResource.title || imp.remoteResource.id }),
+    title: importTitles[textAction](imp.remoteResource.title || imp.remoteResource.id),
     topic: { key: `catalogs:import-${topicAction}:${imp._id}` },
     sender: imp.owner,
     resource: {

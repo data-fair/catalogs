@@ -4,26 +4,33 @@ import type { Catalog } from '#types'
 
 import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import { cipher, decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
-import { type EventAction, eventText } from '@data-fair/catalogs-shared/event-texts.ts'
 import { getPlugin } from '../plugins/service.ts'
 import config from '#config'
 import mongo from '#mongo'
 
+const catalogTitles = {
+  create: (title: string) => ({ en: `The catalog ${title} was created`, fr: `Le catalogue ${title} a été créé` }),
+  patch: (title: string) => ({ en: `The catalog ${title} was updated`, fr: `Le catalogue ${title} a été modifié` }),
+  delete: (title: string) => ({ en: `The catalog ${title} was deleted`, fr: `Le catalogue ${title} a été supprimé` }),
+  'delete-with-publications': (title: string) => ({
+    en: `The catalog ${title} was deleted along with its publications`,
+    fr: `Le catalogue ${title} a été supprimé avec ses publications`
+  })
+}
+
 /**
- * Helper function to send events related to catalogs
- * @param catalog The catalog object
- * @param topicAction The action part of the topic key (e.g. "create", "delete")
- * @param sessionState Optional session state for authentication
- * @param textAction The action whose text is the title, when it is more precise than the topic one
+ * Send an event about a catalog.
+ * @param topicAction The action part of the topic key
+ * @param textAction The text of the title, when it is more precise than the topic action
  */
 export const sendCatalogEvent = (
   catalog: Catalog,
   topicAction: 'create' | 'patch' | 'delete',
   sessionState?: SessionStateAuthenticated,
-  textAction: EventAction<'catalog'> = topicAction
+  textAction: keyof typeof catalogTitles = topicAction
 ) => {
   eventsQueue.pushEvent({
-    title: eventText(`catalog-${textAction}`, { title: catalog.title }),
+    title: catalogTitles[textAction](catalog.title),
     topic: { key: `catalogs:catalog-${topicAction}:${catalog._id}` },
     sender: catalog.owner,
     resource: {

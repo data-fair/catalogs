@@ -6,8 +6,7 @@ import fs from 'fs-extra'
 import FormData from 'form-data'
 import tmp from 'tmp-promise'
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
-import eventsQueue from '@data-fair/lib-node/events-queue.js'
-import { eventText } from '@data-fair/catalogs-shared/event-texts.ts'
+import { sendTaskErrorEvent } from './events.ts'
 import log from '@data-fair/lib-node/log.js'
 import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 // data-fair is a service of our own infrastructure (configured private URL, not user input)
@@ -37,27 +36,7 @@ const handleImportError = async (type: 'upload' | 'download', imp: Import, err: 
   // download: the remote catalog failed (upstream, warn); upload: data-fair, our own infrastructure (error)
   if (type === 'download') log.warn('failed to download the resource file', { code: 'worker-download-failed', err })
   else log.error('failed to upload the resource file', { code: 'worker-upload-failed', err })
-  eventsQueue.pushEvent({
-    title: eventText('import-error', { title: imp.remoteResource.title || imp.remoteResource.id }),
-    topic: { key: `catalogs:import-error:${imp._id}` },
-    sender: imp.owner,
-    resource: {
-      type: 'catalog',
-      id: imp.catalog.id,
-      title: imp.catalog.title
-    },
-    originator: {
-      internalProcess: {
-        id: 'catalogs-worker',
-        name: 'Catalogs Worker'
-      }
-    },
-    urlParams: {
-      catalogId: imp.catalog.id,
-      type: 'imports',
-      itemId: imp._id
-    }
-  })
+  sendTaskErrorEvent('import', imp, imp.remoteResource.title || imp.remoteResource.id)
 }
 
 /**
