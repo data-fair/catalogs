@@ -107,7 +107,7 @@
     </template>
 
     <template #item.size="{ item }">
-      <span class="text-no-wrap">{{ item.type === 'resource' && item.size ? formatBytes(item.size) : '-' }}</span>
+      <span class="text-no-wrap">{{ item.type === 'resource' && item.size ? formatBytes(item.size, locale) : '-' }}</span>
     </template>
 
     <template #item.format="{ item }">
@@ -131,7 +131,7 @@ import formatBytes from '@data-fair/lib-vue/format/bytes.js'
 import { until } from '@vueuse/core'
 import { useAgentTool } from '@data-fair/lib-vue-agents'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { dayjs } = useLocaleDayjs()
 const session = useSessionAuthenticated()
 const { catalog, plugin, mode } = defineProps<{

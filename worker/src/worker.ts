@@ -13,6 +13,7 @@ import { importPluginModule } from '@data-fair/catalogs-shared/plugin-load.ts'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import importTask from './lib/import.ts'
 import publicationTask from './lib/publication.ts'
+import { sendTaskErrorEvent } from './lib/events.ts'
 import log, { withLogContext } from '@data-fair/lib-node/log.js'
 import { taskLogFields } from '@data-fair/catalogs-shared/log-fields.ts'
 import config, { registryCacheDir } from '#config'
@@ -192,27 +193,9 @@ async function processTask (catalog: Catalog, plugin: CatalogPlugin, task: Task,
     })
     await wsEmit(`${type}/${task._id}`, { status: 'error' })
     // Push an event to the queue
-    eventsQueue.pushEvent({
-      title: `${type === 'import' ? "L'import de la resource" : 'La publication du jeu de données'} ${type === 'import' ? (task as Import).remoteResource?.title : (task as Publication).dataFairDataset?.title} a échoué`,
-      topic: { key: `catalogs:${type}-error:${task._id}` },
-      sender: task.owner,
-      resource: {
-        type: 'catalog',
-        id: task.catalog.id,
-        title: 'Catalogue associé : ' + task.catalog.title
-      },
-      originator: {
-        internalProcess: {
-          id: 'catalogs-worker',
-          name: 'Catalogs Worker'
-        }
-      },
-      urlParams: {
-        catalogId: task.catalog.id,
-        type: type + 's',
-        itemId: task._id
-      }
-    })
+    sendTaskErrorEvent(type, task, type === 'import'
+      ? ((task as Import).remoteResource?.title || (task as Import).remoteResource?.id)
+      : ((task as Publication).dataFairDataset?.title || (task as Publication).dataFairDataset?.id))
   }
 }
 

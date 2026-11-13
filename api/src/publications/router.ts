@@ -97,15 +97,19 @@ router.post('/', requireOperationScope('postPublication'), async (req, res) => {
   await mongo.publications.insertOne(validPublication)
   await wsEmit(`publication/${validPublication._id}`, validPublication)
 
-  // Emit an event for the publication
+  // Emit an event for the publication (its errors are sent by the worker)
+  const datasetTitle = validPublication.dataFairDataset.title || validPublication.dataFairDataset.id
   eventsQueue.pushEvent({
-    title: `La publication pour le jeu de données ${validPublication.dataFairDataset.title || validPublication.dataFairDataset.id} a été créée`,
+    title: {
+      en: `The publication of the dataset ${datasetTitle} was created`,
+      fr: `La publication du jeu de données ${datasetTitle} a été créée`
+    },
     topic: { key: `catalogs:publication-create:${validPublication._id}` },
     sender: validPublication.owner,
     resource: {
       type: 'catalog',
       id: validPublication.catalog.id,
-      title: 'Catalogue associé : ' + validPublication.catalog.title,
+      title: validPublication.catalog.title,
     }
   }, sessionState)
   res.status(201).json(validPublication)

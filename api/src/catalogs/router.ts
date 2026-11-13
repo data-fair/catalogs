@@ -86,7 +86,7 @@ router.post('/', requireOperationScope('postCatalog'), async (req, res) => {
   Object.assign(validCatalog, await prepareCatalog(validCatalog))
   await mongo.catalogs.insertOne(validCatalog)
 
-  sendCatalogEvent(validCatalog, 'a été créé', 'create', sessionState)
+  sendCatalogEvent(validCatalog, 'create', sessionState)
   delete validCatalog.secrets // Do not return secrets in the response
   res.status(201).json(validCatalog)
 })
@@ -169,8 +169,7 @@ router.delete('/:id', requireOperationScope('deleteCatalog'), async (req, res) =
   // Delete all imports for this catalog but not the imported datasets
   await mongo.imports.deleteMany({ 'catalog.id': req.params.id })
 
-  const msg = deletePublications ? 'a été supprimé avec ses publications' : 'a été supprimé'
-  sendCatalogEvent(catalog, msg, 'delete', sessionState)
+  sendCatalogEvent(catalog, 'delete', sessionState, deletePublications ? 'delete-with-publications' : 'delete')
   res.status(204).send()
 })
 

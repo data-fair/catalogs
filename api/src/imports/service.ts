@@ -6,27 +6,35 @@ import type { SessionStateAuthenticated } from '@data-fair/lib-express'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import mongo from '#mongo'
 
+const importTitles = {
+  create: (title: string) => ({ en: `The import of the resource ${title} was created`, fr: `L'import de la ressource ${title} a été créé` }),
+  update: (title: string) => ({ en: `The import of the resource ${title} was updated`, fr: `L'import de la ressource ${title} a été modifié` }),
+  delete: (title: string) => ({ en: `The import of the resource ${title} was deleted`, fr: `L'import de la ressource ${title} a été supprimé` }),
+  replace: (title: string) => ({
+    en: `The import of the resource ${title} was deleted (replaced by a new import)`,
+    fr: `L'import de la ressource ${title} a été supprimé (remplacé par un nouvel import)`
+  })
+}
+
 /**
- * Helper function to send events related to catalogs
- * @param catalog The catalog object
- * @param actionText The text describing the action (e.g. "a été créé")
- * @param topicAction The action part of the topic key (e.g. "create", "delete")
- * @param sessionState Optional session state for authentication
+ * Send an event about an import (its errors are sent by the worker).
+ * @param topicAction The action part of the topic key
+ * @param textAction The text of the title, when it is more precise than the topic action
  */
 export const sendImportEvent = (
   imp: Import,
-  actionText: string,
-  topicAction: string,
-  sessionState: SessionStateAuthenticated
+  topicAction: 'create' | 'update' | 'delete',
+  sessionState: SessionStateAuthenticated,
+  textAction: keyof typeof importTitles = topicAction
 ) => {
   eventsQueue.pushEvent({
-    title: `L'import de la resource ${imp.remoteResource.title} ${actionText}`,
+    title: importTitles[textAction](imp.remoteResource.title || imp.remoteResource.id),
     topic: { key: `catalogs:import-${topicAction}:${imp._id}` },
     sender: imp.owner,
     resource: {
       type: 'catalog',
       id: imp.catalog.id,
-      title: 'Catalogue associé : ' + imp.catalog.title,
+      title: imp.catalog.title,
     }
   }, sessionState)
 }
@@ -70,7 +78,7 @@ export const updateImport = async (importDoc: Import, changes: Record<string, an
   const patchedImport = await validateImport(merged)
   await mongo.imports.updateOne({ _id: importDoc._id }, patch)
 
-  sendImportEvent(patchedImport, 'a été modifié', 'update', sessionState)
+  sendImportEvent(patchedImport, 'update', sessionState)
   await wsEmit(`import/${importDoc._id}`, patchedImport)
   return patchedImport
 }

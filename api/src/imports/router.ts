@@ -70,7 +70,7 @@ router.post('/', requireOperationScope('postImport'), async (req, res) => {
     })
     if (existingImport && getAccountRole(sessionState, existingImport.owner) === 'admin') {
       await mongo.imports.deleteOne({ _id: existingImport._id })
-      sendImportEvent(existingImport, 'a été supprimé (remplacé par un nouvel import)', 'delete', sessionState)
+      sendImportEvent(existingImport, 'delete', sessionState, 'replace')
     }
   }
 
@@ -94,7 +94,7 @@ router.post('/', requireOperationScope('postImport'), async (req, res) => {
   const validImport = await validateImport(imp)
   await mongo.imports.insertOne(validImport)
 
-  sendImportEvent(validImport, 'a été créé', 'create', sessionState)
+  sendImportEvent(validImport, 'create', sessionState)
   res.status(201).json(validImport)
 })
 
@@ -141,7 +141,7 @@ router.delete('/:id', requireOperationScope('deleteImport'), async (req, res) =>
   assertAccountRole(sessionState, importDoc.owner, 'admin')
 
   await mongo.imports.deleteOne({ _id: req.params.id })
-  sendImportEvent(importDoc, 'a été supprimé', 'delete', sessionState)
+  sendImportEvent(importDoc, 'delete', sessionState)
 
   res.status(204).send()
 })

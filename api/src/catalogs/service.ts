@@ -8,21 +8,29 @@ import { getPlugin } from '../plugins/service.ts'
 import config from '#config'
 import mongo from '#mongo'
 
+const catalogTitles = {
+  create: (title: string) => ({ en: `The catalog ${title} was created`, fr: `Le catalogue ${title} a été créé` }),
+  patch: (title: string) => ({ en: `The catalog ${title} was updated`, fr: `Le catalogue ${title} a été modifié` }),
+  delete: (title: string) => ({ en: `The catalog ${title} was deleted`, fr: `Le catalogue ${title} a été supprimé` }),
+  'delete-with-publications': (title: string) => ({
+    en: `The catalog ${title} was deleted along with its publications`,
+    fr: `Le catalogue ${title} a été supprimé avec ses publications`
+  })
+}
+
 /**
- * Helper function to send events related to catalogs
- * @param catalog The catalog object
- * @param actionText The text describing the action (e.g. "a été créé")
- * @param topicAction The action part of the topic key (e.g. "create", "delete")
- * @param sessionState Optional session state for authentication
+ * Send an event about a catalog.
+ * @param topicAction The action part of the topic key
+ * @param textAction The text of the title, when it is more precise than the topic action
  */
 export const sendCatalogEvent = (
   catalog: Catalog,
-  actionText: string,
-  topicAction: string,
-  sessionState?: SessionStateAuthenticated
+  topicAction: 'create' | 'patch' | 'delete',
+  sessionState?: SessionStateAuthenticated,
+  textAction: keyof typeof catalogTitles = topicAction
 ) => {
   eventsQueue.pushEvent({
-    title: `Le catalogue ${catalog.title} ${actionText}`,
+    title: catalogTitles[textAction](catalog.title),
     topic: { key: `catalogs:catalog-${topicAction}:${catalog._id}` },
     sender: catalog.owner,
     resource: {
@@ -106,7 +114,7 @@ export const updateCatalog = async (catalog: Catalog, changes: Record<string, an
   Object.assign(patchedCatalog, preparedCatalog)
 
   await mongo.catalogs.updateOne({ _id: catalog._id }, patch)
-  sendCatalogEvent(patchedCatalog, 'a été modifié', 'patch', sessionState)
+  sendCatalogEvent(patchedCatalog, 'patch', sessionState)
   delete patchedCatalog.secrets // Do not return secrets in the response
   return patchedCatalog
 }

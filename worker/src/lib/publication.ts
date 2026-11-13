@@ -4,7 +4,7 @@ import type { AxiosRequestConfig } from 'axios'
 
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
 import log from '@data-fair/lib-node/log.js'
-import eventsQueue from '@data-fair/lib-node/events-queue.js'
+import { sendTaskErrorEvent } from './events.ts'
 import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 // data-fair is a service of our own infrastructure (configured private URL, not user input)
 import { privateAxiosInstance as axios } from '@data-fair/lib-node/axios.js'
@@ -51,27 +51,7 @@ export const process = async (catalog: Catalog, plugin: CatalogPlugin, pub: Publ
     const errorMsg = "You don't have permission to publish this dataset in this catalog. This may be due to a change of ownership for the dataset or the catalog."
     await mongo.publications.updateOne({ _id: pub._id }, { $set: { status: 'error', logs: [{ date: new Date().toISOString(), msg: errorMsg, type: 'error' }] } })
     await wsEmit(`publication/${pub._id}`, { status: 'error', logs: [{ date: new Date().toISOString(), msg: errorMsg, type: 'error' }] })
-    eventsQueue.pushEvent({
-      title: `La publication du jeu de données ${dataFairDataset?.title || pub.dataFairDataset.title} a échoué`,
-      topic: { key: `catalogs:publication-error:${pub._id}` },
-      sender: pub.owner,
-      resource: {
-        type: 'catalog',
-        id: pub.catalog.id,
-        title: 'Catalogue associé : ' + pub.catalog.title
-      },
-      originator: {
-        internalProcess: {
-          id: 'catalogs-worker',
-          name: 'Catalogs Worker'
-        }
-      },
-      urlParams: {
-        catalogId: pub.catalog.id,
-        type: 'publications',
-        itemId: pub._id
-      }
-    })
+    sendTaskErrorEvent('publication', pub, dataFairDataset?.title || pub.dataFairDataset.title || pub.dataFairDataset.id)
     // the owner lost its permissions on the dataset, expected and reported to the owner
     return log.warn(errorMsg, { code: 'worker-missing-permissions' })
   }
