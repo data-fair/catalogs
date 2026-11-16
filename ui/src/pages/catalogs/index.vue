@@ -116,7 +116,7 @@ const pluginsFetch = useFetch<{ results: RegistryArtefact[] }>(
 )
 const pluginsList = computed(() => (pluginsFetch.data.value?.results ?? []).map(a => ({
   id: a._id,
-  title: a.title?.[session.lang.value as 'fr' | 'en'] || a.title?.fr || a.packageName || a.name,
+  title: localizedText(a.title, session.lang.value) || a.packageName || a.name,
   thumbnail: a.thumbnail
 })))
 

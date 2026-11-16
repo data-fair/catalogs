@@ -192,9 +192,9 @@ watch(newPlugin, async (id) => {
 
 /** Localized title/description of a registry artefact, with sensible fallbacks. */
 const artefactTitle = (a: RegistryArtefact) =>
-  a.title?.[session.lang.value as 'fr' | 'en'] || a.title?.fr || a.packageName || a.name
+  localizedText(a.title, session.lang.value) || a.packageName || a.name
 const artefactDescription = (a: RegistryArtefact) =>
-  a.description?.[session.lang.value as 'fr' | 'en'] || a.description?.fr || ''
+  localizedText(a.description, session.lang.value) || ''
 const artefactThumbnail = (a: RegistryArtefact) =>
   `${$sitePath}/registry/api/v1/thumbnails/${a.thumbnail!.id}/data`
 
