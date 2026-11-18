@@ -27,31 +27,31 @@ test.describe('configuration editor tools', () => {
     return { admin, catalog, imp, call }
   }
 
-  test('the catalog_configuration tools edit and save the configuration of a catalog', async () => {
+  test('the form tools with form catalog_configuration edit and save the configuration of a catalog', async () => {
     const { admin, catalog, call } = await setup()
-    const state = await call('catalog_configuration_describeState', { id: catalog._id })
+    const state = await call('form_describeState', { form: 'catalog_configuration', id: catalog._id })
     expect(state.isError).toBeFalsy()
     expect(state.text).toContain('url')
-    expect((await call('catalog_configuration_setFieldValue', { id: catalog._id, path: '/title', value: 'Renamed by the agent' })).isError).toBeFalsy()
-    const saved = await call('catalog_configuration_saveForm', { id: catalog._id })
+    expect((await call('form_setFieldValue', { form: 'catalog_configuration', id: catalog._id, path: '/title', value: 'Renamed by the agent' })).isError).toBeFalsy()
+    const saved = await call('form_saveForm', { form: 'catalog_configuration', id: catalog._id })
     expect(saved.isError, saved.text).toBeFalsy()
     expect((await admin.get(`/api/catalogs/${catalog._id}`)).data.title).toBe('Renamed by the agent')
   })
 
-  test('the import_configuration tools suggest time zones and save the plugin config', async () => {
+  test('the form tools with form import_configuration suggest time zones and save the plugin config', async () => {
     const { admin, imp, call } = await setup()
-    const state = await call('import_configuration_describeState', { id: imp._id })
+    const state = await call('form_describeState', { form: 'import_configuration', id: imp._id })
     expect(state.isError, state.text).toBeFalsy()
     // a daily scheduling rule, to reach its time zone field
-    const added = await call('import_configuration_editArray', { id: imp._id, path: '/scheduling', action: 'add', value: { type: 'daily' } })
+    const added = await call('form_editArray', { form: 'import_configuration', id: imp._id, path: '/scheduling', action: 'add', value: { type: 'daily' } })
     expect(added.isError, added.text).toBeFalsy()
     const timeZonePath = added.text.match(/(\/scheduling\/0\/\S*timeZone)/)?.[1]
     expect(timeZonePath, added.text).toBeTruthy()
-    const suggestions = await call('import_configuration_getFieldSuggestions', { id: imp._id, path: timeZonePath })
+    const suggestions = await call('form_getFieldSuggestions', { form: 'import_configuration', id: imp._id, path: timeZonePath })
     expect(suggestions.isError, suggestions.text).toBeFalsy()
     expect(suggestions.text).toContain('Europe/Paris')
-    expect((await call('import_configuration_setFieldValue', { id: imp._id, path: '/config/nbRows', value: 20 })).isError).toBeFalsy()
-    const saved = await call('import_configuration_saveForm', { id: imp._id })
+    expect((await call('form_setFieldValue', { form: 'import_configuration', id: imp._id, path: '/config/nbRows', value: 20 })).isError).toBeFalsy()
+    const saved = await call('form_saveForm', { form: 'import_configuration', id: imp._id })
     expect(saved.isError, saved.text).toBeFalsy()
     expect((await admin.get(`/api/imports/${imp._id}`)).data.config).toMatchObject({ nbRows: 20 })
   })

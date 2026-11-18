@@ -81,6 +81,9 @@ router.post('/', requireOperationScope('postImport'), async (req, res) => {
   imp.status = 'waiting'
   // the validator applies no defaults: the worker only schedules imports with isSchedulingActive true
   imp.isSchedulingActive = imp.isSchedulingActive ?? importSchema.properties.isSchedulingActive.default
+  imp.scheduling = imp.scheduling ?? []
+  imp.shouldUpdateMetadata = imp.shouldUpdateMetadata ?? importSchema.properties.shouldUpdateMetadata.default
+  imp.shouldUpdateSchema = imp.shouldUpdateSchema ?? importSchema.properties.shouldUpdateSchema.default
   imp.waitingAt = new Date().toISOString()
   imp.created = imp.updated = {
     id: sessionState.user.id,

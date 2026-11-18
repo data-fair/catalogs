@@ -78,8 +78,11 @@ const queryDescriptions: Record<string, string> = {
   catalogId: 'Id of the catalog.',
   dataFairDatasetId: 'Id of the data-fair dataset.'
 }
+// the paging parameters are integers in the document: the get-req schemas type every query value string (what
+// express parses), but openapi-mcp validates the tool input, its x-agent numeric defaults included
+const integerParams = ['size', 'skip', 'page']
 const queryParams = (schema: { properties: Record<string, any> }) => Object.entries(schema.properties).map(([name, s]) => ({
-  in: 'query', name, required: false, description: queryDescriptions[name] ?? s.description, schema: { type: s.type }
+  in: 'query', name, required: false, description: queryDescriptions[name] ?? s.description, schema: { type: integerParams.includes(name) ? 'integer' : s.type }
 }))
 
 // a property of a request body: readOnly marks what the server writes, clients leave it out of requests
@@ -87,8 +90,8 @@ const writable = ({ readOnly, ...property }: Record<string, any>) => property
 const pick = (properties: Record<string, any>, keys: readonly string[]) => Object.fromEntries(keys.map(k => [k, writable(properties[k])]))
 
 // the bodies of the POST routes, as api/doc/*/post-req pick them, from the resolved schemas
-const postBody = (schema: Record<string, any>, keys: string[], overrides: Record<string, any> = {}) => {
-  const { title, ...picked } = component(jsonSchema(schema).pickProperties(keys).schema)
+const postBody = (schema: Record<string, any>, keys: string[], overrides: Record<string, any> = {}, optional: string[] = []) => {
+  const { title, ...picked } = component(jsonSchema(schema).pickProperties(keys).removeFromRequired(optional).schema)
   return { ...picked, properties: { ...pick(picked.properties, keys), ...overrides } }
 }
 
@@ -239,11 +242,11 @@ const operations: Record<ScopedOperationId, Operation> = {
   },
   postImport: {
     summary: 'Import a remote resource',
-    description: 'Import a resource of a remote catalog (listCatalogResources) as a data-fair dataset of the owner of the catalog. The worker runs it within seconds. With dataFairDataset the import overwrites that existing dataset, and replaces the import that pointed to it: dataFairDataset and separator need the admin tier of the catalogs scopes.',
+    description: 'Import a resource of a remote catalog (listCatalogResources) as a data-fair dataset of the owner of the catalog. The worker runs it within seconds. scheduling defaults to none (a single run), shouldUpdateMetadata and shouldUpdateSchema to false. With dataFairDataset the import overwrites that existing dataset, and replaces the import that pointed to it: dataFairDataset and separator need the admin tier of the catalogs scopes.',
     tags: ['imports'],
     requestBody: body(postBody(importSchema, ['catalog', 'dataFairDataset', 'separator', 'remoteResource', 'scheduling', 'config', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema'], {
       config: pluginConfig('The import config, it follows the importConfigSchema of the plugin (getPlugin) when the catalog has the importConfig capability, {} otherwise.')
-    })),
+    }, ['scheduling', 'shouldUpdateMetadata', 'shouldUpdateSchema'])),
     responses: { 201: json('The created import, waiting for the worker.', ref('import')) }
   },
   getImport: {
