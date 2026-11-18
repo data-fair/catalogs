@@ -16,8 +16,7 @@ import { resolvedSchema as catalogSchema } from '#types/catalog/index.ts'
 import { resolvedSchema as importSchema } from '#types/import/index.ts'
 import { resolvedSchema as publicationSchema } from '#types/publication/index.ts'
 import pluginSchema from '#types/plugin/schema.ts'
-import jsonSchema, { resolveXI18n } from '@data-fair/lib-utils/json-schema.js'
-import clone from '@data-fair/lib-utils/clone.js'
+import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import catalogsGetReq from '../doc/catalogs/get-req/schema.ts'
 import importsGetReq from '../doc/imports/get-req/schema.ts'
 import publicationsGetReq from '../doc/publications/get-req/schema.ts'
@@ -380,7 +379,7 @@ export default (locale: ScopeLocale = 'fr') => {
       ...(operationId in agentOperations ? { 'x-agent': agentOperations[operationId as keyof typeof agentOperations] } : {})
     }
   }
-  const doc = {
+  return {
     openapi: '3.1.0',
     info: { ...infos[locale], version: '1.0.0' },
     'x-agent': root,
@@ -405,9 +404,4 @@ export default (locale: ScopeLocale = 'fr') => {
     tags: Object.values(tagTitles).map(t => ({ name: t[locale] })),
     paths
   }
-  // the schemas' x-i18n-title / x-i18n-description resolved to the locale: one text per field, not each
-  // of them repeated in every tool definition (on a copy, the operations are shared between calls)
-  const localized = clone(doc)
-  resolveXI18n(localized, locale)
-  return localized
 }

@@ -71,9 +71,4 @@ test.describe('agent surface of the api docs', () => {
       expect(tool?.inputSchema.properties).toHaveProperty('catalogTitle')
     }
   })
-
-  test('the document resolves the schema translations to its locale', () => {
-    for (const locale of ['en', 'fr'] as const) expect(JSON.stringify(apiDocs(locale))).not.toContain('x-i18n-')
-    expect(JSON.stringify(apiDocs('fr').components.schemas.import)).toContain('Planification de l\'import')
-  })
 })

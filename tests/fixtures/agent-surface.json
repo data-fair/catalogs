@@ -96,6 +96,9 @@
           "title": {
             "type": "string",
             "title": "Title",
+            "x-i18n-title": {
+              "fr": "Titre"
+            },
             "minLength": 3,
             "maxLength": 75,
             "default": ""
@@ -103,7 +106,13 @@
           "description": {
             "type": "string",
             "title": "Description",
-            "description": "A free text area to write comments about the catalog"
+            "x-i18n-title": {
+              "fr": "Description"
+            },
+            "description": "A free text area to write comments about the catalog",
+            "x-i18n-description": {
+              "fr": "Une zone de texte libre pour écrire des commentaires sur le catalogue"
+            }
           },
           "plugin": {
             "type": "string"
@@ -701,7 +710,13 @@
           "dataFairDataset": {
             "type": "object",
             "title": "Dataset to update (optional)",
+            "x-i18n-title": {
+              "fr": "Jeu de données à mettre à jour (optionnel)"
+            },
             "description": "You can choose an existing dataset of type **file** or **remote file** to update with this catalog.<br>*A remote dataset will be converted to a simple dataset*<br>You can also leave this field empty to create a new dataset.",
+            "x-i18n-description": {
+              "fr": "Vous pouvez choisir un jeu de données existant de type **fichier** ou **fichier distant** à mettre à jours avec ce catalogue.<br>*Un jeu de données distant sera converti en jeu de données simple*<br>Vous pouvez aussi laisser ce champ vide pour créer un nouveau jeu de données."
+            },
             "additionalProperties": false,
             "required": [
               "id"
@@ -1030,6 +1045,9 @@
               "id"
             ],
             "title": "Catalog",
+            "x-i18n-title": {
+              "fr": "Catalogue"
+            },
             "properties": {
               "id": {
                 "type": "string",
@@ -1044,6 +1062,9 @@
           "action": {
             "type": "string",
             "title": "Action to perform in the remote catalog",
+            "x-i18n-title": {
+              "fr": "Action à effectuer dans le catalogue distant"
+            },
             "enum": [
               "createFolderInRoot",
               "createFolder",
@@ -1060,6 +1081,9 @@
               "id"
             ],
             "title": "Data Fair dataset",
+            "x-i18n-title": {
+              "fr": "Jeu de données Data Fair"
+            },
             "properties": {
               "id": {
                 "type": "string"
@@ -1072,7 +1096,13 @@
           "publicationSite": {
             "type": "object",
             "title": "Publication Site",
+            "x-i18n-title": {
+              "fr": "Site de publication"
+            },
             "description": "The site where the user will be redirected from the remote dataset.",
+            "x-i18n-description": {
+              "fr": "Le site sur lequel sera redirigé l'utilisateur depuis le jeu de données distant."
+            },
             "required": [
               "title",
               "url",
