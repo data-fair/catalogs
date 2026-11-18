@@ -7,13 +7,13 @@
         "type": "object",
         "properties": {
           "size": {
-            "type": "string",
+            "type": "integer",
             "description": "Number of results per page.",
             "default": 10,
             "maximum": 50
           },
           "page": {
-            "type": "string",
+            "type": "integer",
             "description": "Page number, starting at 1.",
             "default": 1
           },
@@ -576,13 +576,13 @@
         "type": "object",
         "properties": {
           "size": {
-            "type": "string",
+            "type": "integer",
             "description": "Number of results per page.",
             "default": 10,
             "maximum": 50
           },
           "page": {
-            "type": "string",
+            "type": "integer",
             "description": "Page number, starting at 1.",
             "default": 1
           },
@@ -937,13 +937,13 @@
         "type": "object",
         "properties": {
           "size": {
-            "type": "string",
+            "type": "integer",
             "description": "Number of results per page.",
             "default": 10,
             "maximum": 50
           },
           "page": {
-            "type": "string",
+            "type": "integer",
             "description": "Page number, starting at 1.",
             "default": 1
           },

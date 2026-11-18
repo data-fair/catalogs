@@ -79,8 +79,11 @@ const queryDescriptions: Record<string, string> = {
   catalogId: 'Id of the catalog.',
   dataFairDatasetId: 'Id of the data-fair dataset.'
 }
+// the paging parameters are integers in the document: the get-req schemas type every query value string (what
+// express parses), but openapi-mcp validates the tool input, its x-agent numeric defaults included
+const integerParams = ['size', 'skip', 'page']
 const queryParams = (schema: { properties: Record<string, any> }) => Object.entries(schema.properties).map(([name, s]) => ({
-  in: 'query', name, required: false, description: queryDescriptions[name] ?? s.description, schema: { type: s.type }
+  in: 'query', name, required: false, description: queryDescriptions[name] ?? s.description, schema: { type: integerParams.includes(name) ? 'integer' : s.type }
 }))
 
 // a property of a request body: readOnly marks what the server writes, clients leave it out of requests
