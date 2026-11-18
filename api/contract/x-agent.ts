@@ -6,13 +6,18 @@
  *
  * openWorldHint: false on the tools whose results only hold what members wrote (catalog metadata,
  * configuration, owner, deletion); the remote browsing, the logs and the publication stay open.
+ *
+ * The two editor operations are forms of openapi-mcp's one group per document: the form_* tools
+ * (no service prefix), with form "catalogs_catalog_configuration" or "catalogs_import_configuration" in
+ * the platform document, shared with the other services' forms, and its own `form` skill.
  */
 import type { AgentOperation, AgentOperationAnnotation, AgentRoot } from '@data-fair/openapi-mcp'
-import { oauth2Alternatives } from '@data-fair/lib-common-types/scopes.js'
-import { acceptedScopes, type ScopedOperationId } from '../src/scopes.ts'
+import type { ScopedOperationId } from '../src/scopes.ts'
 
-// the security of a view that needs the admin tier on an operation of the write tier
-const adminSecurity = [{ sdCookie: [] }, ...oauth2Alternatives(acceptedScopes('catalogs', 'admin'))]
+// checked labels (openapi-mcp): a write naming a catalog by id also carries its title, which the tool
+// reads with the call's own token and compares before the call. The approval card and the reviewer
+// show what the id names as a checked fact. Imports and publications have no title of their own.
+const catalogLabel = { id: { name: 'catalogTitle', operation: 'getCatalog', field: '/title' } }
 
 const pagination = {
   size: { default: 10, maximum: 50, description: 'Number of results per page.' },
@@ -41,14 +46,14 @@ const listCatalogs = {
 const describeCatalog = {
   name: 'describe_catalog',
   title: { en: 'Describe a catalog', fr: 'Décrire un catalogue' },
-  description: 'Read a catalog: its plugin, its capabilities (what can be imported or published and how) and its config, secret fields masked. To change its title, description or config use the catalogs_catalog_configuration tools.',
+  description: 'Read a catalog: its plugin, its capabilities (what can be imported or published and how) and its config, secret fields masked. To change its title, description or config use the form_* tools with form "catalogs_catalog_configuration".',
   annotations: { readOnlyHint: true, openWorldHint: false }
 } satisfies AgentOperation
 
 const createCatalog = {
   name: 'create_catalog',
   title: { en: 'Connect a catalog', fr: 'Connecter un catalogue' },
-  description: 'Connect the account to a remote catalog. The plugin id is the _id of an artefact found with registry_search_artefacts (category catalog). The config must be valid for the plugin: read its configSchema with catalogs_describe_catalog_plugin first, and put in config at least its required fields. The owner is the account the catalog belongs to, usually the active account ({ type, id, name }, with department and departmentName for a department). Then complete the configuration with the catalogs_catalog_configuration tools; credentials are stored ciphered and masked once saved.',
+  description: 'Connect the account to a remote catalog. The plugin id is the _id of an artefact found with registry_search_artefacts (category catalog). The config must be valid for the plugin: read its configSchema with catalogs_describe_catalog_plugin first, and put in config at least its required fields. The owner is the account the catalog belongs to, usually the active account ({ type, id, name }, with department and departmentName for a department). Then complete the configuration with the form_* tools (form "catalogs_catalog_configuration"); credentials are stored ciphered and masked once saved.',
   annotations: { openWorldHint: false },
   bodyRequired: ['title', 'plugin', 'config']
 } satisfies AgentOperation
@@ -74,7 +79,8 @@ const changeCatalogOwner = {
   description: 'Give a catalog to another account, or to a department of the organization. Its imports and publications follow it. The caller must be an admin of the new owner.',
   annotations: { destructiveHint: true, openWorldHint: false },
   bodyFields: ['owner'],
-  bodyRequired: ['owner']
+  bodyRequired: ['owner'],
+  labels: catalogLabel
 } satisfies AgentOperation
 
 const deleteCatalog = {
@@ -84,7 +90,8 @@ const deleteCatalog = {
   annotations: { destructiveHint: true, openWorldHint: false },
   params: {
     deletePublications: { description: 'true to also delete the published datasets from the remote catalog.' }
-  }
+  },
+  labels: catalogLabel
 } satisfies AgentOperation
 
 const browseRemoteResources = {
@@ -125,9 +132,10 @@ const describeImport = {
 const createImport = {
   name: 'create_import',
   title: { en: 'Import a remote resource', fr: 'Importer une ressource distante' },
-  description: 'Import a resource of a remote catalog as a data-fair dataset of the owner of the catalog. The remoteResource id and title come from catalogs_browse_remote_resources. Without dataFairDataset a new dataset is created; with dataFairDataset (an existing dataset, from datafair_list_account_datasets) the import overwrites it, which needs the admin tier of the catalogs scopes. The worker runs it within seconds: follow it with catalogs_describe_import. Configure its scheduling and plugin options afterwards with the catalogs_import_configuration tools.',
+  description: 'Import a resource of a remote catalog as a data-fair dataset of the owner of the catalog. The remoteResource id and title come from catalogs_browse_remote_resources. Without dataFairDataset a new dataset is created; with dataFairDataset (an existing dataset, from datafair_list_account_datasets) the import overwrites it, which needs the admin tier of the catalogs scopes. The worker runs it within seconds: follow it with catalogs_describe_import. It runs once: schedule it and choose whether the runs update the metadata and the schema of the dataset afterwards, with the form_* tools (form "catalogs_import_configuration").',
   annotations: { openWorldHint: true },
-  bodyFields: ['catalog', 'remoteResource', 'dataFairDataset', 'config', 'scheduling', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema']
+  // the scheduling and the update flags are left to the import form: their schema is the bulk of the tool
+  bodyFields: ['catalog', 'remoteResource', 'dataFairDataset', 'config']
 } satisfies AgentOperation
 
 const importConfiguration = {
@@ -145,17 +153,6 @@ const rerunImport = {
   annotations: { openWorldHint: true },
   bodyFields: ['status'],
   bodyRequired: ['status']
-} satisfies AgentOperation
-
-const changeImportOwner = {
-  name: 'change_import_owner',
-  title: { en: 'Change the owner of an import', fr: 'Changer le propriétaire d\'un import' },
-  description: 'Give an import to another account, or to a department of the organization. The caller must be an admin of the new owner.',
-  annotations: { destructiveHint: true, openWorldHint: false },
-  bodyFields: ['owner'],
-  bodyRequired: ['owner'],
-  // the owner needs the admin tier, the operation accepts the write tier
-  security: adminSecurity
 } satisfies AgentOperation
 
 const deleteImport = {
@@ -224,7 +221,8 @@ export const operations = {
   getImport: describeImport,
   postImport: createImport,
   putImportConfiguration: importConfiguration,
-  patchImport: [rerunImport, changeImportOwner],
+  // the owner of one import is left to the back-office: it follows its catalog (catalogs_change_catalog_owner)
+  patchImport: rerunImport,
   deleteImport,
   listPublications,
   getPublication: describePublication,
@@ -235,7 +233,7 @@ export const operations = {
 
 const toolNames = [
   listCatalogs, describeCatalog, createCatalog, describeCatalogPlugin, changeCatalogOwner, deleteCatalog, browseRemoteResources,
-  listImports, describeImport, createImport, rerunImport, changeImportOwner, deleteImport,
+  listImports, describeImport, createImport, rerunImport, deleteImport,
   listPublications, describePublication, createPublication, rerunPublication, deletePublication
 ].map(op => op.name)
 
@@ -243,7 +241,8 @@ export const root: AgentRoot = {
   skills: [{
     name: 'workflow',
     description: 'How to connect the account to a remote data catalog, import its resources as data-fair datasets, publish data-fair datasets to it, and follow the runs: find a catalog plugin, create and configure a catalog, browse its resources, create and schedule an import, publish a dataset (actions, publication site), then diagnose a failed import or publication from its logs. Read it before connecting a catalog, importing, publishing or repairing one of them.',
-    // the body is skills/workflow.md, served next to this document
+    // the body is skills/workflow.md, served next to this document. The form_* tools are not listed: a token
+    // granted one form would be offered this skill through the other services' forms
     href: 'agents/skills/workflow.md',
     tools: toolNames
   }]

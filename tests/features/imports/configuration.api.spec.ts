@@ -35,6 +35,12 @@ test.describe('import configuration', () => {
     expect((await admin.put(`/api/imports/${created._id}/configuration`, conf)).data.isSchedulingActive).toBe(true)
   })
 
+  test('a create without scheduling nor update flags takes their defaults', async () => {
+    const { admin, catalog } = await create()
+    const created = (await admin.post('/api/imports', { catalog: { id: catalog._id }, config: {}, remoteResource: { id: 'r3', title: 'Resource 3' } })).data
+    expect(created).toMatchObject({ scheduling: [], isSchedulingActive: true, shouldUpdateMetadata: false, shouldUpdateSchema: false })
+  })
+
   test('a key outside the configuration is refused', async () => {
     const { admin, imp } = await create()
     expect((await admin.put(`/api/imports/${imp._id}/configuration`, { config: {}, owner }, status)).status).toBe(400)

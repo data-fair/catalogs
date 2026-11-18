@@ -16,7 +16,8 @@ import { resolvedSchema as catalogSchema } from '#types/catalog/index.ts'
 import { resolvedSchema as importSchema } from '#types/import/index.ts'
 import { resolvedSchema as publicationSchema } from '#types/publication/index.ts'
 import pluginSchema from '#types/plugin/schema.ts'
-import jsonSchema from '@data-fair/lib-utils/json-schema.js'
+import jsonSchema, { resolveXI18n } from '@data-fair/lib-utils/json-schema.js'
+import clone from '@data-fair/lib-utils/clone.js'
 import catalogsGetReq from '../doc/catalogs/get-req/schema.ts'
 import importsGetReq from '../doc/imports/get-req/schema.ts'
 import publicationsGetReq from '../doc/publications/get-req/schema.ts'
@@ -87,8 +88,8 @@ const writable = ({ readOnly, ...property }: Record<string, any>) => property
 const pick = (properties: Record<string, any>, keys: readonly string[]) => Object.fromEntries(keys.map(k => [k, writable(properties[k])]))
 
 // the bodies of the POST routes, as api/doc/*/post-req pick them, from the resolved schemas
-const postBody = (schema: Record<string, any>, keys: string[], overrides: Record<string, any> = {}) => {
-  const { title, ...picked } = component(jsonSchema(schema).pickProperties(keys).schema)
+const postBody = (schema: Record<string, any>, keys: string[], overrides: Record<string, any> = {}, optional: string[] = []) => {
+  const { title, ...picked } = component(jsonSchema(schema).pickProperties(keys).removeFromRequired(optional).schema)
   return { ...picked, properties: { ...pick(picked.properties, keys), ...overrides } }
 }
 
@@ -239,11 +240,11 @@ const operations: Record<ScopedOperationId, Operation> = {
   },
   postImport: {
     summary: 'Import a remote resource',
-    description: 'Import a resource of a remote catalog (listCatalogResources) as a data-fair dataset of the owner of the catalog. The worker runs it within seconds. With dataFairDataset the import overwrites that existing dataset, and replaces the import that pointed to it: dataFairDataset and separator need the admin tier of the catalogs scopes.',
+    description: 'Import a resource of a remote catalog (listCatalogResources) as a data-fair dataset of the owner of the catalog. The worker runs it within seconds. scheduling defaults to none (a single run), shouldUpdateMetadata and shouldUpdateSchema to false. With dataFairDataset the import overwrites that existing dataset, and replaces the import that pointed to it: dataFairDataset and separator need the admin tier of the catalogs scopes.',
     tags: ['imports'],
     requestBody: body(postBody(importSchema, ['catalog', 'dataFairDataset', 'separator', 'remoteResource', 'scheduling', 'config', 'isSchedulingActive', 'shouldUpdateMetadata', 'shouldUpdateSchema'], {
       config: pluginConfig('The import config, it follows the importConfigSchema of the plugin (getPlugin) when the catalog has the importConfig capability, {} otherwise.')
-    })),
+    }, ['scheduling', 'shouldUpdateMetadata', 'shouldUpdateSchema'])),
     responses: { 201: json('The created import, waiting for the worker.', ref('import')) }
   },
   getImport: {
@@ -376,7 +377,7 @@ export default (locale: ScopeLocale = 'fr') => {
       ...(operationId in agentOperations ? { 'x-agent': agentOperations[operationId as keyof typeof agentOperations] } : {})
     }
   }
-  return {
+  const doc = {
     openapi: '3.1.0',
     info: { ...infos[locale], version: '1.0.0' },
     'x-agent': root,
@@ -401,4 +402,9 @@ export default (locale: ScopeLocale = 'fr') => {
     tags: Object.values(tagTitles).map(t => ({ name: t[locale] })),
     paths
   }
+  // the schemas' x-i18n-title / x-i18n-description resolved to the locale: one text per field, not each
+  // of them repeated in every tool definition (on a copy, the operations are shared between calls)
+  const localized = clone(doc)
+  resolveXI18n(localized, locale)
+  return localized
 }

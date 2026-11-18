@@ -89,16 +89,13 @@
     },
     {
       "name": "create_catalog",
-      "description": "Connect the account to a remote catalog. The plugin id is the _id of an artefact found with registry_search_artefacts (category catalog). The config must be valid for the plugin: read its configSchema with catalogs_describe_catalog_plugin first, and put in config at least its required fields. The owner is the account the catalog belongs to, usually the active account ({ type, id, name }, with department and departmentName for a department). Then complete the configuration with the catalogs_catalog_configuration tools; credentials are stored ciphered and masked once saved.",
+      "description": "Connect the account to a remote catalog. The plugin id is the _id of an artefact found with registry_search_artefacts (category catalog). The config must be valid for the plugin: read its configSchema with catalogs_describe_catalog_plugin first, and put in config at least its required fields. The owner is the account the catalog belongs to, usually the active account ({ type, id, name }, with department and departmentName for a department). Then complete the configuration with the form_* tools (form \"catalogs_catalog_configuration\"); credentials are stored ciphered and masked once saved.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "title": {
             "type": "string",
             "title": "Title",
-            "x-i18n-title": {
-              "fr": "Titre"
-            },
             "minLength": 3,
             "maxLength": 75,
             "default": ""
@@ -106,13 +103,7 @@
           "description": {
             "type": "string",
             "title": "Description",
-            "x-i18n-title": {
-              "fr": "Description"
-            },
-            "description": "A free text area to write comments about the catalog",
-            "x-i18n-description": {
-              "fr": "Une zone de texte libre pour écrire des commentaires sur le catalogue"
-            }
+            "description": "A free text area to write comments about the catalog"
           },
           "plugin": {
             "type": "string"
@@ -214,7 +205,7 @@
     },
     {
       "name": "describe_catalog",
-      "description": "Read a catalog: its plugin, its capabilities (what can be imported or published and how) and its config, secret fields masked. To change its title, description or config use the catalogs_catalog_configuration tools.",
+      "description": "Read a catalog: its plugin, its capabilities (what can be imported or published and how) and its config, secret fields masked. To change its title, description or config use the form_* tools with form \"catalogs_catalog_configuration\".",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -287,11 +278,20 @@
           "deletePublications": {
             "type": "boolean",
             "description": "true to also delete the published datasets from the remote catalog."
+          },
+          "catalogTitle": {
+            "type": "string",
+            "description": "The title of what `id` names, as the API gives it. Checked before the call: it is refused, and nothing sent, unless it is that title. It shows whoever reads the call what it acts on.",
+            "x-checked": {
+              "against": "id",
+              "field": "/title"
+            }
           }
         },
         "additionalProperties": false,
         "required": [
-          "id"
+          "id",
+          "catalogTitle"
         ]
       },
       "annotations": {
@@ -385,12 +385,21 @@
                 }
               }
             }
+          },
+          "catalogTitle": {
+            "type": "string",
+            "description": "The title of what `id` names, as the API gives it. Checked before the call: it is refused, and nothing sent, unless it is that title. It shows whoever reads the call what it acts on.",
+            "x-checked": {
+              "against": "id",
+              "field": "/title"
+            }
           }
         },
         "additionalProperties": false,
         "required": [
           "id",
-          "owner"
+          "owner",
+          "catalogTitle"
         ]
       },
       "annotations": {
@@ -649,7 +658,7 @@
     },
     {
       "name": "create_import",
-      "description": "Import a resource of a remote catalog as a data-fair dataset of the owner of the catalog. The remoteResource id and title come from catalogs_browse_remote_resources. Without dataFairDataset a new dataset is created; with dataFairDataset (an existing dataset, from datafair_list_account_datasets) the import overwrites it, which needs the admin tier of the catalogs scopes. The worker runs it within seconds: follow it with catalogs_describe_import. Configure its scheduling and plugin options afterwards with the catalogs_import_configuration tools.",
+      "description": "Import a resource of a remote catalog as a data-fair dataset of the owner of the catalog. The remoteResource id and title come from catalogs_browse_remote_resources. Without dataFairDataset a new dataset is created; with dataFairDataset (an existing dataset, from datafair_list_account_datasets) the import overwrites it, which needs the admin tier of the catalogs scopes. The worker runs it within seconds: follow it with catalogs_describe_import. It runs once: schedule it and choose whether the runs update the metadata and the schema of the dataset afterwards, with the form_* tools (form \"catalogs_import_configuration\").",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -692,13 +701,7 @@
           "dataFairDataset": {
             "type": "object",
             "title": "Dataset to update (optional)",
-            "x-i18n-title": {
-              "fr": "Jeu de données à mettre à jour (optionnel)"
-            },
             "description": "You can choose an existing dataset of type **file** or **remote file** to update with this catalog.<br>*A remote dataset will be converted to a simple dataset*<br>You can also leave this field empty to create a new dataset.",
-            "x-i18n-description": {
-              "fr": "Vous pouvez choisir un jeu de données existant de type **fichier** ou **fichier distant** à mettre à jours avec ce catalogue.<br>*Un jeu de données distant sera converti en jeu de données simple*<br>Vous pouvez aussi laisser ce champ vide pour créer un nouveau jeu de données."
-            },
             "additionalProperties": false,
             "required": [
               "id"
@@ -718,370 +721,13 @@
           "config": {
             "type": "object",
             "description": "The import config, it follows the importConfigSchema of the plugin (getPlugin) when the catalog has the importConfig capability, {} otherwise."
-          },
-          "scheduling": {
-            "type": "array",
-            "title": "Import scheduling",
-            "x-i18n-title": {
-              "fr": "Planification de l'import"
-            },
-            "default": [],
-            "items": {
-              "title": "Scheduling",
-              "type": "object",
-              "required": [
-                "type",
-                "month",
-                "dayOfWeek",
-                "dayOfMonth",
-                "hour",
-                "minute",
-                "timeZone"
-              ],
-              "oneOfLayout": {
-                "emptyData": true
-              },
-              "oneOf": [
-                {
-                  "title": "Monthly",
-                  "x-i18n-title": {
-                    "fr": "Mensuel"
-                  },
-                  "properties": {
-                    "type": {
-                      "const": "monthly"
-                    },
-                    "month": {
-                      "const": "*"
-                    },
-                    "dayOfWeek": {
-                      "const": "*"
-                    },
-                    "dayOfMonth": {
-                      "title": "Day of the Month",
-                      "x-i18n-title": {
-                        "fr": "Jour fixe dans le mois"
-                      },
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 28,
-                      "default": 1
-                    },
-                    "lastDayOfMonth": {
-                      "title": "Last Day of the Month",
-                      "x-i18n-title": {
-                        "fr": "Dernier jour du mois"
-                      },
-                      "type": "boolean",
-                      "default": false
-                    },
-                    "hour": {
-                      "title": "Hour",
-                      "x-i18n-title": {
-                        "fr": "Heure fixe dans le jour"
-                      },
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 23,
-                      "default": 0
-                    },
-                    "minute": {
-                      "title": "Minute",
-                      "x-i18n-title": {
-                        "fr": "Minute fixe dans l'heure"
-                      },
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 59,
-                      "default": 0
-                    },
-                    "timeZone": {
-                      "type": "string",
-                      "title": "Time Zone",
-                      "x-i18n-title": {
-                        "fr": "Fuseau horaire"
-                      },
-                      "default": "Europe/Paris"
-                    }
-                  }
-                },
-                {
-                  "title": "Weekly",
-                  "x-i18n-title": {
-                    "fr": "Hebdomadaire"
-                  },
-                  "properties": {
-                    "type": {
-                      "const": "weekly"
-                    },
-                    "month": {
-                      "const": "*"
-                    },
-                    "dayOfMonth": {
-                      "const": "*"
-                    },
-                    "dayOfWeek": {
-                      "title": "Day of the Week",
-                      "x-i18n-title": {
-                        "fr": "Jour fixe dans la semaine"
-                      },
-                      "type": "string",
-                      "oneOf": [
-                        {
-                          "const": "1",
-                          "title": "Monday",
-                          "x-i18n-title": {
-                            "fr": "Lundi"
-                          }
-                        },
-                        {
-                          "const": "2",
-                          "title": "Tuesday",
-                          "x-i18n-title": {
-                            "fr": "Mardi"
-                          }
-                        },
-                        {
-                          "const": "3",
-                          "title": "Wednesday",
-                          "x-i18n-title": {
-                            "fr": "Mercredi"
-                          }
-                        },
-                        {
-                          "const": "4",
-                          "title": "Thursday",
-                          "x-i18n-title": {
-                            "fr": "Jeudi"
-                          }
-                        },
-                        {
-                          "const": "5",
-                          "title": "Friday",
-                          "x-i18n-title": {
-                            "fr": "Vendredi"
-                          }
-                        },
-                        {
-                          "const": "6",
-                          "title": "Saturday",
-                          "x-i18n-title": {
-                            "fr": "Samedi"
-                          }
-                        },
-                        {
-                          "const": "0",
-                          "title": "Sunday",
-                          "x-i18n-title": {
-                            "fr": "Dimanche"
-                          }
-                        }
-                      ],
-                      "default": "1"
-                    },
-                    "hour": {
-                      "title": "Hour",
-                      "x-i18n-title": {
-                        "fr": "Heure fixe dans le jour"
-                      },
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 23,
-                      "default": 0
-                    },
-                    "minute": {
-                      "title": "Minute",
-                      "x-i18n-title": {
-                        "fr": "Minute fixe dans l'heure"
-                      },
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 59,
-                      "default": 0
-                    },
-                    "timeZone": {
-                      "type": "string",
-                      "title": "Time Zone",
-                      "x-i18n-title": {
-                        "fr": "Fuseau horaire"
-                      },
-                      "default": "Europe/Paris"
-                    }
-                  }
-                },
-                {
-                  "title": "Daily",
-                  "x-i18n-title": {
-                    "fr": "Journalier"
-                  },
-                  "properties": {
-                    "type": {
-                      "const": "daily"
-                    },
-                    "month": {
-                      "const": "*"
-                    },
-                    "dayOfMonth": {
-                      "const": "*"
-                    },
-                    "dayOfWeek": {
-                      "const": "*"
-                    },
-                    "hour": {
-                      "title": "Hour",
-                      "x-i18n-title": {
-                        "fr": "Heure fixe dans le jour"
-                      },
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 23,
-                      "default": 0
-                    },
-                    "minute": {
-                      "title": "Minute",
-                      "x-i18n-title": {
-                        "fr": "Minute fixe dans l'heure"
-                      },
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 59,
-                      "default": 0
-                    },
-                    "timeZone": {
-                      "type": "string",
-                      "title": "Time Zone",
-                      "x-i18n-title": {
-                        "fr": "Fuseau horaire"
-                      },
-                      "default": "Europe/Paris"
-                    }
-                  }
-                },
-                {
-                  "title": "Each # Hours",
-                  "x-i18n-title": {
-                    "fr": "Toutes les # heures"
-                  },
-                  "properties": {
-                    "type": {
-                      "const": "hourly"
-                    },
-                    "month": {
-                      "const": "*"
-                    },
-                    "dayOfMonth": {
-                      "const": "*"
-                    },
-                    "dayOfWeek": {
-                      "const": "*"
-                    },
-                    "hour": {
-                      "const": "*"
-                    },
-                    "hourStep": {
-                      "title": "Interval in Hours",
-                      "x-i18n-title": {
-                        "fr": "Interval en heures"
-                      },
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 12,
-                      "default": 1
-                    },
-                    "minute": {
-                      "title": "Minute",
-                      "x-i18n-title": {
-                        "fr": "Minute fixe dans l'heure"
-                      },
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 59,
-                      "default": 0
-                    },
-                    "timeZone": {
-                      "type": "string",
-                      "title": "Time Zone",
-                      "x-i18n-title": {
-                        "fr": "Fuseau horaire"
-                      },
-                      "default": "Europe/Paris"
-                    }
-                  }
-                }
-              ],
-              "$defs": {
-                "hour": {
-                  "title": "Hour",
-                  "x-i18n-title": {
-                    "fr": "Heure fixe dans le jour"
-                  },
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 23,
-                  "default": 0
-                },
-                "minute": {
-                  "title": "Minute",
-                  "x-i18n-title": {
-                    "fr": "Minute fixe dans l'heure"
-                  },
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 59,
-                  "default": 0
-                },
-                "timeZone": {
-                  "type": "string",
-                  "title": "Time Zone",
-                  "x-i18n-title": {
-                    "fr": "Fuseau horaire"
-                  },
-                  "default": "Europe/Paris"
-                }
-              }
-            }
-          },
-          "isSchedulingActive": {
-            "type": "boolean",
-            "title": "Enable scheduling",
-            "x-i18n-title": {
-              "fr": "Activer la planification"
-            },
-            "default": true
-          },
-          "shouldUpdateMetadata": {
-            "type": "boolean",
-            "title": "Force metadata update",
-            "x-i18n-title": {
-              "fr": "Forcer la mise à jour des métadonnées"
-            },
-            "description": "Overwrite dataset metadata (title, description, attachments, etc.) with values from the import, even if you have modified them.",
-            "x-i18n-description": {
-              "fr": "Écrase les métadonnées du jeu de données (titre, description, pièces jointes, etc.) par celles issues de l'import, même si vous les avez modifiées."
-            },
-            "default": false
-          },
-          "shouldUpdateSchema": {
-            "type": "boolean",
-            "title": "Force schema update",
-            "x-i18n-title": {
-              "fr": "Forcer la mise à jour du schéma"
-            },
-            "description": "Overwrite dataset schema with values from the import, even if you have modified them.",
-            "x-i18n-description": {
-              "fr": "Écrase le schéma du jeu de données par celui issu de l'import, même si vous l'avez modifié."
-            },
-            "default": false
           }
         },
         "additionalProperties": false,
         "required": [
           "catalog",
           "remoteResource",
-          "config",
-          "scheduling",
-          "shouldUpdateMetadata",
-          "shouldUpdateSchema"
+          "config"
         ]
       },
       "annotations": {
@@ -1285,105 +931,6 @@
       ]
     },
     {
-      "name": "change_import_owner",
-      "description": "Give an import to another account, or to a department of the organization. The caller must be an admin of the new owner.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Id of the import."
-          },
-          "owner": {
-            "type": "object",
-            "title": "account",
-            "required": [
-              "type",
-              "id",
-              "name"
-            ],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": [
-                  "user",
-                  "organization"
-                ]
-              },
-              "id": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "department": {
-                "type": "string"
-              },
-              "departmentName": {
-                "type": "string"
-              }
-            },
-            "$defs": {
-              "accountKeys": {
-                "type": "object",
-                "title": "account keys",
-                "required": [
-                  "type",
-                  "id"
-                ],
-                "additionalProperties": false,
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "user",
-                      "organization"
-                    ]
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "department": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "owner"
-        ]
-      },
-      "annotations": {
-        "readOnlyHint": false,
-        "destructiveHint": true,
-        "openWorldHint": false
-      },
-      "security": [
-        {
-          "sdCookie": []
-        },
-        {
-          "oauth2": [
-            "catalogs:admin"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:admin"
-          ]
-        }
-      ]
-    },
-    {
       "name": "list_publications",
       "description": "List the publications of the active account. A publication sends a data-fair dataset and its metadata to a remote catalog, and again each time the dataset changes. Each result tells the dataset, the catalog, the action, the remote folder or resource and the status of the last run (waiting, running, done, error). Use catalogs_describe_publication for its logs.",
       "inputSchema": {
@@ -1483,9 +1030,6 @@
               "id"
             ],
             "title": "Catalog",
-            "x-i18n-title": {
-              "fr": "Catalogue"
-            },
             "properties": {
               "id": {
                 "type": "string",
@@ -1500,9 +1044,6 @@
           "action": {
             "type": "string",
             "title": "Action to perform in the remote catalog",
-            "x-i18n-title": {
-              "fr": "Action à effectuer dans le catalogue distant"
-            },
             "enum": [
               "createFolderInRoot",
               "createFolder",
@@ -1519,9 +1060,6 @@
               "id"
             ],
             "title": "Data Fair dataset",
-            "x-i18n-title": {
-              "fr": "Jeu de données Data Fair"
-            },
             "properties": {
               "id": {
                 "type": "string"
@@ -1534,13 +1072,7 @@
           "publicationSite": {
             "type": "object",
             "title": "Publication Site",
-            "x-i18n-title": {
-              "fr": "Site de publication"
-            },
             "description": "The site where the user will be redirected from the remote dataset.",
-            "x-i18n-description": {
-              "fr": "Le site sur lequel sera redirigé l'utilisateur depuis le jeu de données distant."
-            },
             "required": [
               "title",
               "url",
@@ -1805,13 +1337,22 @@
       ]
     },
     {
-      "name": "catalog_configuration_getData",
-      "description": "Get the current \"Catalog configuration\" data and validity status. The data is always returned whole and unmodified, so on a large form pass \"path\" to read one part of it rather than the entire document.",
+      "name": "form_getData",
+      "description": "Get the form's current data and validity status. The data is always returned whole and unmodified, so on a large form pass \"path\" to read one part of it rather than the entire document.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "form": {
+            "type": "string",
+            "enum": [
+              "catalog_configuration",
+              "import_configuration"
+            ],
+            "description": "The form this call edits. \"catalog_configuration\": Catalog configuration; \"import_configuration\": Import configuration. A form keeps its edits between calls with the same form and parameters."
+          },
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "for \"catalog_configuration\": Id of the catalog; for \"import_configuration\": Id of the import."
           },
           "path": {
             "type": "string",
@@ -1819,11 +1360,12 @@
           }
         },
         "required": [
+          "form",
           "id"
         ]
       },
       "annotations": {
-        "title": "Catalog configuration — read",
+        "title": "Form — read",
         "readOnlyHint": true,
         "openWorldHint": false
       },
@@ -1845,17 +1387,36 @@
           "oauth2": [
             "all:admin"
           ]
+        },
+        {
+          "oauth2": [
+            "catalogs:write"
+          ]
+        },
+        {
+          "oauth2": [
+            "all:write"
+          ]
         }
       ]
     },
     {
-      "name": "catalog_configuration_setData",
-      "description": "Write several \"Catalog configuration\" fields at once: the given keys are merged into the current data, nested objects included; arrays you pass replace the existing ones. Prefer setFieldValue to change one field. Check the errors and warnings in the response.",
+      "name": "form_setData",
+      "description": "Write several fields of the form at once: the given keys are merged into the current data, nested objects included; arrays you pass replace the existing ones. Prefer setFieldValue to change one field. Check the errors and warnings in the response.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "form": {
+            "type": "string",
+            "enum": [
+              "catalog_configuration",
+              "import_configuration"
+            ],
+            "description": "The form this call edits. \"catalog_configuration\": Catalog configuration; \"import_configuration\": Import configuration. A form keeps its edits between calls with the same form and parameters."
+          },
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "for \"catalog_configuration\": Id of the catalog; for \"import_configuration\": Id of the import."
           },
           "data": {
             "description": "The form data object to set"
@@ -1870,12 +1431,13 @@
           }
         },
         "required": [
+          "form",
           "id",
           "data"
         ]
       },
       "annotations": {
-        "title": "Catalog configuration — set fields",
+        "title": "Form — set fields",
         "readOnlyHint": false,
         "openWorldHint": false
       },
@@ -1897,17 +1459,36 @@
           "oauth2": [
             "all:admin"
           ]
+        },
+        {
+          "oauth2": [
+            "catalogs:write"
+          ]
+        },
+        {
+          "oauth2": [
+            "all:write"
+          ]
         }
       ]
     },
     {
-      "name": "catalog_configuration_describeState",
-      "description": "Describe the \"Catalog configuration\" form: every field with its path, type, constraints, current value and errors. Pass \"path\" to describe one subtree instead of the whole form; what is too large to describe whole is answered as an outline. Each option of a choice is listed with the fields it brings, and a path to an option not chosen (\".../$oneOf/2\") or to an item of a list still empty describes what it would hold. To find a field without knowing which tab holds it, pass \"query\" with words of its name.",
+      "name": "form_describeState",
+      "description": "Describe the form: every field with its path, type, constraints, current value and errors. Pass \"path\" to describe one subtree instead of the whole form; what is too large to describe whole is answered as an outline. Each option of a choice is listed with the fields it brings, and a path to an option not chosen (\".../$oneOf/2\") or to an item of a list still empty describes what it would hold. To find a field without knowing which tab holds it, pass \"query\" with words of its name.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "form": {
+            "type": "string",
+            "enum": [
+              "catalog_configuration",
+              "import_configuration"
+            ],
+            "description": "The form this call edits. \"catalog_configuration\": Catalog configuration; \"import_configuration\": Import configuration. A form keeps its edits between calls with the same form and parameters."
+          },
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "for \"catalog_configuration\": Id of the catalog; for \"import_configuration\": Id of the import."
           },
           "path": {
             "type": "string",
@@ -1919,11 +1500,12 @@
           }
         },
         "required": [
+          "form",
           "id"
         ]
       },
       "annotations": {
-        "title": "Catalog configuration — form state",
+        "title": "Form — form state",
         "readOnlyHint": true,
         "openWorldHint": false
       },
@@ -1945,17 +1527,36 @@
           "oauth2": [
             "all:admin"
           ]
+        },
+        {
+          "oauth2": [
+            "catalogs:write"
+          ]
+        },
+        {
+          "oauth2": [
+            "all:write"
+          ]
         }
       ]
     },
     {
-      "name": "catalog_configuration_setFieldValue",
-      "description": "Set the value of a specific field of \"Catalog configuration\" by path. To switch a variant selector, set value to the desired variant index (shown in describeState); the answer then lists the fields of the branch it activated. The returned errors are scoped to the modified field.",
+      "name": "form_setFieldValue",
+      "description": "Set the value of a specific field of the form by path. To switch a variant selector, set value to the desired variant index (shown in describeState); the answer then lists the fields of the branch it activated. The returned errors are scoped to the modified field.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "form": {
+            "type": "string",
+            "enum": [
+              "catalog_configuration",
+              "import_configuration"
+            ],
+            "description": "The form this call edits. \"catalog_configuration\": Catalog configuration; \"import_configuration\": Import configuration. A form keeps its edits between calls with the same form and parameters."
+          },
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "for \"catalog_configuration\": Id of the catalog; for \"import_configuration\": Id of the import."
           },
           "path": {
             "type": "string",
@@ -1974,12 +1575,13 @@
           }
         },
         "required": [
+          "form",
           "id",
           "path"
         ]
       },
       "annotations": {
-        "title": "Catalog configuration — set a field",
+        "title": "Form — set a field",
         "readOnlyHint": false,
         "openWorldHint": false
       },
@@ -2001,17 +1603,36 @@
           "oauth2": [
             "all:admin"
           ]
+        },
+        {
+          "oauth2": [
+            "catalogs:write"
+          ]
+        },
+        {
+          "oauth2": [
+            "all:write"
+          ]
         }
       ]
     },
     {
-      "name": "catalog_configuration_getFieldSuggestions",
-      "description": "Get the accepted values of a field of \"Catalog configuration\" that describeState marked \"suggestions\", optionally filtered by a query. A field whose values describeState already stated on its line as values=[...] needs no call — write one of them. Each option comes back with an index and a title; one whose value is not a short scalar is listed by title alone, exactly as a user sees it. To choose one, call setFieldValue with the same path and \"suggestionIndex\" set to its index, and the full original value is applied.",
+      "name": "form_getFieldSuggestions",
+      "description": "Get the accepted values of a field of the form that describeState marked \"suggestions\", optionally filtered by a query. A field whose values describeState already stated on its line as values=[...] needs no call — write one of them. Each option comes back with an index and a title; one whose value is not a short scalar is listed by title alone, exactly as a user sees it. To choose one, call setFieldValue with the same path and \"suggestionIndex\" set to its index, and the full original value is applied.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "form": {
+            "type": "string",
+            "enum": [
+              "catalog_configuration",
+              "import_configuration"
+            ],
+            "description": "The form this call edits. \"catalog_configuration\": Catalog configuration; \"import_configuration\": Import configuration. A form keeps its edits between calls with the same form and parameters."
+          },
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "for \"catalog_configuration\": Id of the catalog; for \"import_configuration\": Id of the import."
           },
           "path": {
             "type": "string",
@@ -2023,12 +1644,13 @@
           }
         },
         "required": [
+          "form",
           "id",
           "path"
         ]
       },
       "annotations": {
-        "title": "Catalog configuration — suggestions",
+        "title": "Form — suggestions",
         "readOnlyHint": true,
         "openWorldHint": false
       },
@@ -2050,17 +1672,36 @@
           "oauth2": [
             "all:admin"
           ]
+        },
+        {
+          "oauth2": [
+            "catalogs:write"
+          ]
+        },
+        {
+          "oauth2": [
+            "all:write"
+          ]
         }
       ]
     },
     {
-      "name": "catalog_configuration_editArray",
-      "description": "Add, remove or move items in an array field of \"Catalog configuration\". Use describeState to see current array contents. When adding an item it is activated for edition and its children fields are returned, they can then be filled with setFieldValue. The returned errors are scoped to this array. Moving an item keeps its data, so reorder with move rather than adding and removing.",
+      "name": "form_editArray",
+      "description": "Add, remove or move items in an array field of the form. Use describeState to see current array contents. When adding an item it is activated for edition and its children fields are returned, they can then be filled with setFieldValue. The returned errors are scoped to this array. Moving an item keeps its data, so reorder with move rather than adding and removing.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "form": {
+            "type": "string",
+            "enum": [
+              "catalog_configuration",
+              "import_configuration"
+            ],
+            "description": "The form this call edits. \"catalog_configuration\": Catalog configuration; \"import_configuration\": Import configuration. A form keeps its edits between calls with the same form and parameters."
+          },
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "for \"catalog_configuration\": Id of the catalog; for \"import_configuration\": Id of the import."
           },
           "path": {
             "type": "string",
@@ -2096,13 +1737,14 @@
           }
         },
         "required": [
+          "form",
           "id",
           "path",
           "action"
         ]
       },
       "annotations": {
-        "title": "Catalog configuration — edit a list",
+        "title": "Form — edit a list",
         "readOnlyHint": false,
         "openWorldHint": false
       },
@@ -2124,115 +1766,6 @@
           "oauth2": [
             "all:admin"
           ]
-        }
-      ]
-    },
-    {
-      "name": "catalog_configuration_saveForm",
-      "description": "Save the \"Catalog configuration\" form: persist the data currently in it through the session's save function. Refuses while the form is invalid. On a version conflict, reload first.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "annotations": {
-        "title": "Catalog configuration — save",
-        "readOnlyHint": false,
-        "openWorldHint": false
-      },
-      "security": [
-        {
-          "sdCookie": []
-        },
-        {
-          "oauth2": [
-            "catalogs:admin"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:admin"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "catalog_configuration_reloadForm",
-      "description": "Reload the \"Catalog configuration\" form from its source, discarding local changes. Use it to resolve a save conflict.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "annotations": {
-        "title": "Catalog configuration — reload",
-        "readOnlyHint": false,
-        "openWorldHint": false
-      },
-      "security": [
-        {
-          "sdCookie": []
-        },
-        {
-          "oauth2": [
-            "catalogs:admin"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:admin"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "import_configuration_getData",
-      "description": "Get the current \"Import configuration\" data and validity status. The data is always returned whole and unmodified, so on a large form pass \"path\" to read one part of it rather than the entire document.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string",
-            "description": "Node path as returned by describeState (e.g. \"/address/city\"). Omit for the whole document."
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "annotations": {
-        "title": "Import configuration — read",
-        "readOnlyHint": true,
-        "openWorldHint": false
-      },
-      "security": [
-        {
-          "sdCookie": []
         },
         {
           "oauth2": [
@@ -2241,332 +1774,43 @@
         },
         {
           "oauth2": [
-            "catalogs:admin"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs"
-          ]
-        },
-        {
-          "oauth2": [
             "all:write"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:admin"
           ]
         }
       ]
     },
     {
-      "name": "import_configuration_setData",
-      "description": "Write several \"Import configuration\" fields at once: the given keys are merged into the current data, nested objects included; arrays you pass replace the existing ones. Prefer setFieldValue to change one field. Check the errors and warnings in the response.",
+      "name": "form_saveForm",
+      "description": "Save the form: persist the data currently in it through the session's save function. Refuses while the form is invalid. On a version conflict, reload first.",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
-          "data": {
-            "description": "The form data object to set"
-          },
-          "merge": {
-            "type": "boolean",
-            "description": "Merge the given keys into the existing data, nested objects included (default); arrays you pass replace the existing ones. Set false to replace the whole object, which removes every key you do not pass."
-          },
-          "save": {
-            "type": "boolean",
-            "description": "Save the form after this write, when the write leaves it valid (default false)."
-          }
-        },
-        "required": [
-          "id",
-          "data"
-        ]
-      },
-      "annotations": {
-        "title": "Import configuration — set fields",
-        "readOnlyHint": false,
-        "openWorldHint": false
-      },
-      "security": [
-        {
-          "sdCookie": []
-        },
-        {
-          "oauth2": [
-            "catalogs:write"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs:admin"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:write"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:admin"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "import_configuration_describeState",
-      "description": "Describe the \"Import configuration\" form: every field with its path, type, constraints, current value and errors. Pass \"path\" to describe one subtree instead of the whole form; what is too large to describe whole is answered as an outline. Each option of a choice is listed with the fields it brings, and a path to an option not chosen (\".../$oneOf/2\") or to an item of a list still empty describes what it would hold. To find a field without knowing which tab holds it, pass \"query\" with words of its name.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string",
-            "description": "Node path as returned by describeState (e.g. \"/address/city\"). Omit for the whole tree. It may name what does not exist yet: an option not chosen (\"/menu/0/$oneOf/2\"), or an item of a list still empty (\"/menu/0\")."
-          },
-          "query": {
-            "type": "string",
-            "description": "Words to look for instead of describing: lists the fields (under \"path\" if given) whose key, title, help or short text value holds all of them, accents and case apart, including those a condition hides."
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "annotations": {
-        "title": "Import configuration — form state",
-        "readOnlyHint": true,
-        "openWorldHint": false
-      },
-      "security": [
-        {
-          "sdCookie": []
-        },
-        {
-          "oauth2": [
-            "catalogs:write"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs:admin"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:write"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:admin"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "import_configuration_setFieldValue",
-      "description": "Set the value of a specific field of \"Import configuration\" by path. To switch a variant selector, set value to the desired variant index (shown in describeState); the answer then lists the fields of the branch it activated. The returned errors are scoped to the modified field.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string",
-            "description": "Node path as returned by describeState (e.g. \"/address/city\")."
-          },
-          "value": {
-            "description": "The value to set. For variant-selector fields, pass the variant index to switch variants. Exclusive with \"suggestionIndex\"."
-          },
-          "suggestionIndex": {
-            "type": "number",
-            "description": "Index from the last getFieldSuggestions call on this same path. Exclusive with \"value\"."
-          },
-          "save": {
-            "type": "boolean",
-            "description": "Save the form after this write, when the write leaves it valid (default false)."
-          }
-        },
-        "required": [
-          "id",
-          "path"
-        ]
-      },
-      "annotations": {
-        "title": "Import configuration — set a field",
-        "readOnlyHint": false,
-        "openWorldHint": false
-      },
-      "security": [
-        {
-          "sdCookie": []
-        },
-        {
-          "oauth2": [
-            "catalogs:write"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs:admin"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:write"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:admin"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "import_configuration_getFieldSuggestions",
-      "description": "Get the accepted values of a field of \"Import configuration\" that describeState marked \"suggestions\", optionally filtered by a query. A field whose values describeState already stated on its line as values=[...] needs no call — write one of them. Each option comes back with an index and a title; one whose value is not a short scalar is listed by title alone, exactly as a user sees it. To choose one, call setFieldValue with the same path and \"suggestionIndex\" set to its index, and the full original value is applied.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string",
-            "description": "Node path as returned by describeState (e.g. \"/address/city\")."
-          },
-          "query": {
-            "type": "string",
-            "description": "Search query to filter suggestions"
-          }
-        },
-        "required": [
-          "id",
-          "path"
-        ]
-      },
-      "annotations": {
-        "title": "Import configuration — suggestions",
-        "readOnlyHint": true,
-        "openWorldHint": false
-      },
-      "security": [
-        {
-          "sdCookie": []
-        },
-        {
-          "oauth2": [
-            "catalogs:write"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs:admin"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:write"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:admin"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "import_configuration_editArray",
-      "description": "Add, remove or move items in an array field of \"Import configuration\". Use describeState to see current array contents. When adding an item it is activated for edition and its children fields are returned, they can then be filled with setFieldValue. The returned errors are scoped to this array. Moving an item keeps its data, so reorder with move rather than adding and removing.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string",
-            "description": "Node path as returned by describeState (e.g. \"/address/city\"). Must be an array field."
-          },
-          "action": {
+          "form": {
             "type": "string",
             "enum": [
-              "add",
-              "remove",
-              "move"
+              "catalog_configuration",
+              "import_configuration"
             ],
-            "description": "\"add\" to insert an item, \"remove\" to delete one, \"move\" to put an item at another place in the list"
+            "description": "The form this call edits. \"catalog_configuration\": Catalog configuration; \"import_configuration\": Import configuration. A form keeps its edits between calls with the same form and parameters."
           },
-          "index": {
-            "type": "number",
-            "description": "Index to insert at (for add, defaults to end) or remove from (for remove, defaults to last)"
-          },
-          "from": {
-            "type": "number",
-            "description": "Index of the item to move (move only, required)"
-          },
-          "to": {
-            "type": "number",
-            "description": "Index the item should have afterwards (move only, required)"
-          },
-          "value": {
-            "description": "Value for the new item (for add action). For an item that is a choice between options, choose its option by the discriminator value describeState lists for it, e.g. { \"type\": \"...\" }: \"$oneOf\" is a path segment, not a data key. Or omit the value and choose the option afterwards with setFieldValue on the item's $oneOf."
-          },
-          "save": {
-            "type": "boolean",
-            "description": "Save the form after this write, when the write leaves it valid (default false)."
+          "id": {
+            "type": "string",
+            "description": "for \"catalog_configuration\": Id of the catalog; for \"import_configuration\": Id of the import."
           }
         },
         "required": [
-          "id",
-          "path",
-          "action"
+          "form",
+          "id"
         ]
       },
       "annotations": {
-        "title": "Import configuration — edit a list",
+        "title": "Form — save",
         "readOnlyHint": false,
         "openWorldHint": false
       },
       "security": [
         {
           "sdCookie": []
-        },
-        {
-          "oauth2": [
-            "catalogs:write"
-          ]
         },
         {
           "oauth2": [
@@ -2580,43 +1824,53 @@
         },
         {
           "oauth2": [
-            "all:write"
+            "all:admin"
           ]
         },
         {
           "oauth2": [
-            "all:admin"
+            "catalogs:write"
+          ]
+        },
+        {
+          "oauth2": [
+            "all:write"
           ]
         }
       ]
     },
     {
-      "name": "import_configuration_saveForm",
-      "description": "Save the \"Import configuration\" form: persist the data currently in it through the session's save function. Refuses while the form is invalid. On a version conflict, reload first.",
+      "name": "form_reloadForm",
+      "description": "Reload the form from its source, discarding local changes. Use it to resolve a save conflict.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "form": {
+            "type": "string",
+            "enum": [
+              "catalog_configuration",
+              "import_configuration"
+            ],
+            "description": "The form this call edits. \"catalog_configuration\": Catalog configuration; \"import_configuration\": Import configuration. A form keeps its edits between calls with the same form and parameters."
+          },
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "for \"catalog_configuration\": Id of the catalog; for \"import_configuration\": Id of the import."
           }
         },
         "required": [
+          "form",
           "id"
         ]
       },
       "annotations": {
-        "title": "Import configuration — save",
+        "title": "Form — reload",
         "readOnlyHint": false,
         "openWorldHint": false
       },
       "security": [
         {
           "sdCookie": []
-        },
-        {
-          "oauth2": [
-            "catalogs:write"
-          ]
         },
         {
           "oauth2": [
@@ -2630,38 +1884,8 @@
         },
         {
           "oauth2": [
-            "all:write"
-          ]
-        },
-        {
-          "oauth2": [
             "all:admin"
           ]
-        }
-      ]
-    },
-    {
-      "name": "import_configuration_reloadForm",
-      "description": "Reload the \"Import configuration\" form from its source, discarding local changes. Use it to resolve a save conflict.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "annotations": {
-        "title": "Import configuration — reload",
-        "readOnlyHint": false,
-        "openWorldHint": false
-      },
-      "security": [
-        {
-          "sdCookie": []
         },
         {
           "oauth2": [
@@ -2670,22 +1894,7 @@
         },
         {
           "oauth2": [
-            "catalogs:admin"
-          ]
-        },
-        {
-          "oauth2": [
-            "catalogs"
-          ]
-        },
-        {
-          "oauth2": [
             "all:write"
-          ]
-        },
-        {
-          "oauth2": [
-            "all:admin"
           ]
         }
       ]
@@ -2695,17 +1904,12 @@
     {
       "name": "workflow",
       "description": "How to connect the account to a remote data catalog, import its resources as data-fair datasets, publish data-fair datasets to it, and follow the runs: find a catalog plugin, create and configure a catalog, browse its resources, create and schedule an import, publish a dataset (actions, publication site), then diagnose a failed import or publication from its logs. Read it before connecting a catalog, importing, publishing or repairing one of them.",
-      "digest": "sha256:efa913db41b277cb7488db76e54272911179466e5eb258d765fe4343391112d3"
+      "digest": "sha256:5e4afcf15fee00a5160c064f69c7822b492550e35d522afb9e17aa92c0b7f80a"
     },
     {
-      "name": "catalog-configuration",
-      "description": "Catalog configuration: how to use the catalog_configuration_* form tools.",
-      "digest": "sha256:bff4d276b4712636645fd01f0daa9ae39bad5c08bfaa478b85fba5dba7e71062"
-    },
-    {
-      "name": "import-configuration",
-      "description": "Import configuration: how to use the import_configuration_* form tools.",
-      "digest": "sha256:2babb6a8f1bbf7f0dc29312c511b7d1e9c8d7246b2706b6ebf04b1ed3f6fc731"
+      "name": "form",
+      "description": "How to use the form_* tools. Forms: \"catalog_configuration\": Catalog configuration; \"import_configuration\": Import configuration.",
+      "digest": "sha256:e448bd47181b5e017d1670f762307a81b3f0828cfa96dc8a5cc421d447dcbbdc"
     }
   ],
   "guides": []

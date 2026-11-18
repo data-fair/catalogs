@@ -52,9 +52,14 @@ Apart from the UI tools, the API describes itself to agents: `GET /catalogs/api/
 document, where `@data-fair/openapi-mcp` turns its `x-agent` annotations (`api/contract/x-agent.ts`)
 into the `catalogs_*` tools of agents working without a browser (MCP clients, the platform MCP
 server): list, create and delete catalogs, imports and publications, browse a remote catalog, re-run
-and read the logs of a run, and two json-layout editor groups (`catalogs_catalog_configuration_*`,
-`catalogs_import_configuration_*`) over the whole-document configuration routes. Their skill is
-`api/contract/skills/workflow.md`. Each tool carries the scopes of its operation (`api/src/scopes.ts`);
+and read the logs of a run, and two json-layout forms over the whole-document configuration routes.
+The forms belong to openapi-mcp's one editor group per document: in the platform document every
+service's forms share the bare `form_*` tools (`form_describeState`, `form_saveForm`...), the form
+chosen by the `form` argument (`catalogs_catalog_configuration`, `catalogs_import_configuration`),
+with one `form` skill from the package. The catalogs skill is `api/contract/skills/workflow.md`; it
+does not list the `form_*` tools, which would offer it to a token granted only another service's form.
+Writes naming a catalog by id (`catalogs_change_catalog_owner`, `catalogs_delete_catalog`) carry a
+checked `catalogTitle` label. Each tool carries the scopes of its operation (`api/src/scopes.ts`);
 the surface is pinned by `tests/fixtures/agent-surface.json` (`UPDATE_GOLDEN=1` regenerates it). These
 tools act directly, with the person's or the token's rights, unlike the UI tools above.
 
