@@ -1,5 +1,8 @@
 import log from '@data-fair/lib-node/log.js'
 import { start, stop } from './src/worker.ts'
+import { installUncaughtErrorsHandler } from '@data-fair/catalogs-shared/plugin-guard.ts'
+
+installUncaughtErrorsHandler()
 
 start().then(() => log.info('worker loop is running'), err => {
   log.error('failure while starting the worker', { code: 'start-process', err })

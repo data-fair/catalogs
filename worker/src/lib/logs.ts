@@ -3,6 +3,7 @@ import type { Import, Publication } from '#api/types'
 import mongo from '#mongo'
 
 import { emit as wsEmit } from '@data-fair/lib-node/ws-emitter.js'
+import { outsidePlugin } from '@data-fair/catalogs-shared/plugin-guard.ts'
 
 type TaskKey = 'import' | 'publication'
 type Task = Import | Publication
@@ -14,11 +15,11 @@ type Task = Import | Publication
 export default (task: Task, type: TaskKey): LogFunctions => {
   const collection = type === 'import' ? mongo.imports : mongo.publications
 
-  const pushLog = async (log: Omit<Log, 'date'>) => {
+  const pushLog = (log: Omit<Log, 'date'>) => outsidePlugin(async () => {
     const logWithDate = { ...log, date: new Date().toISOString() } as Log
     await collection.updateOne({ _id: task._id }, { $push: { logs: logWithDate } })
     await wsEmit(`${type}/${task._id}/logs`, logWithDate)
-  }
+  })
 
   return {
     info: async (msg, extra) => await pushLog({ type: 'info', msg, extra } as Omit<Log, 'date'>),
@@ -26,11 +27,11 @@ export default (task: Task, type: TaskKey): LogFunctions => {
     error: async (msg, extra) => await pushLog({ type: 'error', msg, extra } as Omit<Log, 'date'>),
     step: async (msg) => await pushLog({ type: 'step', msg } as Omit<Log, 'date'>),
     task: async (key, msg, total) => await pushLog({ type: 'task', msg, key, progress: 0, total } as Omit<Log, 'date'>),
-    progress: async (taskKey, progress, total) => {
+    progress: (taskKey, progress, total) => outsidePlugin(async () => {
       const progressDate = new Date().toISOString()
       await collection.updateOne({ _id: task._id, logs: { $elemMatch: { type: 'task', key: taskKey } } },
         { $set: { 'logs.$.progress': progress, 'logs.$.total': total, 'logs.$.progressDate': progressDate } })
       await wsEmit(`${type}/${task._id}/logs`, { type: 'task', key: taskKey, progressDate, progress, total })
-    }
+    })
   }
 }

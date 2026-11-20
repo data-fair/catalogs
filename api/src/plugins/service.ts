@@ -5,9 +5,12 @@ import fs from 'fs-extra'
 import { httpError } from '@data-fair/lib-express'
 import { ensureArtefact } from '@data-fair/lib-node-registry'
 import { importPluginModule } from '@data-fair/catalogs-shared/plugin-load.ts'
+import { guardPlugin } from '@data-fair/catalogs-shared/plugin-guard.ts'
 import config, { registryCacheDir } from '#config'
 
 fs.ensureDirSync(registryCacheDir)
+
+const pluginCallTimeout = 60 * 1000
 
 /** Minimal account shape forwarded to the registry for access control. */
 export type PluginAccount = { type: 'user' | 'organization', id: string, department?: string }
@@ -55,5 +58,5 @@ export const getPlugin = async (
   // For compatibility with older plugins
   if (plugin.listResources && !plugin.list) plugin.list = plugin.listResources
 
-  return { plugin, pkg }
+  return { plugin: guardPlugin(plugin, artefactId, { timeout: pluginCallTimeout }), pkg }
 }

@@ -10,6 +10,7 @@ import eventsQueue from '@data-fair/lib-node/events-queue.js'
 import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
 import { ensureArtefact } from '@data-fair/lib-node-registry'
 import { importPluginModule } from '@data-fair/catalogs-shared/plugin-load.ts'
+import { guardPlugin } from '@data-fair/catalogs-shared/plugin-guard.ts'
 import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import importTask from './lib/import.ts'
 import publicationTask from './lib/publication.ts'
@@ -150,6 +151,7 @@ async function iter (task: Task, type: typeof types[number]) {
     const mod = await importPluginModule<{ default: CatalogPlugin }>(ensured.path)
     plugin = mod.default
     if (plugin.listResources && !plugin.list) plugin.list = plugin.listResources
+    plugin = guardPlugin(plugin, catalog.plugin)
   } catch (e: any) {
     const status = e.status ?? e.statusCode ?? e.response?.status
     const msg = (status === 404 || status === 403)

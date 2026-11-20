@@ -1,5 +1,8 @@
 import log from '@data-fair/lib-node/log.js'
 import { start, stop } from './src/server.ts'
+import { installUncaughtErrorsHandler } from '@data-fair/catalogs-shared/plugin-guard.ts'
+
+installUncaughtErrorsHandler()
 
 start().then(() => {}, err => {
   log.error('failure while starting the service', { code: 'start-process', err })
