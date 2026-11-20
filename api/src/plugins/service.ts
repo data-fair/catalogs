@@ -10,6 +10,8 @@ import config, { registryCacheDir } from '#config'
 
 fs.ensureDirSync(registryCacheDir)
 
+const pluginCallTimeout = 60 * 1000
+
 /** Minimal account shape forwarded to the registry for access control. */
 export type PluginAccount = { type: 'user' | 'organization', id: string, department?: string }
 
@@ -56,5 +58,5 @@ export const getPlugin = async (
   // For compatibility with older plugins
   if (plugin.listResources && !plugin.list) plugin.list = plugin.listResources
 
-  return { plugin: guardPlugin(plugin, artefactId), pkg }
+  return { plugin: guardPlugin(plugin, artefactId, { timeout: pluginCallTimeout }), pkg }
 }
