@@ -66,6 +66,7 @@ export const prepareCatalog = async (catalog: Catalog) => {
       secrets: decipherSecrets(catalog.secrets, config.cipherPassword)
     })
   } catch (error: any) {
+    if (error.status >= 500) throw error
     throw httpError(400, `Invalid configuration: ${error.message || 'Unknown error'}`)
   }
 

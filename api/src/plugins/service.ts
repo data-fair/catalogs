@@ -10,7 +10,7 @@ import config, { registryCacheDir } from '#config'
 
 fs.ensureDirSync(registryCacheDir)
 
-const pluginCallTimeout = 60 * 1000
+const pluginCallTimeout = 45 * 1000
 
 /** Minimal account shape forwarded to the registry for access control. */
 export type PluginAccount = { type: 'user' | 'organization', id: string, department?: string }
