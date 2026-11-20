@@ -7,9 +7,9 @@ type PluginCall = { plugin: string, method: string, settled: boolean, fail: (err
 const pluginStorage = new AsyncLocalStorage<PluginCall>()
 const pendingCalls = new Set<PluginCall>()
 
-const maxPluginErrors = 20
+const maxPluginErrors = 10
 const pluginErrorsWindow = 10 * 60 * 1000
-let pluginErrorDates: number[] = []
+const pluginErrorDates = new Map<string, number[]>()
 
 const isThenable = (value: unknown): value is PromiseLike<unknown> =>
   typeof (value as PromiseLike<unknown> | null)?.then === 'function'
@@ -81,9 +81,10 @@ export const installUncaughtErrorsHandler = () => {
     for (const failedCall of failedCalls) failedCall.fail(err)
 
     const now = Date.now()
-    pluginErrorDates = [...pluginErrorDates.filter(date => date > now - pluginErrorsWindow), now]
-    if (pluginErrorDates.length > maxPluginErrors) {
-      log.error('too many uncaught errors in plugins, shutting down', { code: 'plugin-uncaught-errors-limit', count: pluginErrorDates.length })
+    const dates = [...(pluginErrorDates.get(call.plugin) ?? []).filter(date => date > now - pluginErrorsWindow), now]
+    pluginErrorDates.set(call.plugin, dates)
+    if (dates.length >= maxPluginErrors) {
+      log.error('too many uncaught errors in a plugin, shutting down', { code: 'plugin-uncaught-errors-limit', plugin: call.plugin, count: dates.length })
       process.exit(1)
     }
   })

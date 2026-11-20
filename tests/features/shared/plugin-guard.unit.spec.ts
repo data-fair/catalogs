@@ -76,8 +76,10 @@ await plugin.useConnection().catch(err => console.log('REJECTED=' + err.code))`)
     expect(res.status).toBe(1)
   })
 
-  test('too many uncaught errors in plugins stop the process', () => {
-    const res = runScript('for (let i = 0; i < 21; i++) plugin.list({})')
+  test('10 uncaught errors of one plugin stop the process', () => {
+    const res = runScript('for (let i = 0; i < 9; i++) plugin.list({}); setTimeout(() => console.log("NINE_OK"), 50); setTimeout(() => plugin.list({}), 100)')
+    expect(res.stdout).toContain('NINE_OK')
+    expect(res.stdout).toContain('"plugin":"test-plugin","count":10')
     expect(res.stdout).not.toContain('ALIVE')
     expect(res.stdout).toContain('"code":"plugin-uncaught-errors-limit"')
     expect(res.status).toBe(1)
