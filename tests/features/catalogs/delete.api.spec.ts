@@ -5,7 +5,7 @@ import { publishMockPlugin, mockPluginId } from '../../support/registry.ts'
 const devHost = process.env.DEV_HOST ?? 'localhost'
 const nginxPort = process.env.NGINX_PORT ?? '5600'
 const dataFairUrl = `http://${devHost}:${nginxPort}/data-fair`
-const owner = { type: 'organization', id: 'test_org1', name: 'Test Org 1' }
+const owner = { type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1' }
 
 test.describe('catalog deletion', () => {
   test.beforeAll(publishMockPlugin)
@@ -13,7 +13,7 @@ test.describe('catalog deletion', () => {
   test.afterAll(cleanDb)
 
   test('deletePublications=false keeps the remote publications, as without the parameter', async () => {
-    const admin = await axiosAuth({ email: 'test_admin1@test.com', org: 'test_org1' })
+    const admin = await axiosAuth({ email: 'test_catalogs_org1_admin@test.com', org: 'test_catalogs_org1' })
     const catalog = (await admin.post('/api/catalogs', { title: 'To delete', plugin: mockPluginId, owner, config: { url: 'https://example.com', delay: 0 } })).data
     await admin.post('/api/publications', {
       catalog: { id: catalog._id },

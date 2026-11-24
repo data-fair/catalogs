@@ -4,10 +4,10 @@ import { axiosAuth as _axiosAuth } from '@data-fair/lib-node/axios-auth.js'
 
 /**
  * Test users and orgs are defined in:
- *   - dev/resources/users.json — accounts test_superadmin, test_admin1, test_contrib1,
- *     test_user1, test_dep_admin, test_dep_contrib, test_admin2 (all use password
- *     'passwd' except test_superadmin which uses 'superpasswd').
- *   - dev/resources/organizations.json — test_org1 (departments dep1/dep2) and test_org2.
+ *   - dev/resources/users.json — accounts test_catalogs_superadmin, test_catalogs_org1_admin, test_catalogs_org1_contrib,
+ *     test_catalogs_org1_user, test_catalogs_org1_dep_admin, test_catalogs_org1_dep_contrib, test_catalogs_org2_admin (all use password
+ *     'passwd' except test_catalogs_superadmin which uses 'superpasswd').
+ *   - dev/resources/organizations.json — test_catalogs_org1 (departments dep1/dep2) and test_catalogs_org2.
  *
  * Loaded by simple-directory (STORAGE_TYPE=file in docker-compose.yml).
  */
@@ -25,7 +25,7 @@ export const anonymousAx = axios()
 
 export const axiosAuth = (opts: string | Omit<AxiosAuthOptions, 'directoryUrl' | 'axiosOpts' | 'password'>) => {
   opts = typeof opts === 'string' ? { email: opts } : opts
-  const isSuperadmin = opts.email === 'test_superadmin@test.com' || opts.email === 'superadmin@test.com'
+  const isSuperadmin = opts.email === 'test_catalogs_superadmin@test.com'
   const password = isSuperadmin ? 'superpasswd' : 'passwd'
   const adminMode = isSuperadmin
   return _axiosAuth({ ...opts, password, adminMode, axiosOpts, directoryUrl })

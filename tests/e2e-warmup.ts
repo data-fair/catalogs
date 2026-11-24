@@ -19,11 +19,11 @@ setup('warm up the dev UI routes', async ({ page, goToWithAuth }, testInfo) => {
 
   await publishMockPlugin()
   await cleanDb()
-  const admin = await axiosAuth('test_admin1@test.com')
+  const admin = await axiosAuth('test_catalogs_org1_admin@test.com')
   const { data: catalog } = await admin.post('/api/catalogs', {
     title: 'Warmup catalog',
     plugin: mockPluginId,
-    owner: { type: 'user', id: 'test_admin1', name: 'Test Admin1' },
+    owner: { type: 'user', id: 'test_catalogs_org1_admin', name: 'Test Admin1' },
     config: { url: 'https://data.gouv.fr', delay: 0 }
   })
   const { data: imp } = await admin.post('/api/imports', {
@@ -36,32 +36,32 @@ setup('warm up the dev UI routes', async ({ page, goToWithAuth }, testInfo) => {
   })
   stamp('seed a catalog and an import')
 
-  await goToWithAuth('/catalogs/catalogs', 'test_admin1')
+  await goToWithAuth('/catalogs/catalogs', 'test_catalogs_org1_admin')
   await expect(page.getByText('Warmup catalog')).toBeVisible()
   stamp('catalogs list')
 
-  await goToWithAuth('/catalogs/catalogs/new', 'test_admin1')
+  await goToWithAuth('/catalogs/catalogs/new', 'test_catalogs_org1_admin')
   await expect(page.getByText(/Mock/).first()).toBeVisible()
   stamp('new catalog')
 
-  await goToWithAuth(`/catalogs/catalogs/${catalog._id}?tab=configuration`, 'test_admin1')
+  await goToWithAuth(`/catalogs/catalogs/${catalog._id}?tab=configuration`, 'test_catalogs_org1_admin')
   await expect(page.getByLabel('URL', { exact: true })).toHaveValue('https://data.gouv.fr')
   stamp('catalog configuration')
 
-  await goToWithAuth(`/catalogs/catalogs/${catalog._id}/imports/new`, 'test_admin1')
+  await goToWithAuth(`/catalogs/catalogs/${catalog._id}/imports/new`, 'test_catalogs_org1_admin')
   await expect(page.locator('.v-stepper')).toBeVisible()
   stamp('new import')
 
-  await goToWithAuth(`/catalogs/catalogs/${catalog._id}/imports/${imp._id}`, 'test_admin1')
+  await goToWithAuth(`/catalogs/catalogs/${catalog._id}/imports/${imp._id}`, 'test_catalogs_org1_admin')
   await expect(page.getByText('Warmup resource').first()).toBeVisible()
   stamp('import page')
 
-  await goToWithAuth(`/catalogs/catalogs/${catalog._id}/publications/new`, 'test_admin1')
+  await goToWithAuth(`/catalogs/catalogs/${catalog._id}/publications/new`, 'test_catalogs_org1_admin')
   await expect(page.getByLabel(/Jeu de données Data Fair/)).toBeVisible()
   stamp('new publication')
 
   // a clean reload proves nothing is left to optimize: a pending one would reload the page again
-  await goToWithAuth(`/catalogs/catalogs/${catalog._id}?tab=configuration`, 'test_admin1')
+  await goToWithAuth(`/catalogs/catalogs/${catalog._id}?tab=configuration`, 'test_catalogs_org1_admin')
   await expect(page.getByLabel('URL', { exact: true })).toHaveValue('https://data.gouv.fr')
   stamp('reload stable')
 

@@ -66,7 +66,7 @@ tools act directly, with the person's or the token's rights, unlike the UI tools
 ## Simulations
 
 `simulations/` holds judged browser simulations, run by the `/agents-sim` skill (see AGENTS.md):
-the persona logs in as `test_admin1` of `test_org1`, lands on a back-office route
+the persona logs in as `test_catalogs_org1_admin` of `test_catalogs_org1`, lands on a back-office route
 (`/data-fair/catalogs/...`) and talks to the chat of the shell; the tools it reaches are the
 ones above. Cases seed one catalog connected to the mock plugin (`runner/fixtures.ts`).
 The loop, the gateway error capture and the bridge settings are adapted from portals.

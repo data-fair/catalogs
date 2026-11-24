@@ -5,7 +5,7 @@ test.describe('UI layout', () => {
   test.beforeEach(cleanDb)
 
   test('authenticated admin sees the catalogs list with its empty state', { tag: '@smoke' }, async ({ page, goToWithAuth }) => {
-    await goToWithAuth('/catalogs/catalogs', 'test_admin1')
+    await goToWithAuth('/catalogs/catalogs', 'test_catalogs_org1_admin')
     await expect(page.getByText(/n'avez pas encore créé de catalogue/)).toBeVisible({ timeout: 10000 })
   })
 })

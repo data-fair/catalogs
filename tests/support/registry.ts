@@ -67,7 +67,7 @@ export const publishMockPlugin = async () => {
  */
 export const deleteMockPlugin = async () => {
   const superadmin = await axiosAuth({
-    email: 'test_superadmin@test.com',
+    email: 'test_catalogs_superadmin@test.com',
     password: 'superpasswd',
     adminMode: true,
     directoryUrl,

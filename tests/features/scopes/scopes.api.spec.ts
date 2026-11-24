@@ -7,7 +7,7 @@ const devHost = process.env.DEV_HOST ?? 'localhost'
 const nginxPort = process.env.NGINX_PORT ?? '5600'
 const dataFairUrl = `http://${devHost}:${nginxPort}/data-fair`
 
-const owner = { type: 'organization', id: 'test_org1', name: 'Test Org 1' }
+const owner = { type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1' }
 const status = { validateStatus: () => true }
 
 const catalogPayload = (o = owner) => ({ title: 'Scoped catalog', plugin: mockPluginId, owner: o, config: { url: 'https://example.com', delay: 0 } })
@@ -20,7 +20,7 @@ const publicationPayload = (catalogId: string) => ({
 })
 
 const seed = async () => {
-  const admin = await axiosAuth({ email: 'test_admin1@test.com', org: 'test_org1' })
+  const admin = await axiosAuth({ email: 'test_catalogs_org1_admin@test.com', org: 'test_catalogs_org1' })
   const catalog = (await admin.post('/api/catalogs', catalogPayload())).data
   const imp = (await admin.post('/api/imports', importPayload(catalog._id))).data
   return { admin, catalog, imp }
@@ -98,8 +98,8 @@ test.describe('scopes', () => {
   })
 
   test('the account role still applies to a scoped session', async () => {
-    const admin2 = await axiosAuth({ email: 'test_admin2@test.com', org: 'test_org2' })
-    const other = (await admin2.post('/api/catalogs', catalogPayload({ type: 'organization', id: 'test_org2', name: 'Test Org 2' }))).data
+    const admin2 = await axiosAuth({ email: 'test_catalogs_org2_admin@test.com', org: 'test_catalogs_org2' })
+    const other = (await admin2.post('/api/catalogs', catalogPayload({ type: 'organization', id: 'test_catalogs_org2', name: 'Test Org 2' }))).data
     const scoped = (await (await nhiSession('catalogs:admin')).bearerAx.get(`/api/catalogs/${other._id}`, status)).status
     const unscoped = (await (await nhiSession()).bearerAx.get(`/api/catalogs/${other._id}`, status)).status
     expect(scoped).not.toBe(200)

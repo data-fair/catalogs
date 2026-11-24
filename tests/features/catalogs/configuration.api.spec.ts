@@ -2,7 +2,7 @@ import { test, expect } from '../../fixtures/login.ts'
 import { axios, axiosAuth, cleanDb } from '../../support/axios.ts'
 import { publishMockPlugin, mockPluginId } from '../../support/registry.ts'
 
-const owner = { type: 'organization', id: 'test_org1', name: 'Test Org 1' }
+const owner = { type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1' }
 const status = { validateStatus: () => true }
 const rawCatalog = async (id: string) => (await axios().get(`/api/test-env/catalogs/${id}`)).data
 
@@ -12,7 +12,7 @@ test.describe('catalog configuration', () => {
   test.afterAll(cleanDb)
 
   const create = async () => {
-    const admin = await axiosAuth({ email: 'test_admin1@test.com', org: 'test_org1' })
+    const admin = await axiosAuth({ email: 'test_catalogs_org1_admin@test.com', org: 'test_catalogs_org1' })
     const catalog = (await admin.post('/api/catalogs', { title: 'Configured', plugin: mockPluginId, owner, config: { url: 'https://example.com', delay: 0 } })).data
     return { admin, catalog }
   }
@@ -52,7 +52,7 @@ test.describe('catalog configuration', () => {
 
   test('a non-admin of the owner gets the same answer as on PATCH', async () => {
     const { catalog } = await create()
-    const contrib = await axiosAuth({ email: 'test_contrib1@test.com', org: 'test_org1' })
+    const contrib = await axiosAuth({ email: 'test_catalogs_org1_contrib@test.com', org: 'test_catalogs_org1' })
     const put = await contrib.put(`/api/catalogs/${catalog._id}/configuration`, { title: 'x', config: catalog.config }, status)
     const patch = await contrib.patch(`/api/catalogs/${catalog._id}`, { title: 'x' }, status)
     expect(put.status).toBe(patch.status)

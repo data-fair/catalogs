@@ -3,7 +3,7 @@ import { load } from '@data-fair/openapi-mcp'
 import { axios, axiosAuth, baseURL, cleanDb } from '../../support/axios.ts'
 import { publishMockPlugin, mockPluginId } from '../../support/registry.ts'
 
-const owner = { type: 'organization', id: 'test_org1', name: 'Test Org 1' }
+const owner = { type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1' }
 
 test.describe('configuration editor tools', () => {
   test.beforeAll(publishMockPlugin)
@@ -11,12 +11,12 @@ test.describe('configuration editor tools', () => {
   test.afterAll(cleanDb)
 
   const setup = async () => {
-    const admin = await axiosAuth({ email: 'test_admin1@test.com', org: 'test_org1' })
+    const admin = await axiosAuth({ email: 'test_catalogs_org1_admin@test.com', org: 'test_catalogs_org1' })
     const catalog = (await admin.post('/api/catalogs', { title: 'Editor catalog', plugin: mockPluginId, owner, config: { url: 'https://example.com', delay: 0 } })).data
     const imp = (await admin.post('/api/imports', { catalog: { id: catalog._id }, config: {}, remoteResource: { id: 'r1', title: 'Resource 1' }, scheduling: [], shouldUpdateMetadata: true, shouldUpdateSchema: true })).data
     const doc = (await axios().get('/api/api-docs.json', { headers: { 'Accept-Language': 'en' } })).data
     const toolSet = await load(doc, { baseUrl: `${baseURL}/api`, lint: 'error' })
-    const ctx = { headers: { cookie: admin.cookieJar.getCookieStringSync(baseURL) }, identity: 'test_admin1' }
+    const ctx = { headers: { cookie: admin.cookieJar.getCookieStringSync(baseURL) }, identity: 'test_catalogs_org1_admin' }
     const call = async (name: string, params: Record<string, unknown>) => {
       const tool = toolSet.tools.find(t => t.name === name)
       if (!tool) throw new Error(`no tool ${name}`)

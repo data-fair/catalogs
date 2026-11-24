@@ -33,13 +33,13 @@ test.describe('Permissions', () => {
   test.beforeAll(async () => {
     await cleanPlugins()
     await publishMockPlugin()
-    superadmin = await axiosAuth('test_superadmin@test.com')
-    adminOtherOrg = await axiosAuth({ email: 'test_admin2@test.com', org: 'test_org2' })
-    adminOrg = await axiosAuth({ email: 'test_admin1@test.com', org: 'test_org1' })
-    contribOrg = await axiosAuth({ email: 'test_contrib1@test.com', org: 'test_org1' })
-    adminDep = await axiosAuth({ email: 'test_dep_admin@test.com', org: 'test_org1', dep: 'dep1' })
-    contribDep = await axiosAuth({ email: 'test_dep_contrib@test.com', org: 'test_org1', dep: 'dep1' })
-    userOrg = await axiosAuth({ email: 'test_user1@test.com', org: 'test_org1' })
+    superadmin = await axiosAuth('test_catalogs_superadmin@test.com')
+    adminOtherOrg = await axiosAuth({ email: 'test_catalogs_org2_admin@test.com', org: 'test_catalogs_org2' })
+    adminOrg = await axiosAuth({ email: 'test_catalogs_org1_admin@test.com', org: 'test_catalogs_org1' })
+    contribOrg = await axiosAuth({ email: 'test_catalogs_org1_contrib@test.com', org: 'test_catalogs_org1' })
+    adminDep = await axiosAuth({ email: 'test_catalogs_org1_dep_admin@test.com', org: 'test_catalogs_org1', dep: 'dep1' })
+    contribDep = await axiosAuth({ email: 'test_catalogs_org1_dep_contrib@test.com', org: 'test_catalogs_org1', dep: 'dep1' })
+    userOrg = await axiosAuth({ email: 'test_catalogs_org1_user@test.com', org: 'test_catalogs_org1' })
   })
   test.beforeEach(cleanDb)
   test.afterAll(async () => {
@@ -50,12 +50,12 @@ test.describe('Permissions', () => {
   test.describe('permissions-catalogs', () => {
     test('superadmin can create, read, update, delete catalogs at any level', { tag: '@smoke' }, async () => {
       const orgCatalog = await superadmin.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1'
       }))
       expect(orgCatalog.status).toBe(201)
 
       const depCatalog = await superadmin.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1', department: 'dep1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1', department: 'dep1'
       }))
       expect(depCatalog.status).toBe(201)
 
@@ -77,7 +77,7 @@ test.describe('Permissions', () => {
 
     test('admin from other organization cannot access catalogs from different org (403)', async () => {
       const catalog = await adminOrg.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1'
       }))
 
       await expect(adminOtherOrg.get(`/api/catalogs/${catalog.data._id}`)).rejects.toMatchObject({ status: 403 })
@@ -87,7 +87,7 @@ test.describe('Permissions', () => {
 
     test('organization admin can create/edit organization level catalogs', async () => {
       const catalog = await adminOrg.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1'
       }))
       expect(catalog.status).toBe(201)
 
@@ -97,7 +97,7 @@ test.describe('Permissions', () => {
 
     test('organization admin can create/edit department level catalogs', async () => {
       const catalog = await adminOrg.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1', department: 'dep1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1', department: 'dep1'
       }))
       expect(catalog.status).toBe(201)
 
@@ -107,13 +107,13 @@ test.describe('Permissions', () => {
 
     test('department admin cannot create organization level catalogs', async () => {
       await expect(adminDep.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1'
       }))).rejects.toMatchObject({ status: 403 })
     })
 
     test('department admin can create/edit department level catalogs', async () => {
       const catalog = await adminDep.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1', department: 'dep1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1', department: 'dep1'
       }))
       expect(catalog.status).toBe(201)
 
@@ -123,15 +123,15 @@ test.describe('Permissions', () => {
 
     test('contributors cannot create/edit/delete catalogs', async () => {
       await expect(contribOrg.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1'
       }))).rejects.toMatchObject({ status: 403 })
 
       await expect(contribDep.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1', department: 'dep1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1', department: 'dep1'
       }))).rejects.toMatchObject({ status: 403 })
 
       await expect(userOrg.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1'
       }))).rejects.toMatchObject({ status: 403 })
     })
   })
@@ -142,10 +142,10 @@ test.describe('Permissions', () => {
 
     test.beforeEach(async () => {
       orgCatalog = await superadmin.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1'
       }))
       depCatalog = await superadmin.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1', department: 'dep1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1', department: 'dep1'
       }))
     })
 
@@ -200,10 +200,10 @@ test.describe('Permissions', () => {
 
     test.beforeEach(async () => {
       orgCatalog = await superadmin.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1'
       }))
       depCatalog = await superadmin.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1', department: 'dep1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1', department: 'dep1'
       }))
     })
 
@@ -290,7 +290,7 @@ test.describe('Permissions', () => {
 
     test.beforeEach(async () => {
       const catalog = await adminOrg.post('/api/catalogs', createCatalogPayload({
-        type: 'organization', id: 'test_org1', name: 'Test Org 1'
+        type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1'
       }))
       importDoc = (await adminOrg.post('/api/imports', {
         catalog: { id: catalog.data._id },
@@ -323,7 +323,7 @@ test.describe('Permissions', () => {
     })
 
     test('importing into the same dataset id from another organization does not delete its import', async () => {
-      const otherCatalog = await adminOtherOrg.post('/api/catalogs', createCatalogPayload({ type: 'organization', id: 'test_org2', name: 'Test Org 2' }))
+      const otherCatalog = await adminOtherOrg.post('/api/catalogs', createCatalogPayload({ type: 'organization', id: 'test_catalogs_org2', name: 'Test Org 2' }))
       const importPayload = (catalogId: string) => ({
         catalog: { id: catalogId },
         dataFairDataset: { id: 'shared-dataset-id' },
@@ -339,7 +339,7 @@ test.describe('Permissions', () => {
     })
 
     test('replacing a remote resource from another organization does not delete its publication', async () => {
-      const otherCatalog = await adminOtherOrg.post('/api/catalogs', createCatalogPayload({ type: 'organization', id: 'test_org2', name: 'Test Org 2' }))
+      const otherCatalog = await adminOtherOrg.post('/api/catalogs', createCatalogPayload({ type: 'organization', id: 'test_catalogs_org2', name: 'Test Org 2' }))
       const replacePayload = (catalogId: string, datasetId: string) => ({
         catalog: { id: catalogId },
         dataFairDataset: { id: datasetId },
@@ -353,7 +353,7 @@ test.describe('Permissions', () => {
     })
 
     test('an organization admin still replaces the import of one of its departments', async () => {
-      const depCatalog = await adminDep.post('/api/catalogs', createCatalogPayload({ type: 'organization', id: 'test_org1', name: 'Test Org 1', department: 'dep1' }))
+      const depCatalog = await adminDep.post('/api/catalogs', createCatalogPayload({ type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1', department: 'dep1' }))
       const importPayload = (catalogId: string) => ({
         catalog: { id: catalogId },
         dataFairDataset: { id: 'dep-dataset-id' },

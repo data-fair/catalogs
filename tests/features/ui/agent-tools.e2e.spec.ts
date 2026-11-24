@@ -19,11 +19,11 @@ const callTool = async (page: Page, name: string, args: Record<string, unknown> 
 }
 
 const createCatalog = async () => {
-  const admin = await axiosAuth('test_admin1@test.com')
+  const admin = await axiosAuth('test_catalogs_org1_admin@test.com')
   return (await admin.post('/api/catalogs', {
     title: 'Agent catalog',
     plugin: mockPluginId,
-    owner: { type: 'user', id: 'test_admin1', name: 'Test Admin1' },
+    owner: { type: 'user', id: 'test_catalogs_org1_admin', name: 'Test Admin1' },
     config: { url: 'https://data.gouv.fr', delay: 0 }
   })).data
 }
@@ -36,7 +36,7 @@ test.describe('agent tools', () => {
 
   test('the catalog configuration form is editable by the assistant', async ({ page, goToWithAuth }) => {
     const catalog = await createCatalog()
-    await goToWithAuth(`/catalogs/catalogs/${catalog._id}`, 'test_admin1')
+    await goToWithAuth(`/catalogs/catalogs/${catalog._id}`, 'test_catalogs_org1_admin')
 
     await waitForTools(page, ['open_page_tab'])
     expect((await callTool(page, 'open_page_tab', { tab: 'configuration' })).isError).toBe(false)
@@ -52,7 +52,7 @@ test.describe('agent tools', () => {
 
   test('the import wizard can be driven up to its configuration step', async ({ page, goToWithAuth }) => {
     const catalog = await createCatalog()
-    await goToWithAuth(`/catalogs/catalogs/${catalog._id}`, 'test_admin1')
+    await goToWithAuth(`/catalogs/catalogs/${catalog._id}`, 'test_catalogs_org1_admin')
 
     await waitForTools(page, ['open_catalog_wizard'])
     const opened = await callTool(page, 'open_catalog_wizard', { wizard: 'import' })
@@ -75,9 +75,9 @@ test.describe('agent tools', () => {
 
   test('the imports of a catalog can be listed and opened', async ({ page, goToWithAuth }) => {
     const catalog = await createCatalog()
-    const admin = await axiosAuth('test_admin1@test.com')
+    const admin = await axiosAuth('test_catalogs_org1_admin@test.com')
     const { data: imp } = await admin.post('/api/imports', { catalog: { id: catalog._id }, config: {}, remoteResource: { id: 'r1', title: 'Listed resource' }, scheduling: [], shouldUpdateMetadata: true, shouldUpdateSchema: true })
-    await goToWithAuth(`/catalogs/catalogs/${catalog._id}`, 'test_admin1')
+    await goToWithAuth(`/catalogs/catalogs/${catalog._id}`, 'test_catalogs_org1_admin')
 
     await waitForTools(page, ['list_catalog_items', 'open_catalog_item'])
     expect((await callTool(page, 'list_catalog_items', { kind: 'import' })).text).toContain(`Listed resource (id: \`${imp._id}\`)`)
@@ -87,7 +87,7 @@ test.describe('agent tools', () => {
   })
 
   test('the catalog creation wizard lets the assistant pick the catalog type', async ({ page, goToWithAuth }) => {
-    await goToWithAuth('/catalogs/catalogs/new', 'test_admin1')
+    await goToWithAuth('/catalogs/catalogs/new', 'test_catalogs_org1_admin')
 
     await waitForTools(page, ['list_catalog_plugins', 'select_catalog_plugin'])
     expect((await callTool(page, 'list_catalog_plugins')).text).toContain(mockPluginId)

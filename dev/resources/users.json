@@ -1,151 +1,70 @@
 [
   {
-    "id": "superadmin",
-    "firstName": "Super",
-    "lastName": "Admin",
-    "email": "superadmin@test.com",
-    "password": {
-      "clear": "superpasswd"
-    }
-  },
-  {
-    "id": "adminOrga",
-    "firstName": "Admin Organization",
-    "lastName": "",
-    "email": "admin@test.com",
-    "password": {
-      "clear": "passwd"
-    }
-  },
-  {
-    "id": "contribOrga",
-    "firstName": "Contrib Organization",
-    "lastName": "",
-    "email": "contrib@test.com",
-    "password": {
-      "clear": "passwd"
-    }
-  },
-  {
-    "id": "adminDep",
-    "firstName": "Admin Department",
-    "lastName": "",
-    "email": "admin.dep@test.com",
-    "password": {
-      "clear": "passwd"
-    }
-  },
-  {
-    "id": "contribDep",
-    "firstName": "Contrib Department",
-    "lastName": "",
-    "email": "contrib.dep@test.com",
-    "password": {
-      "clear": "passwd"
-    }
-  },
-  {
-    "id": "userOrga",
-    "firstName": "User Organization",
-    "lastName": "",
-    "email": "user@test.com",
-    "password": {
-      "clear": "passwd"
-    }
-  },
-  {
-    "id": "dmeadus",
-    "firstName": "Danna",
-    "lastName": "Meadus",
-    "email": "dmeadus@answers.com",
-    "password": {
-      "clear": "passwd"
-    }
-  },
-  {
-    "id": "alone",
-    "firstName": "I am",
-    "lastName": "Alone",
-    "email": "alone@no.org",
-    "password": {
-      "clear": "passwd"
-    }
-  },
-  {
-    "id": "albanm",
-    "firstName": "Alban",
-    "lastName": "Mouton",
-    "email": "alban.mouton@koumoul.com",
-    "password": {
-      "clear": "passwd"
-    }
-  },
-  {
-    "id": "test_superadmin",
+    "id": "test_catalogs_superadmin",
     "firstName": "Test Super",
     "lastName": "Admin",
-    "email": "test_superadmin@test.com",
+    "email": "test_catalogs_superadmin@test.com",
     "password": {
       "clear": "superpasswd"
     }
   },
   {
-    "id": "test_admin1",
+    "id": "test_catalogs_org1_admin",
     "firstName": "Test Admin1",
     "lastName": "",
-    "email": "test_admin1@test.com",
+    "email": "test_catalogs_org1_admin@test.com",
     "password": {
       "clear": "passwd"
     }
   },
   {
-    "id": "test_contrib1",
+    "id": "test_catalogs_org1_contrib",
     "firstName": "Test Contrib1",
     "lastName": "",
-    "email": "test_contrib1@test.com",
+    "email": "test_catalogs_org1_contrib@test.com",
     "password": {
       "clear": "passwd"
     }
   },
   {
-    "id": "test_user1",
+    "id": "test_catalogs_org1_user",
     "firstName": "Test User1",
     "lastName": "",
-    "email": "test_user1@test.com",
+    "email": "test_catalogs_org1_user@test.com",
     "password": {
       "clear": "passwd"
     }
   },
   {
-    "id": "test_dep_admin",
+    "id": "test_catalogs_org1_dep_admin",
     "firstName": "Test Dep",
     "lastName": "Admin",
-    "email": "test_dep_admin@test.com",
+    "email": "test_catalogs_org1_dep_admin@test.com",
     "password": {
       "clear": "passwd"
     }
   },
   {
-    "id": "test_dep_contrib",
+    "id": "test_catalogs_org1_dep_contrib",
     "firstName": "Test Dep",
     "lastName": "Contrib",
-    "email": "test_dep_contrib@test.com",
+    "email": "test_catalogs_org1_dep_contrib@test.com",
     "password": {
       "clear": "passwd"
     }
   },
   {
-    "id": "test_admin2",
+    "id": "test_catalogs_org2_admin",
     "firstName": "Test Admin2",
     "lastName": "",
-    "email": "test_admin2@test.com",
+    "email": "test_catalogs_org2_admin@test.com",
     "password": {
       "clear": "passwd"
     }
   },
   {
-    "id": "test_scope_nhi",
-    "email": "test_scope_nhi@test.com",
+    "id": "test_catalogs_org1_scope_nhi",
+    "email": "test_catalogs_org1_scope_nhi@test.com",
     "nhi": {
       "provider": {
         "issuer": "https://catalogs-tests.example.com",

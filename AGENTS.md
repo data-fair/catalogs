@@ -42,12 +42,12 @@ running dev API, dev worker and dev UI. There is no separate test server.
 ### Test users
 
 Test fixtures live in `dev/resources/users.json` and `dev/resources/organizations.json`.
-All test users and orgs are prefixed with `test_` (e.g. `test_admin1@test.com`,
-`test_org1`). The cleanup endpoint `DELETE /api/test-env` only purges documents whose
+All test users and orgs are prefixed with `test_` (e.g. `test_catalogs_org1_admin@test.com`,
+`test_catalogs_org1`). The cleanup endpoint `DELETE /api/test-env` only purges documents whose
 `owner.id` matches `^test_`, so interactive dev work under non-prefixed accounts survives
 test runs.
 
-Passwords: `test_superadmin@test.com` uses `superpasswd`, every other `test_*@test.com`
+Passwords: `test_catalogs_superadmin@test.com` uses `superpasswd`, every other `test_*@test.com`
 uses `passwd`.
 
 ### Test-env API
@@ -112,7 +112,7 @@ shell embedding the catalogs UI, then a judge reads the transcript. Cases live i
   bridge (`npx --no df-agents-bridge`, port `BRIDGE_PORT` in `.env`). Only the user starts the
   bridge.
 - A run wipes `test_`-owned catalogs, imports and publications (`DELETE /api/test-env`) and
-  rewrites `test_org1`'s agents settings and its data-fair `agentChat` setting.
+  rewrites `test_catalogs_org1`'s agents settings and its data-fair `agentChat` setting.
 
 ### Linting & Type Checking
 
