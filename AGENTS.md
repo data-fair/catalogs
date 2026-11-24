@@ -39,6 +39,8 @@ event; an empty `EVENTS_PORT` (when another environment provides the containers)
 The dev environment also serves as the test environment: the Playwright test suite hits the
 running dev API, dev worker and dev UI. There is no separate test server.
 
+Design specs and implementation plans are not kept in this repository; durable architecture docs live in `docs/architecture/`.
+
 ### Test sub-space
 
 The tests own the simple-directory accounts whose ids start with `test_catalogs_`
