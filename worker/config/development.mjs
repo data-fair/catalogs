@@ -1,23 +1,28 @@
-const mongoPort = process.env.MONGO_PORT ?? '27017'
-const eventsPort = process.env.EVENTS_PORT ?? '8088'
-const registryPort = process.env.REGISTRY_PORT ?? '8089'
-const devHost = process.env.DEV_HOST ?? 'localhost'
-const nginxPort = process.env.NGINX_PORT ?? '5600'
-const dfPort = process.env.DF_PORT ?? '8081'
+// the dev ports come from .env (copied from dev/default.env by npm run dev-deps); the production names of
+// custom-environment-variables.mjs (MONGO_URL, PRIVATE_DATA_FAIR_URL, DATA_FAIR_API_KEY...) override this file
+/** @param {string} name */
+const envPort = (name) => {
+  const port = process.env[name]
+  if (!port) throw new Error(`${name} must be set, run "npm run dev-deps" (it creates .env from dev/default.env)`)
+  return port
+}
+// optional services (events): turned off ('') when their port variable is empty
+/** @param {string | undefined} port */
+const optionalUrl = (port) => port ? `http://localhost:${port}` : ''
 
 export default {
   cipherPassword: 'dev-cipher-password-0123456789abcdef',
   dataDir: '../data/development',
   // seeded into data-fair's settings by tests/state-setup.ts (idempotent)
   dataFairAPIKey: 'dev-test-catalogs-worker-key',
-  host: `${devHost}:${nginxPort}`,
-  mongoUrl: `mongodb://localhost:${mongoPort}/data-fair-catalogs-development`,
+  host: `${process.env.DEV_HOST ?? 'localhost'}:${envPort('NGINX_PORT')}`,
+  mongoUrl: `mongodb://localhost:${envPort('MONGO_PORT')}/data-fair-catalogs-development`,
   observer: {
     active: false
   },
-  privateDataFairUrl: `http://localhost:${dfPort}`,
-  privateEventsUrl: `http://localhost:${eventsPort}`,
-  privateRegistryUrl: `http://localhost:${registryPort}`,
+  privateDataFairUrl: `http://localhost:${envPort('DF_PORT')}`,
+  privateEventsUrl: optionalUrl(process.env.EVENTS_PORT),
+  privateRegistryUrl: `http://localhost:${envPort('REGISTRY_PORT')}`,
   secretKeys: {
     events: 'secret-events',
     registry: 'secret-registry-internal'

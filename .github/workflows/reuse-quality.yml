@@ -121,29 +121,27 @@ jobs:
       run: npx playwright install-deps chromium
 
     - name: Init .env
-      run: ./node_modules/.bin/df-dev init-env # local bin only: a bare npx would fetch an unrelated "df-dev" from the registry if the dependency were missing
+      run: cp dev/default.env .env
 
-    - name: Use localhost as DEV_HOST in CI
-      run: sed -i 's/^DEV_HOST=.*/DEV_HOST=localhost/' .env
+    # every later step gets the variables of .env, as npm run dev exports them to its processes
+    - name: Export .env to the next steps
+      run: grep -vE '^\s*(#|$)' .env >> "$GITHUB_ENV" # GITHUB_ENV accepts only NAME=value lines, no comments
 
-    # the core services only, like a developer's default env: no test needs an optional one
-    - name: Start docker compose services
-      run: docker compose up -d --wait
+    # the core services only, like a developer's default env: no test needs an optional one.
+    # The build above leaves dev-setup nothing to build
+    - name: Start dev dependencies
+      run: npm run dev-deps
 
-    - name: Start dev API
+    # the processes of npm run dev, logs in dev/logs for the upload below
+    - name: Start dev API, worker and UI
       run: |
         mkdir -p dev/logs
-        NODE_CONFIG=$(./node_modules/.bin/df-dev absent-config) ./node_modules/.bin/dotenv -- npm -w api run dev > dev/logs/api.log 2>&1 &
-
-    - name: Start dev worker
-      run: NODE_CONFIG=$(./node_modules/.bin/df-dev absent-config) ./node_modules/.bin/dotenv -- npm -w worker run dev > dev/logs/worker.log 2>&1 &
-
-    - name: Start dev UI
-      run: ./node_modules/.bin/dotenv -- npm -w ui run dev > dev/logs/ui.log 2>&1 &
+        npm run dev:api > dev/logs/api.log 2>&1 &
+        npm run dev:worker > dev/logs/worker.log 2>&1 &
+        npm run dev:ui > dev/logs/ui.log 2>&1 &
 
     - name: Wait for the dev API and UI to be ready
       run: |
-        set -a; source .env; set +a
         for i in {1..30}; do
           if curl -sf "http://localhost:${DEV_API_PORT}/catalogs/api/test-env" >/dev/null \
             && curl -sf "http://localhost:${DEV_UI_PORT}/catalogs/" >/dev/null; then
