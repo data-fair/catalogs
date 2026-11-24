@@ -1,8 +1,8 @@
 import { test, expect } from '../../fixtures/login.ts'
 import { axios, axiosAuth } from '../../support/axios.ts'
-import { publishMockPlugin } from '../../support/registry.ts'
+import { publishMockPlugin, mockPluginId } from '../../support/registry.ts'
 
-const pluginId = '@data-fair-catalog-mock-0'
+const pluginId = mockPluginId
 const axAno = axios()
 
 test.describe('plugins resolved from the registry', () => {

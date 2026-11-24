@@ -23,10 +23,9 @@ const sessions = new Map<string, { at: number, cookies: Cookies }>()
 const apiLogin = async (user: string, opts: AccountOpts): Promise<Cookies> => {
   const ctx = await request.newContext()
   try {
-    const password = user === 'test_catalogs_superadmin' ? 'superpasswd' : 'passwd'
     const res = await ctx.post(`${directoryUrl}/api/auth/password`, {
       params: { redirect: `${baseUrl}/catalogs/` },
-      data: { email: `${user}@test.com`, password, ...opts }
+      data: { email: `${user}@test.com`, password: 'passwd', ...opts }
     })
     expect(res.ok(), `login of ${user} failed: ${res.status()} ${await res.text()}`).toBe(true)
     // the callback sets the session cookies and redirects to the app

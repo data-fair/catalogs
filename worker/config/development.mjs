@@ -13,8 +13,9 @@ const optionalUrl = (port) => port ? `http://localhost:${port}` : ''
 export default {
   cipherPassword: 'dev-cipher-password-0123456789abcdef',
   dataDir: '../data/development',
-  // seeded into data-fair's settings by tests/state-setup.ts (idempotent)
-  dataFairAPIKey: 'dev-test-catalogs-worker-key',
+  // none by default (DATA_FAIR_API_KEY sets one): the worker then uses the key the test setup handed over
+  // (worker/src/lib/data-fair-api-key.ts)
+  dataFairAPIKey: '',
   host: `${process.env.DEV_HOST ?? 'localhost'}:${envPort('NGINX_PORT')}`,
   mongoUrl: `mongodb://localhost:${envPort('MONGO_PORT')}/data-fair-catalogs-development`,
   observer: {

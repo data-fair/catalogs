@@ -9,6 +9,7 @@ import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 // data-fair is a service of our own infrastructure (configured private URL, not user input)
 import { privateAxiosInstance as axios } from '@data-fair/lib-node/axios.js'
 import prepareLog from './logs.ts'
+import { dataFairAPIKey } from './data-fair-api-key.ts'
 import config from '#config'
 import mongo from '#mongo'
 
@@ -16,7 +17,7 @@ const getAxiosOptions = (catalog: Catalog): AxiosRequestConfig => {
   return {
     baseURL: config.privateDataFairUrl,
     headers: {
-      'x-apiKey': config.dataFairAPIKey,
+      'x-apiKey': dataFairAPIKey(),
       'x-account': JSON.stringify(catalog.owner),
       'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
       host: config.host,

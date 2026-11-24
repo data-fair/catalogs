@@ -1,6 +1,6 @@
 import { test, expect } from '../../fixtures/login.ts'
 import { axiosAuth, cleanDb, cleanPlugins } from '../../support/axios.ts'
-import { publishMockPlugin } from '../../support/registry.ts'
+import { publishMockPlugin, mockPluginId } from '../../support/registry.ts'
 
 let catalogId: string
 
@@ -15,7 +15,7 @@ test.describe('new publication form', () => {
     const ax = await axiosAuth('test_catalogs_org1_admin@test.com')
     const catalog = await ax.post('/api/catalogs', {
       title: 'Test Catalog',
-      plugin: '@data-fair-catalog-mock-0',
+      plugin: mockPluginId,
       owner: { type: 'user', id: 'test_catalogs_org1_admin', name: 'test_catalogs_org1_admin' },
       config: { url: 'https://data.gouv.fr', delay: 0 }
     })

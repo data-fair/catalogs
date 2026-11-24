@@ -39,26 +39,43 @@ event; an empty `EVENTS_PORT` (when another environment provides the containers)
 The dev environment also serves as the test environment: the Playwright test suite hits the
 running dev API, dev worker and dev UI. There is no separate test server.
 
-### Test users
+### Test sub-space
 
-Test fixtures live in `dev/resources/users.json` and `dev/resources/organizations.json`.
-All test users and orgs are prefixed with `test_` (e.g. `test_catalogs_org1_admin@test.com`,
-`test_catalogs_org1`). The cleanup endpoint `DELETE /api/test-env` only purges documents whose
-`owner.id` matches `^test_`, so interactive dev work under non-prefixed accounts survives
-test runs.
+The tests own the simple-directory accounts whose ids start with `test_catalogs_`
+(@tests/support/sd-fixtures.ts: `test_catalogs_superadmin`, a simple-directory admin, `test_catalogs_org1` with
+its admin, contributor, user, department members and scope NHI, `test_catalogs_org2` with its admin; password
+`passwd`, email `<id>@test.com`). `tests/global-setup.ts` upserts them through simple-directory's test API
+before the spec files load, and `tests/state-setup.ts`, under a lock against a second concurrent run, cleans
+and seeds them again, cleans the sub-space here and sets up the worker's data-fair key (below). The dev world
+`test_demo_` (`npm run dev-world`, run by `dev-deps`, @dev/resources/demo-world.json, login
+`test_demo_dev@example.org` / `passwd`, a simple-directory admin) is never cleaned by the tests.
 
-Passwords: `test_catalogs_superadmin@test.com` uses `superpasswd`, every other `test_*@test.com`
-uses `passwd`.
+Everything a test creates belongs to the sub-space: owners under `test_catalogs_`, and the mock plugin's
+registry artefact `@test_catalogs_catalog-mock-0` (`tests/support/registry.ts`, uploaded with the registry's
+internal secret on its private URL), which registry's own prefixed clean removes.
+
+**The worker's data-fair key.** The worker writes the imported datasets in data-fair in the name of their
+owner (`x-account`), with an API key in admin mode. `tests/support/data-fair.ts` creates it through data-fair's
+API, as `test_catalogs_superadmin` in admin mode on its own settings, and hands it to the worker through
+`PUT /api/test-env/data-fair-api-key`: in development, without `DATA_FAIR_API_KEY`, the worker reads it from
+its database before each task (`worker/src/lib/data-fair-api-key.ts`). The tests never write into another
+service's database. For manual work, run the tests once, or set `DATA_FAIR_API_KEY` in `.env` (an admin mode
+key with `asAccount`, created in data-fair by a super admin, see CONTRIBUTING.md).
 
 ### Test-env API
 
 When `NODE_ENV=development` the API exposes `/api/test-env`:
 - `GET /` — readiness probe (`{ ok: true }`)
-- `DELETE /` — delete all `test_*`-owned catalogs, imports and publications; answers 409 with
-  the list of `test_*` tasks the worker still runs after 5 s (a task leaking from a test)
+- `DELETE /?prefix=test_<suite>_` — delete the catalogs, imports and publications owned by the accounts of
+  that prefix, and the locks of those tasks; 400 without a valid prefix, 204 after the clean. It answers 409
+  with the list of the sub-space's tasks the worker still runs after 5 s (a task leaking from a test). Several
+  suites can share one catalogs service: the clean of one prefix never touches another one
+  (`tests/features/test-env/test-env.api.spec.ts`)
+- `PUT /data-fair-api-key` — the worker's data-fair key (above)
+- `GET /catalogs/:id`, `POST /docs/:collection`, `GET /docs/:collection/:id` — raw documents, for the tests
 - `DELETE /plugins` — wipe the installed plugins directory
 
-These endpoints are used by the Playwright support helpers in `tests/support/axios.ts`.
+These endpoints are used by the Playwright support helpers in `tests/support/`.
 
 ### Testing
 
@@ -111,8 +128,9 @@ shell embedding the catalogs UI, then a judge reads the transcript. Cases live i
 - They need the `agents` container (`npm run dev-deps -- --profile agents`) and the Claude Code
   bridge (`npx --no df-agents-bridge`, port `BRIDGE_PORT` in `.env`). Only the user starts the
   bridge.
-- A run wipes `test_`-owned catalogs, imports and publications (`DELETE /api/test-env`) and
-  rewrites `test_catalogs_org1`'s agents settings and its data-fair `agentChat` setting.
+- A run seeds the `test_catalogs_` accounts, wipes their catalogs, imports and publications
+  (`DELETE /api/test-env?prefix=test_catalogs_`) and rewrites `test_catalogs_org1`'s agents settings
+  and its data-fair `agentChat` setting.
 
 ### Linting & Type Checking
 
@@ -136,7 +154,7 @@ catalogs is scope-aware (`session.init(..., { scopeAware: true })`): a session w
 - The vocabulary (the `catalogs` family with read / write / admin tiers, declared with `defineScopes` from `@data-fair/lib-common-types/scopes.js`, which adds the global `all:read` / `all:write` / `all:admin`) and the operation table live in `api/src/scopes.ts`. The worker reaches data-fair with its own key in the name of the owner: `catalogs:write` alone creates datasets (imports) and sends datasets outside (publications), the descriptions say so; keep them explicit.
 - Every new session-facing route gets a row in `scopedOperations` and `requireOperationScope('<operationId>')` as its first handler. Without one it stays refused to scoped sessions (the admin routes, on purpose). Parts of a body that need a higher tier than the route are checked in the route with `assertReqScope` (the admin parts of an import PATCH, `api/src/imports/patch-fields.ts`).
 - `GET /api/api-docs.json` (`api/contract/api-docs.ts`, built from the same table) is the document data-fair merges into the platform document: keep it independent of the request origin (data-fair fetches it over the private url) and keep each accepted scope as its own `security` alternative. Edit the table, not the document. Its skills are the markdown files of `api/contract/skills/`, served at `/api/agents/skills/<name>.md`.
-- Tests: `tests/features/scopes/` (vocabulary, route enforcement with `nhiSession` from `tests/support/nhi.ts`, the test NHI of `dev/resources/users.json`) and `tests/features/agent-tools/`.
+- Tests: `tests/features/scopes/` (vocabulary, route enforcement with `nhiSession` from `tests/support/nhi.ts`, the test NHI of `tests/support/sd-fixtures.ts`) and `tests/features/agent-tools/`.
 
 ## Logging
 

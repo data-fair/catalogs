@@ -1,6 +1,6 @@
 import { test, expect } from '../../fixtures/login.ts'
 import { axios, axiosAuth, cleanDb, cleanPlugins } from '../../support/axios.ts'
-import { publishMockPlugin } from '../../support/registry.ts'
+import { publishMockPlugin, mockPluginId } from '../../support/registry.ts'
 
 // identity webhooks are internal calls: simple-directory reaches the API directly, not through the proxy
 const axIdentities = axios({ baseURL: `http://localhost:${process.env.DEV_API_PORT}`, headers: { 'x-secret-key': 'secret-identities' } })
@@ -10,7 +10,7 @@ let adminOrg: any
 
 const createCatalog = async () => (await adminOrg.post('/api/catalogs', {
   title: 'Identities catalog',
-  plugin: '@data-fair-catalog-mock-0',
+  plugin: mockPluginId,
   owner: { type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1', department: 'dep1', departmentName: 'Department 1' },
   config: { url: 'https://data.gouv.fr', delay: 0 }
 })).data

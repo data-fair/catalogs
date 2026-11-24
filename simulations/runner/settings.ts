@@ -10,7 +10,7 @@ export const ROOT = `http://${process.env.DEV_HOST}:${process.env.NGINX_PORT}`
 
 /** An org: the account shape catalogs are managed in. test_ data is wiped by test cleanups. */
 export const OWNER = { type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1' } as const
-/** Admin of OWNER per dev/resources/organizations.json. */
+/** Admin of OWNER per tests/support/sd-fixtures.ts. */
 export const OWNER_ADMIN_EMAIL = 'test_catalogs_org1_admin@test.com'
 /** Global admin, needed to write another owner's agent settings. */
 const SUPER_ADMIN_EMAIL = 'test_catalogs_superadmin@test.com'

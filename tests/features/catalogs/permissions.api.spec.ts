@@ -1,6 +1,6 @@
 import { test, expect } from '../../fixtures/login.ts'
 import { axios, axiosAuth, cleanDb, cleanPlugins } from '../../support/axios.ts'
-import { publishMockPlugin } from '../../support/registry.ts'
+import { publishMockPlugin, mockPluginId } from '../../support/registry.ts'
 
 /**
  * This file is based on the permission rules described in CONTRIBUTING.md.
@@ -21,7 +21,7 @@ let userOrg: any
 
 const createCatalogPayload = (owner: any) => ({
   title: 'Test Catalog',
-  plugin: '@data-fair-catalog-mock-0',
+  plugin: mockPluginId,
   owner,
   config: {
     url: 'https://data.gouv.fr',

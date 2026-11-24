@@ -1,15 +1,12 @@
 import type { AxiosAuthOptions } from '@data-fair/lib-node/axios-auth.js'
 import { axiosBuilder } from '@data-fair/lib-node/axios.js'
 import { axiosAuth as _axiosAuth } from '@data-fair/lib-node/axios-auth.js'
+import { prefix } from './sd-fixtures.ts'
 
 /**
- * Test users and orgs are defined in:
- *   - dev/resources/users.json — accounts test_catalogs_superadmin, test_catalogs_org1_admin, test_catalogs_org1_contrib,
- *     test_catalogs_org1_user, test_catalogs_org1_dep_admin, test_catalogs_org1_dep_contrib, test_catalogs_org2_admin (all use password
- *     'passwd' except test_catalogs_superadmin which uses 'superpasswd').
- *   - dev/resources/organizations.json — test_catalogs_org1 (departments dep1/dep2) and test_catalogs_org2.
- *
- * Loaded by simple-directory (STORAGE_TYPE=file in docker-compose.yml).
+ * The test accounts are those of the sub-space test_catalogs_ (tests/support/sd-fixtures.ts), seeded in
+ * simple-directory by tests/global-setup.ts and tests/state-setup.ts: password 'passwd', email `<id>@test.com`.
+ * test_catalogs_superadmin is a simple-directory admin, logged in admin mode.
  */
 
 const devHost = process.env.DEV_HOST ?? 'localhost'
@@ -25,15 +22,13 @@ export const anonymousAx = axios()
 
 export const axiosAuth = (opts: string | Omit<AxiosAuthOptions, 'directoryUrl' | 'axiosOpts' | 'password'>) => {
   opts = typeof opts === 'string' ? { email: opts } : opts
-  const isSuperadmin = opts.email === 'test_catalogs_superadmin@test.com'
-  const password = isSuperadmin ? 'superpasswd' : 'passwd'
-  const adminMode = isSuperadmin
-  return _axiosAuth({ ...opts, password, adminMode, axiosOpts, directoryUrl })
+  const adminMode = opts.email === `${prefix}superadmin@test.com`
+  return _axiosAuth({ ...opts, password: 'passwd', adminMode, axiosOpts, directoryUrl })
 }
 
-/** Delete all test_* owned catalogs/imports/publications on the running dev API. */
+/** Delete the catalogs, imports and publications of the test sub-space on the running dev API. */
 export const cleanDb = async () => {
-  await anonymousAx.delete('/api/test-env')
+  await anonymousAx.delete('/api/test-env', { params: { prefix } })
 }
 
 /** Wipe the local registry artefact cache on the running dev API. */

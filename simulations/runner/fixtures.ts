@@ -1,10 +1,13 @@
 import { axiosAuth, cleanDb } from '../../tests/support/axios.ts'
 import { publishMockPlugin, mockPluginId } from '../../tests/support/registry.ts'
+import { postSdSeed, sdFixtures, sdTestEnvUrl } from '../../tests/support/sd-fixtures.ts'
 import { OWNER, OWNER_ADMIN_EMAIL } from './settings.ts'
 
 export type SeedIds = { catalogId: string, failedImportId: string }
 
 export async function seedAll (): Promise<SeedIds> {
+  // the accounts of the test sub-space (test_catalogs_), upserted in simple-directory
+  await postSdSeed(sdTestEnvUrl(), sdFixtures())
   await cleanDb()
   await publishMockPlugin()
   const admin = await axiosAuth({ email: OWNER_ADMIN_EMAIL, org: OWNER.id })

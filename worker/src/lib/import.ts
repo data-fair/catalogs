@@ -12,6 +12,7 @@ import { decipherSecrets } from '@data-fair/catalogs-shared/cipher.ts'
 // data-fair is a service of our own infrastructure (configured private URL, not user input)
 import { privateAxiosInstance as axios } from '@data-fair/lib-node/axios.js'
 import prepareLog from './logs.ts'
+import { dataFairAPIKey } from './data-fair-api-key.ts'
 import config from '#config'
 import mongo from '#mongo'
 
@@ -69,7 +70,7 @@ const uploadRestDataset = async (
       data: datasetResource,
       headers: {
         'content-type': 'application/json',
-        'x-apiKey': config.dataFairAPIKey,
+        'x-apiKey': dataFairAPIKey(),
         'x-account': JSON.stringify(account),
         'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
         host: config.host
@@ -91,7 +92,7 @@ const uploadRestDataset = async (
     headers: {
       'Content-Type': 'text/csv',
       'Content-Length': fs.statSync(resource.filePath).size,
-      'x-apiKey': config.dataFairAPIKey,
+      'x-apiKey': dataFairAPIKey(),
       'x-account': JSON.stringify(account),
       'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
       host: config.host
@@ -140,7 +141,7 @@ const uploadStandardDataset = async (
     headers: {
       ...formData.getHeaders(),
       'content-length': contentLength.toString(),
-      'x-apiKey': config.dataFairAPIKey,
+      'x-apiKey': dataFairAPIKey(),
       'x-account': JSON.stringify(account),
       'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
       host: config.host
@@ -156,7 +157,7 @@ const uploadStandardDataset = async (
       baseURL: config.privateDataFairUrl,
       data: { remoteFile: null },
       headers: {
-        'x-apiKey': config.dataFairAPIKey,
+        'x-apiKey': dataFairAPIKey(),
         'x-account': JSON.stringify(catalog.owner),
         'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
         host: config.host
@@ -241,7 +242,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
           data: attachmentFormData,
           headers: {
             ...attachmentFormData.getHeaders(),
-            'x-apiKey': config.dataFairAPIKey,
+            'x-apiKey': dataFairAPIKey(),
             'x-account': JSON.stringify(catalog.owner),
             'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
             host: config.host
@@ -269,7 +270,7 @@ const uploadDataset = async (log: ReturnType<typeof prepareLog>, catalog: Catalo
       baseURL: config.privateDataFairUrl,
       data: { attachments },
       headers: {
-        'x-apiKey': config.dataFairAPIKey,
+        'x-apiKey': dataFairAPIKey(),
         'x-account': JSON.stringify(catalog.owner),
         'User-Agent': `@data-fair/catalogs (${catalog.plugin})`,
         host: config.host

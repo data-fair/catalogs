@@ -5,7 +5,9 @@ const ci = !!process.env.CI
 
 export default defineConfig({
   testDir: './tests',
-  // api and e2e tests share the dev env state (one clean wipes every test owner): one worker
+  // the test accounts in simple-directory, before the spec files (which log in at import time) are loaded
+  globalSetup: './tests/global-setup.ts',
+  // api and e2e tests share the dev env state (one clean wipes the whole test sub-space): one worker
   workers: 1,
   fullyParallel: false,
   forbidOnly: ci,
@@ -34,6 +36,11 @@ export default defineConfig({
     {
       name: 'state-setup',
       testMatch: /state-setup\.ts/,
+      teardown: 'state-teardown',
+    },
+    {
+      name: 'state-teardown',
+      testMatch: /state-teardown\.ts/,
     },
     {
       name: 'api',

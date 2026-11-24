@@ -60,10 +60,10 @@ To run a specific file :
 npx playwright test tests/features/plugins/registry.api.spec.ts
 ```
 
-Tests live under `tests/features/<topic>/<name>.{unit,api,e2e}.spec.ts`. They reset state
-through the `test_*`-prefixed accounts (see `dev/resources/users.json` and
-`dev/resources/organizations.json`); interactive data under other accounts is left
-untouched.
+Tests live under `tests/features/<topic>/<name>.{unit,api,e2e}.spec.ts`. They own the
+`test_catalogs_` accounts, seeded in simple-directory from `tests/support/sd-fixtures.ts`, and reset only
+what those accounts own; the dev world `test_demo_` (`npm run dev-world`, login `test_demo_dev@example.org` /
+`passwd`) and interactive data under other accounts are left untouched.
 
 ## Setup the development environment
 
@@ -75,10 +75,10 @@ A. Congifure the publication site
 
 You can configure the publication site for each organization on which you want to run your tests.
 
-Here is the command to type in the browser console, while being connected as a super administrator:
+Here is the command to type in the browser console, while being connected as a super administrator (`test_demo_dev@example.org` / `passwd` of the dev world, in admin mode):
 
 ```js
-fetch('http://localhost:5800/data-fair/api/v1/settings/user/superadmin/publication-sites', {
+fetch('http://localhost:5800/data-fair/api/v1/settings/user/test_demo_dev/publication-sites', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -91,14 +91,14 @@ fetch('http://localhost:5800/data-fair/api/v1/settings/user/superadmin/publicati
 })
 ```
 
-*You can replace in the URL the type (user/organization) and the account ID to configure (here superadmin)*
+*You can replace in the URL the type (user/organization) and the account ID to configure (here test_demo_dev)*
 
 B. Configure the API Key
 
 In the browser console, while being connected as a super administrator, you can create an API key used by the worker to import datasets and read metadata of datasets from the Data Fair API.
 
 ```js
-fetch('http://localhost:5800/data-fair/api/v1/settings/user/superadmin', {
+fetch('http://localhost:5800/data-fair/api/v1/settings/user/test_demo_dev', {
   method: 'PUT',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -115,13 +115,13 @@ fetch('http://localhost:5800/data-fair/api/v1/settings/user/superadmin', {
 .catch(error => console.error('Erreur:', error));
 ```
 
-Then copy the `clearKey` value returned by the API and paste it in a new file `worker/config/local-development.cjs` file :
+Then copy the `clearKey` value returned by the API into `.env`, and restart the worker:
 
-```js
-export default {
-  dataFairAPIKey: 'your api key here',
-}
+```sh
+DATA_FAIR_API_KEY=your api key here
 ```
+
+Without it, the worker uses the key of the last test run (AGENTS.md, "The worker's data-fair key").
 
 ## Random information
 
