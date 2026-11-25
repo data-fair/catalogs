@@ -31,7 +31,7 @@ export const cleanDb = async () => {
   await anonymousAx.delete('/api/test-env', { params: { prefix } })
 }
 
-/** Wipe the local registry artefact cache on the running dev API. */
+/** Remove the test sub-space's plugins from the registry artefact cache of the running dev API. */
 export const cleanPlugins = async () => {
-  await anonymousAx.delete('/api/test-env/plugins')
+  await anonymousAx.delete('/api/test-env/plugins', { params: { prefix } })
 }

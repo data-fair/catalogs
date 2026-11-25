@@ -1,3 +1,4 @@
+import path from 'node:path'
 import express from 'express'
 import fs from 'fs-extra'
 import mongo from '#mongo'
@@ -112,11 +113,19 @@ router.put('/data-fair-api-key', async (req, res, next) => {
   }
 })
 
-// Wipe the local registry artefact cache (used between test runs).
+// Remove the cached registry artefacts of a sub-space (DELETE /plugins?prefix=test_<suite>_): the entries of the
+// cache named after its plugins (`@test_<suite>_…`), the others stay.
 router.delete('/plugins', async (req, res, next) => {
   try {
-    await fs.emptyDir(registryCacheDir)
-    res.json({ ok: true })
+    const prefix = req.query.prefix
+    if (typeof prefix !== 'string' || !testPrefixRegexp.test(prefix)) {
+      return res.status(400).type('text/plain').send('invalid test prefix')
+    }
+    const entries = await fs.pathExists(registryCacheDir) ? await fs.readdir(registryCacheDir) : []
+    for (const entry of entries.filter(e => e.startsWith('@' + prefix))) {
+      await fs.remove(path.join(registryCacheDir, entry))
+    }
+    res.status(204).send()
   } catch (err) {
     next(err)
   }
