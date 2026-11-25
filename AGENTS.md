@@ -48,9 +48,9 @@ The tests own the simple-directory accounts whose ids start with `test_catalogs_
 its admin, contributor, user, department members and scope NHI, `test_catalogs_org2` with its admin; password
 `passwd`, email `<id>@test.com`). `tests/global-setup.ts` upserts them through simple-directory's test API
 before the spec files load, and `tests/state-setup.ts`, under a lock against a second concurrent run, cleans
-and seeds them again, cleans the sub-space here and sets up the worker's data-fair key (below). The dev world
-`test_demo_` (`npm run dev-world`, run by `dev-deps`, @dev/resources/demo-world.json, login
-`test_demo_dev@example.org` / `passwd`, a simple-directory admin) is never cleaned by the tests.
+and seeds them again, cleans the sub-space here and sets up the worker's data-fair key (below). The repository
+ships no dev data: accounts seeded by hand through the same test API under another prefix are never cleaned by
+the tests.
 
 Everything a test creates belongs to the sub-space: owners under `test_catalogs_`, and the mock plugin's
 registry artefact `@test_catalogs_catalog-mock-0` (`tests/support/registry.ts`, uploaded with the registry's

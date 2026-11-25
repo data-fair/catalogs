@@ -62,8 +62,7 @@ npx playwright test tests/features/plugins/registry.api.spec.ts
 
 Tests live under `tests/features/<topic>/<name>.{unit,api,e2e}.spec.ts`. They own the
 `test_catalogs_` accounts, seeded in simple-directory from `tests/support/sd-fixtures.ts`, and reset only
-what those accounts own; the dev world `test_demo_` (`npm run dev-world`, login `test_demo_dev@example.org` /
-`passwd`) and interactive data under other accounts are left untouched.
+what those accounts own; dev data under other accounts is left untouched.
 
 ## Setup the development environment
 
@@ -75,10 +74,10 @@ A. Congifure the publication site
 
 You can configure the publication site for each organization on which you want to run your tests.
 
-Here is the command to type in the browser console, while being connected as a super administrator (`test_demo_dev@example.org` / `passwd` of the dev world, in admin mode):
+Here is the command to type in the browser console, while being connected as a super administrator (a simple-directory admin of your dev environment, in admin mode):
 
 ```js
-fetch('http://localhost:5800/data-fair/api/v1/settings/user/test_demo_dev/publication-sites', {
+fetch('http://localhost:5800/data-fair/api/v1/settings/user/<user id>/publication-sites', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -91,14 +90,14 @@ fetch('http://localhost:5800/data-fair/api/v1/settings/user/test_demo_dev/public
 })
 ```
 
-*You can replace in the URL the type (user/organization) and the account ID to configure (here test_demo_dev)*
+*You can replace in the URL the type (user/organization) and the account ID to configure (here `<user id>`, your own)*
 
 B. Configure the API Key
 
 In the browser console, while being connected as a super administrator, you can create an API key used by the worker to import datasets and read metadata of datasets from the Data Fair API.
 
 ```js
-fetch('http://localhost:5800/data-fair/api/v1/settings/user/test_demo_dev', {
+fetch('http://localhost:5800/data-fair/api/v1/settings/user/<user id>', {
   method: 'PUT',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
