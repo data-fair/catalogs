@@ -45,7 +45,6 @@
     "@data-fair/lib-types-builder": "^1.14.5"
   },
   "devDependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.3.295",
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
     "@data-fair/lib-node": "^3.0.0",
