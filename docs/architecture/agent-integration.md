@@ -65,11 +65,11 @@ tools act directly, with the person's or the token's rights, unlike the UI tools
 
 ## Simulations
 
-`simulations/` holds judged browser simulations, run by the `/agents-sim` skill (see AGENTS.md):
-the persona logs in as `test_catalogs_org1_admin` of `test_catalogs_org1`, lands on a back-office route
-(`/data-fair/catalogs/...`) and talks to the chat of the shell; the tools it reaches are the
-ones above. Cases seed one catalog connected to the mock plugin (`runner/fixtures.ts`).
-The loop, the gateway error capture and the bridge settings are adapted from portals.
+Judged scenarios run in the data-fair back-office shell: a person, admin of an organization, lands on a
+back-office route (`/data-fair/catalogs/...`) and talks to the chat of the shell; the tools it reaches
+are the ones above. Their context holds one catalog connected to the mock plugin
+(`tests/fixtures/catalog-mock.tgz`) and an import in error. They are not kept in this repository: this
+document is what their judge reads as the product's promises.
 
 ## Tests
 

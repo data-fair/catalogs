@@ -120,19 +120,10 @@ The UI exposes WebMCP tools and host state to the data-fair chat, see
 
 ### Simulations
 
-Judged browser simulations of the AI assistant (`@data-fair/lib-agents-sim`): a simulated
-person pursues a goal with the real assistant on a real model, in the data-fair back-office
-shell embedding the catalogs UI, then a judge reads the transcript. Cases live in
-`simulations/cases/index.ts`. Run and judge them with the `/agents-sim` skill.
-
-- Never part of `npm test`, CI or hooks (separate `playwright.sim.config.ts`): they spend
-  Claude plan quota.
-- They need the `agents` container (`npm run dev-deps -- --profile agents`) and the Claude Code
-  bridge (`npx --no df-agents-bridge`, port `BRIDGE_PORT` in `.env`). Only the user starts the
-  bridge.
-- A run seeds the `test_catalogs_` accounts, wipes their catalogs, imports and publications
-  (`DELETE /api/test-env?prefix=test_catalogs_`) and rewrites `test_catalogs_org1`'s agents settings
-  and its data-fair `agentChat` setting.
+The judged browser simulations of the assistant (a simulated person, a real model, a judge reading the
+transcript) are not kept in this repository. What a judge reads as the product's promises is
+`docs/architecture/agent-integration.md`, keep it current when the agent tools change. They publish the mock plugin
+`tests/fixtures/catalog-mock.tgz`: keep it a working catalog plugin.
 
 ### Linting & Type Checking
 

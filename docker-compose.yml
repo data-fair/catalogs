@@ -81,7 +81,7 @@ services:
       - DIRECTORY_URL=http://${DEV_HOST}:${NGINX_PORT}/simple-directory
       - PRIVATE_DIRECTORY_URL=http://localhost:${SD_PORT}
       - PRIVATE_EVENTS_URL=http://localhost:${EVENTS_PORT}
-      # turns on the back-office AI assistant (agentsIntegration), needed by the simulations
+      # turns on the back-office AI assistant (agentsIntegration)
       - PRIVATE_AGENTS_URL=http://localhost:${AGENTS_PORT}
       - MONGO_URL=mongodb://localhost:${MONGO_PORT}/data-fair
       - ES_HOST=http://localhost:${ES_PORT}
