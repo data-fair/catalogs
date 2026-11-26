@@ -1,7 +1,11 @@
 <template>
   <v-container data-iframe-height>
+    <v-progress-linear
+      v-if="catalogsFetch.loading.value"
+      indeterminate
+    />
     <span
-      v-if="!catalogsFetch.data.value?.results.length"
+      v-else-if="!catalogsFetch.data.value?.results.length"
       class="d-flex justify-center text-title-large"
     >
       {{ t('noCatalogs') }}
