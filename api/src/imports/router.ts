@@ -91,8 +91,8 @@ router.post('/', requireOperationScope('postImport'), async (req, res) => {
     date: new Date().toISOString()
   }
 
-  // Set the next import date based on scheduling
-  if (imp.scheduling) imp.nextImportDate = getNextImportDate(imp.scheduling)
+  // a paused import has no next import date: the worker only schedules active ones
+  if (imp.isSchedulingActive && imp.scheduling.length) imp.nextImportDate = getNextImportDate(imp.scheduling)
 
   const validImport = await validateImport(imp)
   await mongo.imports.insertOne(validImport)
