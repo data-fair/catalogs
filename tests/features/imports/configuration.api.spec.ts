@@ -41,6 +41,19 @@ test.describe('import configuration', () => {
     expect(created).toMatchObject({ scheduling: [], isSchedulingActive: true, shouldUpdateMetadata: false, shouldUpdateSchema: false })
   })
 
+  test('a paused import has no next import date', async () => {
+    const { admin, catalog } = await create()
+    const daily = { type: 'daily', minute: 0, hour: 3, dayOfMonth: '*', month: '*', dayOfWeek: '*', timeZone: 'Europe/Paris' }
+    const created = (await admin.post('/api/imports', { catalog: { id: catalog._id }, config: {}, remoteResource: { id: 'r4', title: 'Resource 4' }, scheduling: [daily], isSchedulingActive: false })).data
+    expect(created.nextImportDate).toBeUndefined()
+    // resuming with the same rules schedules the next run, pausing removes it
+    await admin.patch(`/api/imports/${created._id}`, { isSchedulingActive: true })
+    expect((await admin.get(`/api/imports/${created._id}`)).data.nextImportDate).toBeTruthy()
+    const conf = (await admin.get(`/api/imports/${created._id}/configuration`)).data
+    await admin.put(`/api/imports/${created._id}/configuration`, { ...conf, isSchedulingActive: false })
+    expect((await admin.get(`/api/imports/${created._id}`)).data.nextImportDate).toBeUndefined()
+  })
+
   test('a key outside the configuration is refused', async () => {
     const { admin, imp } = await create()
     expect((await admin.put(`/api/imports/${imp._id}/configuration`, { config: {}, owner }, status)).status).toBe(400)

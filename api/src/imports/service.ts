@@ -48,18 +48,16 @@ export const validateImport = async (imp: Partial<Import>) => {
 
 /**
  * Apply changes to an import (a PATCH, or a PUT of its configuration): null removes a property.
- * Computes the next import date when the scheduling changes, stamps the update, validates and saves
+ * Computes the next import date when the scheduling or its activation changes, stamps the update, validates and saves
  * the result, sends the event and the websocket update. Returns the saved import.
  */
 export const updateImport = async (importDoc: Import, changes: Record<string, any>, sessionState: SessionStateAuthenticated) => {
   changes = { ...changes }
-  // Set the next import date based on scheduling if scheduling was updated
-  if (changes.scheduling !== undefined) {
-    if (!changes.scheduling || (Array.isArray(changes.scheduling) && changes.scheduling.length === 0)) {
-      changes.nextImportDate = null
-    } else {
-      changes.nextImportDate = getNextImportDate(changes.scheduling)
-    }
+  // a paused import has no next import date: the worker only schedules active ones
+  if (changes.scheduling !== undefined || changes.isSchedulingActive !== undefined) {
+    const scheduling = changes.scheduling !== undefined ? changes.scheduling : importDoc.scheduling
+    const isSchedulingActive = changes.isSchedulingActive !== undefined ? changes.isSchedulingActive : importDoc.isSchedulingActive
+    changes.nextImportDate = (isSchedulingActive && scheduling?.length && getNextImportDate(scheduling)) || null
   }
   changes.updated = { id: sessionState.user.id, name: sessionState.user.name, date: new Date().toISOString() }
 
