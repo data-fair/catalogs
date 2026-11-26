@@ -15,6 +15,7 @@ import { getNextImportDate } from '@data-fair/catalogs-shared/cron.ts'
 import importTask from './lib/import.ts'
 import publicationTask from './lib/publication.ts'
 import { sendTaskErrorEvent } from './lib/events.ts'
+import { refreshDataFairAPIKey } from './lib/data-fair-api-key.ts'
 import log, { withLogContext } from '@data-fair/lib-node/log.js'
 import { taskLogFields } from '@data-fair/catalogs-shared/log-fields.ts'
 import config, { registryCacheDir } from '#config'
@@ -124,6 +125,8 @@ async function iter (task: Task, type: typeof types[number]) {
   // would attribute its long-lived timers and pools to this first task
   const logFields = taskLogFields(task, type)
   const collection = type === 'import' ? mongo.imports : mongo.publications
+
+  await refreshDataFairAPIKey()
 
   const catalog = await mongo.catalogs.findOne({ _id: task.catalog.id })
   if (!catalog) { // A task without catalog should not exist, log an error and delete the task

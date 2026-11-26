@@ -10,22 +10,25 @@
 
 ```sh
 npm ci
-npx --no df-dev setup                 # .env with free ports (kept if it exists, --force to redraw), types, UI build
 npx playwright install chromium  # browser of the end-to-end tests
 ```
 
 ## Start the development environment
 
 ```sh
-npm run dev-zellij                          # core containers + ui, api, worker
-npm run dev-zellij -- --services agents     # with the optional agents container
+npm run dev                          # core containers, then the api, the worker and the ui
+npm run dev -- --profile agents      # with the optional agents container
 ```
 
-This opens a zellij (>= 0.44) session named after the checkout directory, or attaches to it if it runs. The dev URL is in the footer. From another terminal: `npx --no df-dev status`, `npx --no df-dev logs <pane>`, `npx --no df-dev restart <pane>`, `npx --no df-dev up <service>`.
+`npm run dev` copies `dev/default.env` to `.env` the first time (fixed ports 5800-5812; `.env` overrides them
+and is never overwritten), builds the types and the UI once, starts the containers, then the api, the worker and
+the ui in the terminal. Ctrl+C stops them. The dev page is at `http://localhost:5800/catalogs/dev`, the process
+logs in `dev/logs/`. `npm run dev-deps` starts only the containers; `npm run dev:api`, `dev:worker` and `dev:ui`
+run one process each, with the variables of `.env` exported.
 
 ## Stop the development environment
 
-Quit zellij, then:
+Ctrl+C, then:
 
 ```sh
 npm run stop-dev-deps
@@ -38,23 +41,11 @@ docker build --progress=plain --target=main -t data-fair/catalogs:dev .
 docker build --progress=plain --target=worker -t data-fair/catalogs/worker:dev .
 ```
 
-## Working on several branches at once
-
-Each checkout has its own `.env` with random ports, so you can run multiple worktrees side
-by side without port collisions :
-
-```sh
-npx --no df-worktree feat-xyz          # from the main checkout: ../catalogs_feat-xyz, installed and built
-npx --no df-worktree-delete feat-xyz   # its containers, volumes and zellij session, the worktree and its branch
-```
-
-You can check the health of the current environment at any time with `npx --no df-dev status`.
-
 ## Running the tests
 
 The test suite uses [Playwright](https://playwright.dev/) and runs against the **running
 dev environment** — the dev environment is the test environment. Start it first
-(`npm run dev-zellij`), then :
+(`npm run dev`), then :
 
 ```sh
 npm test            # all tests (unit + api + e2e)
@@ -69,57 +60,24 @@ To run a specific file :
 npx playwright test tests/features/plugins/registry.api.spec.ts
 ```
 
-Tests live under `tests/features/<topic>/<name>.{unit,api,e2e}.spec.ts`. They reset state
-through the `test_*`-prefixed accounts (see `dev/resources/users.json` and
-`dev/resources/organizations.json`); interactive data under other accounts is left
-untouched.
-
-## Zellij installation
-
-<details>
-<summary>Guide</summary>
-
-1) Install Rust's Cargo
-
-```sh
-curl https://sh.rustup.rs -sSf | sh
-# choose 1 when prompted
-```
-
-2) Install Zellij
-
-```sh
-cargo install --locked zellij
-```
-
-3) Install NVM
-
-```sh
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
-nvm install
-```
-
-*Tips :*
-
-- Use <kbd>Ctrl</kbd> + <kbd>Q</kbd> to quit Zellij.
-- Click on a panel, then use <kbd>Ctrl</kbd> + <kbd>C</kbd> then <kbd>Esc</kbd> to stop a terminal and regain access of the panel.
-
-</details>
+Tests live under `tests/features/<topic>/<name>.{unit,api,e2e}.spec.ts`. They own the
+`test_catalogs_` accounts, seeded in simple-directory from `tests/support/sd-fixtures.ts`, and reset only
+what those accounts own; dev data under other accounts is left untouched.
 
 ## Setup the development environment
 
 > To work on the dataset publication feature, you first need to add a publication site and setup an API Key on Data Fair.
 
-*Note : the snippets below use `http://localhost:5600` as the Data Fair URL. Replace it with your actual dev server URL — the host and ports are randomized per checkout and printed in the zellij banner (see `.env`).*
+*Note : the snippets below use `http://localhost:5800` as the Data Fair URL (`NGINX_PORT` of `.env`).*
 
 A. Congifure the publication site
 
 You can configure the publication site for each organization on which you want to run your tests.
 
-Here is the command to type in the browser console, while being connected as a super administrator:
+Here is the command to type in the browser console, while being connected as a super administrator (a simple-directory admin of your dev environment, in admin mode):
 
 ```js
-fetch('http://localhost:5600/data-fair/api/v1/settings/user/superadmin/publication-sites', {
+fetch('http://localhost:5800/data-fair/api/v1/settings/user/<user id>/publication-sites', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -132,14 +90,14 @@ fetch('http://localhost:5600/data-fair/api/v1/settings/user/superadmin/publicati
 })
 ```
 
-*You can replace in the URL the type (user/organization) and the account ID to configure (here superadmin)*
+*You can replace in the URL the type (user/organization) and the account ID to configure (here `<user id>`, your own)*
 
 B. Configure the API Key
 
 In the browser console, while being connected as a super administrator, you can create an API key used by the worker to import datasets and read metadata of datasets from the Data Fair API.
 
 ```js
-fetch('http://localhost:5600/data-fair/api/v1/settings/user/superadmin', {
+fetch('http://localhost:5800/data-fair/api/v1/settings/user/<user id>', {
   method: 'PUT',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -156,13 +114,13 @@ fetch('http://localhost:5600/data-fair/api/v1/settings/user/superadmin', {
 .catch(error => console.error('Erreur:', error));
 ```
 
-Then copy the `clearKey` value returned by the API and paste it in a new file `worker/config/local-development.cjs` file :
+Then copy the `clearKey` value returned by the API into `.env`, and restart the worker:
 
-```js
-export default {
-  dataFairAPIKey: 'your api key here',
-}
+```sh
+DATA_FAIR_API_KEY=your api key here
 ```
+
+Without it, the worker uses the key of the last test run (AGENTS.md, "The worker's data-fair key").
 
 ## Random information
 

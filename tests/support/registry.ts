@@ -2,19 +2,24 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { axiosBuilder } from '@data-fair/lib-node/axios.js'
 import { axiosAuth } from '@data-fair/lib-node/axios-auth.js'
+import { prefix } from './sd-fixtures.ts'
 
 const devHost = process.env.DEV_HOST ?? 'localhost'
 const nginxPort = process.env.NGINX_PORT ?? '5600'
-const registryPort = process.env.REGISTRY_PORT ?? '5601'
 
 export const registryUrl = `http://${devHost}:${nginxPort}/registry`
-const directRegistryUrl = `http://localhost:${registryPort}`
+// the private URL of the registry API (PRIVATE_REGISTRY_URL, the production name the api and the worker read too)
+const directRegistryUrl = process.env.PRIVATE_REGISTRY_URL || `http://localhost:${process.env.REGISTRY_PORT}`
 const directoryUrl = `http://${devHost}:${nginxPort}/simple-directory`
-/** Matches the registry container's SECRET_INTERNAL_SERVICES in docker-compose.yml. */
+/** Matches the registry's SECRET_INTERNAL_SERVICES (docker-compose.yml). */
 const secretKey = 'secret-registry-internal'
 
-/** Registry artefact id of the mock catalog plugin (matches catalog.plugin). */
-export const mockPluginId = '@data-fair-catalog-mock-0'
+/**
+ * Registry artefact id of the mock catalog plugin (matches catalog.plugin). It carries the prefix of the test
+ * sub-space: registry's prefixed clean (DELETE /api/test-env?prefix=test_catalogs_) removes it, and the clean of
+ * another sub-space leaves it alone. The package inside keeps its name, @data-fair/catalog-mock.
+ */
+export const mockPluginId = `@${prefix}catalog-mock-0`
 
 /**
  * Thumbnail uploaded for the mock plugin. The registry never derives a thumbnail
@@ -67,8 +72,8 @@ export const publishMockPlugin = async () => {
  */
 export const deleteMockPlugin = async () => {
   const superadmin = await axiosAuth({
-    email: 'test_superadmin@test.com',
-    password: 'superpasswd',
+    email: `${prefix}superadmin@test.com`,
+    password: 'passwd',
     adminMode: true,
     directoryUrl,
     axiosOpts: { baseURL: registryUrl }

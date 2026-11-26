@@ -21,31 +21,31 @@ test.describe('catalog plugin thumbnails from the registry', () => {
 
   test('the plugin picker lists the registry plugins with their thumbnail', { tag: '@smoke' }, async ({ page, goToWithAuth }) => {
     const thumbnail = waitForThumbnail(page)
-    await goToWithAuth('/catalogs/catalogs/new', 'test_admin1')
+    await goToWithAuth('/catalogs/catalogs/new', 'test_catalogs_org1_admin')
     // the picker card of the mock plugin (registry artefact title "Mock")
     await expect(page.getByText(/Mock/).first()).toBeVisible({ timeout: 10_000 })
     expect((await thumbnail).status()).toBe(200)
   })
 
   test('the catalog card and detail page fetch the thumbnail', async ({ page, goToWithAuth }) => {
-    // Catalog owned by the test_admin1 personal account — the account the
+    // Catalog owned by the test_catalogs_org1_admin personal account — the account the
     // browser session uses after login.
-    const admin = await axiosAuth('test_admin1@test.com')
+    const admin = await axiosAuth('test_catalogs_org1_admin@test.com')
     const { data: catalog } = await admin.post('/api/catalogs', {
       title: 'Thumbnail catalog',
       plugin: mockPluginId,
-      owner: { type: 'user', id: 'test_admin1', name: 'Test Admin1' },
+      owner: { type: 'user', id: 'test_catalogs_org1_admin', name: 'Test Admin1' },
       config: { url: 'https://data.gouv.fr', delay: 0 }
     })
 
     // Catalog list — the card renders the registry-hosted plugin thumbnail.
     const cardThumbnail = waitForThumbnail(page)
-    await goToWithAuth('/catalogs/catalogs', 'test_admin1')
+    await goToWithAuth('/catalogs/catalogs', 'test_catalogs_org1_admin')
     expect((await cardThumbnail).status()).toBe(200)
 
     // Catalog detail page — same thumbnail in the section header.
     const detailThumbnail = waitForThumbnail(page)
-    await goToWithAuth(`/catalogs/catalogs/${catalog._id}`, 'test_admin1')
+    await goToWithAuth(`/catalogs/catalogs/${catalog._id}`, 'test_catalogs_org1_admin')
     expect((await detailThumbnail).status()).toBe(200)
   })
 })

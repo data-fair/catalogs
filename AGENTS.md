@@ -13,58 +13,71 @@ catalogs, through NPM-installable plugins. The project is a monorepo with four w
 
 ## Dev environment
 
-The user starts the dev environment of a checkout with `npm run dev-zellij` (zellij >= 0.44, session named after the checkout directory). Agents never start or kill the session, and act on processes and containers only through `df-dev`:
+Docker runs the containers (nginx, simple-directory, data-fair, registry, elasticsearch, mongo; optional profiles
+`events` and `agents`); the api, the worker and the ui run as node processes.
 
-```bash
-npx --no df-dev status                # containers (health, memory), panes (running / exited + code, readiness), dev processes memory
-npx --no df-dev logs api -n 100       # last lines of a pane: api, worker, ui, bridge
-npx --no df-dev restart worker        # Ctrl+C, rerun (api: then wait for /catalogs/api/ping)
-npx --no df-dev up agents             # optional container (compose profile), added to the running env
-```
+- `npm run dev` — the containers (`npm run dev-deps`), then the api, the worker and the ui in the terminal (Ctrl+C
+  stops them), at `http://localhost:5800/catalogs/dev`. Their logs are in `dev/logs/` (`DEV_LOG_DIR`,
+  `DEV_LOG_PREFIX`); `npm run dev` accepts docker compose arguments (`npm run dev -- --profile agents`).
+- `npm run dev-deps` — the containers only, plus `npm run dev-setup`.
+- `npm run dev-setup` — idempotent builds (types, ui), no container.
+- `npm run dev:api`, `dev:worker`, `dev:ui` — one process each, with the variables of `.env` exported.
+- `npm run stop-dev-deps` — stops the containers.
 
-- Read the logs before restarting: nodemon (api, worker) and vite (ui) already reload on file changes. Restart only a pane that exited, hangs, or needs new env.
-- If `restart` answers "not ready", report to the user with the logs instead of retrying.
-- Never use `docker compose restart`, `kill` or `zellij action` directly.
-- Optional containers: `agents` (assistant, simulations) and `events` (notifications; when absent, `privateEventsUrl` is emptied through `NODE_CONFIG`, see `optional` in `dev/dev.json`). The user can start them with the env: `npm run dev-zellij -- --services agents,events`; after `npx --no df-dev up events`, run `npx --no df-dev restart api` and `restart worker`.
+Default ports (5800-5812) are in `dev/default.env`, copied to `.env` the first time: `.env` overrides it and is
+never overwritten. Production names (`MONGO_URL`, `PRIVATE_DIRECTORY_URL`, `PRIVATE_REGISTRY_URL`,
+`PRIVATE_DATA_FAIR_URL`, `DATA_FAIR_API_KEY`...) override `api/config/development.mjs` and
+`worker/config/development.mjs`. Without the `events` profile, the api and the worker log a failure per pushed
+event; an empty `EVENTS_PORT` (when another environment provides the containers) turns the integration off.
+
+- Read the logs before restarting: nodemon (api, worker) and vite (ui) already reload on file changes.
+- Do not start, stop or restart the dev processes or containers of the user: ask.
+- Never `npm ci` / `npm install` while the env runs.
+- If a service is down, do not try to fix the infrastructure: read its logs (`dev/logs/`, or
+  `docker compose logs <service>` for a container) and report the problem to the user with the relevant lines.
 
 The dev environment also serves as the test environment: the Playwright test suite hits the
 running dev API, dev worker and dev UI. There is no separate test server.
 
-Each git worktree gets its own `.env` (random ports + `<branch>.localhost` host) so multiple
-worktrees coexist without port collisions. From the main checkout:
+Design specs and implementation plans are not kept in this repository; durable architecture docs live in `docs/architecture/`.
 
-```bash
-npx --no df-worktree feat-xyz          # ../catalogs_feat-xyz: npm ci + df-dev setup (.env, types, UI build)
-npx --no df-worktree-delete feat-xyz   # containers, volumes, zellij session, the worktree and its branch
-```
+### Test sub-space
 
-Branch names: letters, digits, `.`, `_`, `-`, at most 60 characters, no `/`.
+The tests own the simple-directory accounts whose ids start with `test_catalogs_`
+(@tests/support/sd-fixtures.ts: `test_catalogs_superadmin`, a simple-directory admin, `test_catalogs_org1` with
+its admin, contributor, user, department members and scope NHI, `test_catalogs_org2` with its admin; password
+`passwd`, email `<id>@test.com`). `tests/global-setup.ts` upserts them through simple-directory's test API
+before the spec files load, and `tests/state-setup.ts`, under a lock against a second concurrent run, cleans
+and seeds them again, cleans the sub-space here and sets up the worker's data-fair key (below). The repository
+ships no dev data: accounts seeded by hand through the same test API under another prefix are never cleaned by
+the tests.
 
-### Port assignments
+Everything a test creates belongs to the sub-space: owners under `test_catalogs_`, and the mock plugin's
+registry artefact `@test_catalogs_catalog-mock-0` (`tests/support/registry.ts`, uploaded with the registry's
+internal secret on its private URL), which registry's own prefixed clean removes.
 
-Port numbers and the `DEV_HOST` host live in `.env` (gitignored, generated by
-`npx --no df-dev setup`). Do not modify port assignments by hand.
-
-### Test users
-
-Test fixtures live in `dev/resources/users.json` and `dev/resources/organizations.json`.
-All test users and orgs are prefixed with `test_` (e.g. `test_admin1@test.com`,
-`test_org1`). The cleanup endpoint `DELETE /api/test-env` only purges documents whose
-`owner.id` matches `^test_`, so interactive dev work under non-prefixed accounts survives
-test runs.
-
-Passwords: `test_superadmin@test.com` uses `superpasswd`, every other `test_*@test.com`
-uses `passwd`.
+**The worker's data-fair key.** The worker writes the imported datasets in data-fair in the name of their
+owner (`x-account`), with an API key in admin mode. `tests/support/data-fair.ts` creates it through data-fair's
+API, as `test_catalogs_superadmin` in admin mode on its own settings, and hands it to the worker through
+`PUT /api/test-env/data-fair-api-key`: in development, without `DATA_FAIR_API_KEY`, the worker reads it from
+its database before each task (`worker/src/lib/data-fair-api-key.ts`). The tests never write into another
+service's database. For manual work, run the tests once, or set `DATA_FAIR_API_KEY` in `.env` (an admin mode
+key with `asAccount`, created in data-fair by a super admin, see CONTRIBUTING.md).
 
 ### Test-env API
 
 When `NODE_ENV=development` the API exposes `/api/test-env`:
 - `GET /` — readiness probe (`{ ok: true }`)
-- `DELETE /` — delete all `test_*`-owned catalogs, imports and publications; answers 409 with
-  the list of `test_*` tasks the worker still runs after 5 s (a task leaking from a test)
+- `DELETE /?prefix=test_<suite>_` — delete the catalogs, imports and publications owned by the accounts of
+  that prefix, and the locks of those tasks; 400 without a valid prefix, 204 after the clean. It answers 409
+  with the list of the sub-space's tasks the worker still runs after 5 s (a task leaking from a test). Several
+  suites can share one catalogs service: the clean of one prefix never touches another one
+  (`tests/features/test-env/test-env.api.spec.ts`)
+- `PUT /data-fair-api-key` — the worker's data-fair key (above)
+- `GET /catalogs/:id`, `POST /docs/:collection`, `GET /docs/:collection/:id` — raw documents, for the tests
 - `DELETE /plugins` — wipe the installed plugins directory
 
-These endpoints are used by the Playwright support helpers in `tests/support/axios.ts`.
+These endpoints are used by the Playwright support helpers in `tests/support/`.
 
 ### Testing
 
@@ -83,7 +96,7 @@ checks that the dev API is up, `e2e-warmup` visits every UI route once so a cold
 dependency discovery is off, so a blank page there with a module named in the console means a
 commonjs dependency is missing from `optimizeDeps.include` in `ui/vite.config.ts` (use the
 exact import specifier). On a failure the api and
-worker pane logs are attached to the trace (`npx playwright show-trace test-results/<test>/trace.zip`);
+worker logs (`dev/logs/`) are attached to the trace (`npx playwright show-trace test-results/<test>/trace.zip`);
 per-test durations of the last run are in `dev/logs/test-timings.json`. Keep the 30 s test
 timeout (hooks included): a heavy spec calls `test.slow()`.
 
@@ -107,18 +120,10 @@ The UI exposes WebMCP tools and host state to the data-fair chat, see
 
 ### Simulations
 
-Judged browser simulations of the AI assistant (`@data-fair/lib-agents-sim`): a simulated
-person pursues a goal with the real assistant on a real model, in the data-fair back-office
-shell embedding the catalogs UI, then a judge reads the transcript. Cases live in
-`simulations/cases/index.ts`. Run and judge them with the `/agents-sim` skill.
-
-- Never part of `npm test`, CI or hooks (separate `playwright.sim.config.ts`): they spend
-  Claude plan quota.
-- They need the `agents` container (`npx --no df-dev up agents`) and the Claude Code bridge
-  (`bridge` zellij pane, suspended until the user presses Enter in it, port `BRIDGE_PORT`
-  in `.env`). Only the user starts the bridge.
-- A run wipes `test_`-owned catalogs, imports and publications (`DELETE /api/test-env`) and
-  rewrites `test_org1`'s agents settings and its data-fair `agentChat` setting.
+The judged browser simulations of the assistant (a simulated person, a real model, a judge reading the
+transcript) are not kept in this repository. What a judge reads as the product's promises is
+`docs/architecture/agent-integration.md`, keep it current when the agent tools change. They publish the mock plugin
+`tests/fixtures/catalog-mock.tgz`: keep it a working catalog plugin.
 
 ### Linting & Type Checking
 
@@ -142,7 +147,7 @@ catalogs is scope-aware (`session.init(..., { scopeAware: true })`): a session w
 - The vocabulary (the `catalogs` family with read / write / admin tiers, declared with `defineScopes` from `@data-fair/lib-common-types/scopes.js`, which adds the global `all:read` / `all:write` / `all:admin`) and the operation table live in `api/src/scopes.ts`. The worker reaches data-fair with its own key in the name of the owner: `catalogs:write` alone creates datasets (imports) and sends datasets outside (publications), the descriptions say so; keep them explicit.
 - Every new session-facing route gets a row in `scopedOperations` and `requireOperationScope('<operationId>')` as its first handler. Without one it stays refused to scoped sessions (the admin routes, on purpose). Parts of a body that need a higher tier than the route are checked in the route with `assertReqScope` (the admin parts of an import PATCH, `api/src/imports/patch-fields.ts`).
 - `GET /api/api-docs.json` (`api/contract/api-docs.ts`, built from the same table) is the document data-fair merges into the platform document: keep it independent of the request origin (data-fair fetches it over the private url) and keep each accepted scope as its own `security` alternative. Edit the table, not the document. Its skills are the markdown files of `api/contract/skills/`, served at `/api/agents/skills/<name>.md`.
-- Tests: `tests/features/scopes/` (vocabulary, route enforcement with `nhiSession` from `tests/support/nhi.ts`, the test NHI of `dev/resources/users.json`) and `tests/features/agent-tools/`.
+- Tests: `tests/features/scopes/` (vocabulary, route enforcement with `nhiSession` from `tests/support/nhi.ts`, the test NHI of `tests/support/sd-fixtures.ts`) and `tests/features/agent-tools/`.
 
 ## Logging
 

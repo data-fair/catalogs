@@ -2,7 +2,7 @@ import { test, expect } from '../../fixtures/login.ts'
 import { axiosAuth, cleanDb } from '../../support/axios.ts'
 import { publishMockPlugin, mockPluginId } from '../../support/registry.ts'
 
-const owner = { type: 'organization', id: 'test_org1', name: 'Test Org 1' }
+const owner = { type: 'organization', id: 'test_catalogs_org1', name: 'Test Org 1' }
 const status = { validateStatus: () => true }
 
 test.describe('import configuration', () => {
@@ -11,7 +11,7 @@ test.describe('import configuration', () => {
   test.afterAll(cleanDb)
 
   const create = async () => {
-    const admin = await axiosAuth({ email: 'test_admin1@test.com', org: 'test_org1' })
+    const admin = await axiosAuth({ email: 'test_catalogs_org1_admin@test.com', org: 'test_catalogs_org1' })
     const catalog = (await admin.post('/api/catalogs', { title: 'Source', plugin: mockPluginId, owner, config: { url: 'https://example.com', delay: 0 } })).data
     const imp = (await admin.post('/api/imports', { catalog: { id: catalog._id }, config: {}, remoteResource: { id: 'r1', title: 'Resource 1' }, scheduling: [], isSchedulingActive: true, shouldUpdateMetadata: true, shouldUpdateSchema: true })).data
     return { admin, catalog, imp }
@@ -55,7 +55,7 @@ test.describe('import configuration', () => {
 
   test('without the importConfig capability there is no config', async () => {
     const { admin, catalog, imp } = await create()
-    const superadmin = await axiosAuth('test_superadmin@test.com')
+    const superadmin = await axiosAuth('test_catalogs_superadmin@test.com')
     await superadmin.patch(`/api/catalogs/${catalog._id}`, { capabilities: catalog.capabilities.filter((c: string) => c !== 'importConfig') })
     const schema = (await admin.get(`/api/imports/${imp._id}/configuration-schema`)).data
     expect(schema.properties.config).toBeUndefined()

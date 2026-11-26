@@ -1,6 +1,5 @@
 import { test as base, expect, request, type BrowserContext } from '@playwright/test'
-import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
+import { processLogs } from '../support/process-logs.ts'
 
 /**
  * The `test` of every api and e2e spec.
@@ -24,10 +23,9 @@ const sessions = new Map<string, { at: number, cookies: Cookies }>()
 const apiLogin = async (user: string, opts: AccountOpts): Promise<Cookies> => {
   const ctx = await request.newContext()
   try {
-    const password = user === 'test_superadmin' ? 'superpasswd' : 'passwd'
     const res = await ctx.post(`${directoryUrl}/api/auth/password`, {
       params: { redirect: `${baseUrl}/catalogs/` },
-      data: { email: `${user}@test.com`, password, ...opts }
+      data: { email: `${user}@test.com`, password: 'passwd', ...opts }
     })
     expect(res.ok(), `login of ${user} failed: ${res.status()} ${await res.text()}`).toBe(true)
     // the callback sets the session cookies and redirects to the app
@@ -49,18 +47,11 @@ const sessionCookies = async (user: string, opts: AccountOpts) => {
   return session.cookies
 }
 
-const exec = promisify(execFile)
-// the scrollback of a df-dev pane, or nothing when df-dev is not running (CI keeps its own logs)
-const paneLogs = async (pane: string) => {
-  const { stdout } = await exec('./node_modules/.bin/df-dev', ['logs', pane, '-n', '200']).catch(() => ({ stdout: '' }))
-  return stdout
-}
-
 /**
  * - `goToWithAuth(url, user, opts?)`: lands on url logged in as user, with the organization /
  *   department of opts as active account, or in admin mode (super admins).
  * - `page` override: French, cache bypass, and no session keepalive (see above).
- * - on a failure, the api and worker pane logs are attached to the report and the trace.
+ * - on a failure, the last lines of the api and worker logs are attached to the report and the trace.
  */
 export const test = base.extend<{
   goToWithAuth: (url: string, user: string, opts?: AccountOpts) => Promise<void>,
@@ -91,9 +82,9 @@ export const test = base.extend<{
   diagnostics: [async ({}, use, testInfo) => {
     await use()
     if (testInfo.status === testInfo.expectedStatus) return
-    for (const pane of ['api', 'worker']) {
-      const logs = await paneLogs(pane)
-      if (logs) await testInfo.attach(`${pane}.log`, { body: logs, contentType: 'text/plain' })
+    for (const name of ['api', 'worker']) {
+      const logs = processLogs(name)
+      if (logs) await testInfo.attach(`${name}.log`, { body: logs, contentType: 'text/plain' })
     }
   }, { auto: true }]
 })

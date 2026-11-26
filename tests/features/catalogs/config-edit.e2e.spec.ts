@@ -17,15 +17,15 @@ test.describe('catalog configuration edition', () => {
   test.beforeEach(cleanDb)
 
   test('keeps the plugin config visible while editing the title and description', { tag: '@smoke' }, async ({ page, goToWithAuth }) => {
-    const admin = await axiosAuth('test_admin1@test.com')
+    const admin = await axiosAuth('test_catalogs_org1_admin@test.com')
     const { data: catalog } = await admin.post('/api/catalogs', {
       title: 'Config edit catalog',
       plugin: mockPluginId,
-      owner: { type: 'user', id: 'test_admin1', name: 'Test Admin1' },
+      owner: { type: 'user', id: 'test_catalogs_org1_admin', name: 'Test Admin1' },
       config: { url: 'https://data.gouv.fr', delay: 0 }
     })
 
-    await goToWithAuth(`/catalogs/catalogs/${catalog._id}?tab=configuration`, 'test_admin1')
+    await goToWithAuth(`/catalogs/catalogs/${catalog._id}?tab=configuration`, 'test_catalogs_org1_admin')
 
     const title = page.getByLabel('Titre')
     const description = page.getByLabel('Description')
