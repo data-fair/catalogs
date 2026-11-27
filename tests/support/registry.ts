@@ -70,6 +70,11 @@ export const publishMockPlugin = async () => {
  * The registry's DELETE endpoint requires a superadmin session (the internal
  * secret is accepted for upload and PATCH but not for DELETE).
  */
+/** Mark the mock plugin deprecated or not (its catalogs keep working, it is no longer offered for a new one). */
+export const setMockPluginDeprecated = async (deprecated: boolean) => {
+  await internalAx.patch(`/api/v1/artefacts/${encodeURIComponent(mockPluginId)}`, { deprecated })
+}
+
 export const deleteMockPlugin = async () => {
   const superadmin = await axiosAuth({
     email: `${prefix}superadmin@test.com`,

@@ -110,10 +110,8 @@ interface RegistryArtefact {
   title?: { fr?: string, en?: string }
   thumbnail?: { id: string }
 }
-const pluginsFetch = useFetch<{ results: RegistryArtefact[] }>(
-  `${$sitePath}/registry/api/v1/artefacts?format=npm&category=catalog&size=100`,
-  { notifError: false }
-)
+// every page, deprecated plugins included: their catalogs still work and must not read as "deleted"
+const pluginsFetch = useRegistryPlugins<RegistryArtefact>({ includeDeprecated: true })
 const pluginsList = computed(() => (pluginsFetch.data.value?.results ?? []).map(a => ({
   id: a._id,
   title: localizedText(a.title, session.lang.value) || a.packageName || a.name,
