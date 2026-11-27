@@ -165,13 +165,9 @@ const session = useSessionAuthenticated()
 const router = useRouter()
 const { t } = useI18n()
 
-// List catalog plugins straight from the registry — same domain, so the
-// browser sends the SimpleDirectory session cookie and the registry
-// access-filters the results.
-const pluginsFetch = useFetch<{ results: RegistryArtefact[], count: number }>(
-  `${$sitePath}/registry/api/v1/artefacts?format=npm&category=catalog&size=100`,
-  { notifError: false }
-)
+// List catalog plugins straight from the registry, every page of them (use-registry-plugins.ts); a deprecated plugin
+// is not offered for a new catalog.
+const pluginsFetch = useRegistryPlugins<RegistryArtefact>({ includeDeprecated: false })
 
 const step = ref('1')
 const newCatalog = ref<Partial<CatalogPostReq['body']>>({})
